@@ -1,17 +1,19 @@
 import { useState, useEffect } from 'react'
+import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom'
 import pb from './lib/pocketbase'
 import AuthPage from './pages/AuthPage'
+import HostPage from './pages/HostPage'
+import LobbyPage from './pages/LobbyPage'
 
 function App() {
   const [connectionStatus, setConnectionStatus] = useState<'connecting' | 'connected' | 'error'>('connecting')
-  const [isHealthy, setIsHealthy] = useState(false)
+  const [isAuthenticated, setIsAuthenticated] = useState(pb.authStore.isValid)
 
   useEffect(() => {
     const checkConnection = async () => {
       try {
         // Test PocketBase connection
         const health = await pb.health.check()
-        setIsHealthy(true)
         setConnectionStatus('connected')
         console.log('PocketBase connected successfully!', health)
       } catch (error) {
@@ -21,6 +23,16 @@ function App() {
     }
 
     checkConnection()
+  }, [])
+
+  // Listen to auth store changes
+  useEffect(() => {
+    const unsubscribe = pb.authStore.onChange(() => {
+      console.log('Auth state changed, isValid:', pb.authStore.isValid)
+      setIsAuthenticated(pb.authStore.isValid)
+    })
+
+    return () => unsubscribe()
   }, [])
 
   // Show connection status if not connected
@@ -34,11 +46,9 @@ function App() {
 
           <div className="space-y-4">
             <div className={`text-center font-medium ${
-              connectionStatus === 'connected' ? 'text-green-600' :
               connectionStatus === 'connecting' ? 'text-yellow-600' : 'text-red-600'
             }`}>
-              {connectionStatus === 'connected' ? 'Connected to PocketBase! 🎉' :
-               connectionStatus === 'connecting' ? 'Connecting to PocketBase...' :
+              {connectionStatus === 'connecting' ? 'Connecting to PocketBase...' :
                'Failed to connect to PocketBase'}
             </div>
 
@@ -55,7 +65,26 @@ function App() {
     )
   }
 
-  return <AuthPage />
+  return (
+    <Router>
+      <Routes>
+        <Route path="/" element={<AuthPage />} />
+        <Route
+          path="/host"
+          element={
+            isAuthenticated ? <HostPage /> : <Navigate to="/" replace />
+          }
+        />
+        <Route
+          path="/lobby"
+          element={
+            isAuthenticated ? <LobbyPage /> : <Navigate to="/" replace />
+          }
+        />
+        <Route path="*" element={<Navigate to="/" replace />} />
+      </Routes>
+    </Router>
+  )
 }
 
 export default App

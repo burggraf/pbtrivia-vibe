@@ -1,4 +1,5 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
+import { useNavigate } from 'react-router-dom'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
@@ -12,7 +13,9 @@ interface AuthFormData {
 }
 
 export default function AuthPage() {
+  const navigate = useNavigate()
   const [mode, setMode] = useState<'login' | 'register' | 'forgot'>('login')
+  const [userMode, setUserMode] = useState<'host' | 'player'>('player')
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
   const [success, setSuccess] = useState('')
@@ -36,9 +39,11 @@ export default function AuthPage() {
 
     try {
       await pb.collection('users').authWithPassword(formData.email, formData.password)
+      console.log('Login successful, auth state:', pb.authStore.isValid)
+      console.log('User mode:', userMode)
       setSuccess('Login successful!')
-      // You can redirect or update state here
     } catch (err: any) {
+      console.error('Login error:', err)
       setError(err.message || 'Login failed')
     } finally {
       setLoading(false)
@@ -89,6 +94,19 @@ export default function AuthPage() {
     }
   }
 
+  // Redirect effect - if user is authenticated, redirect to appropriate page
+  useEffect(() => {
+    if (pb.authStore.isValid && success) {
+      // Small delay to show success message
+      const timer = setTimeout(() => {
+        const targetRoute = userMode === 'host' ? '/host' : '/lobby'
+        console.log('Redirect effect triggered, navigating to:', targetRoute)
+        navigate(targetRoute)
+      }, 1500)
+      return () => clearTimeout(timer)
+    }
+  }, [pb.authStore.isValid, success, userMode, navigate])
+
   const handleSubmit = mode === 'login' ? handleLogin : mode === 'register' ? handleRegister : handleForgotPassword
 
   return (
@@ -109,6 +127,37 @@ export default function AuthPage() {
         </CardHeader>
         <CardContent>
           <form onSubmit={handleSubmit} className="space-y-4">
+            {/* Host/Player Mode Selector */}
+            <div className="space-y-3">
+              <Label className="text-slate-700 font-medium">Login as:</Label>
+              <div className="flex gap-2">
+                <Button
+                  type="button"
+                  variant={userMode === 'player' ? 'default' : 'outline'}
+                  onClick={() => setUserMode('player')}
+                  className={`flex-1 ${
+                    userMode === 'player'
+                      ? 'bg-slate-700 hover:bg-slate-800 text-white'
+                      : 'border-slate-300 text-slate-700 hover:bg-slate-50'
+                  }`}
+                >
+                  Player
+                </Button>
+                <Button
+                  type="button"
+                  variant={userMode === 'host' ? 'default' : 'outline'}
+                  onClick={() => setUserMode('host')}
+                  className={`flex-1 ${
+                    userMode === 'host'
+                      ? 'bg-slate-700 hover:bg-slate-800 text-white'
+                      : 'border-slate-300 text-slate-700 hover:bg-slate-50'
+                  }`}
+                >
+                  Host
+                </Button>
+              </div>
+            </div>
+
             <div className="space-y-2">
               <Label htmlFor="email" className="text-slate-700">Email</Label>
               <Input
