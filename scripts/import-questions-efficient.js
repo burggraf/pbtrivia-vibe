@@ -98,17 +98,20 @@ async function createQuestion(token, questionData) {
 async function getExistingExternalIds(token) {
 	const existingIds = new Set()
 	let page = 1
-	const perPage = 1000
+	const perPage = 10000
 	let hasMore = true
 
 	console.log('🔍 Getting existing question IDs to prevent duplicates...')
 
 	while (hasMore) {
-		const response = await fetch(`${POCKETBASE_URL}/api/collections/questions/records?page=${page}&perPage=${perPage}&fields=external_id`, {
-			headers: {
-				Authorization: token,
-			},
-		})
+		const response = await fetch(
+			`${POCKETBASE_URL}/api/collections/questions/records?page=${page}&perPage=${perPage}&fields=external_id`,
+			{
+				headers: {
+					Authorization: token,
+				},
+			}
+		)
 
 		if (!response.ok) {
 			console.warn(`Warning: Could not fetch existing IDs page ${page}`)
@@ -117,7 +120,7 @@ async function getExistingExternalIds(token) {
 
 		const data = await response.json()
 
-		data.items.forEach(item => {
+		data.items.forEach((item) => {
 			if (item.external_id) {
 				existingIds.add(item.external_id)
 			}
@@ -165,7 +168,11 @@ async function main() {
 			return id && !existingIds.has(id)
 		})
 
-		console.log(`📊 ${newLines.length} new questions to import (${lines.length - newLines.length} already exist)`)
+		console.log(
+			`📊 ${newLines.length} new questions to import (${
+				lines.length - newLines.length
+			} already exist)`
+		)
 
 		let successCount = 0
 		let errorCount = 0
@@ -228,7 +235,7 @@ async function main() {
 				successCount++
 
 				// Progress indicator
-				if (successCount % 100 === 0) {
+				if (successCount % 1000 === 0) {
 					console.log(`  ✓ Loaded ${successCount} questions...`)
 				}
 			} catch (error) {
