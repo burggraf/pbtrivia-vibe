@@ -7,13 +7,13 @@ set -e  # Exit on any error
 
 echo "🚀 Setting up pbtrivia-vibe development environment..."
 
-# Kill any existing PocketBase server on port 8091
-echo "🔄 Stopping any existing PocketBase server on port 8091..."
-if lsof -Pi :8091 -sTCP:LISTEN -t >/dev/null ; then
-    kill $(lsof -Pi :8091 -sTCP:LISTEN -t)
-    echo "✅ PocketBase server on port 8091 stopped"
+# Kill any existing PocketBase server on port 8090
+echo "🔄 Stopping any existing PocketBase server on port 8090..."
+if lsof -Pi :8090 -sTCP:LISTEN -t >/dev/null ; then
+    kill $(lsof -Pi :8090 -sTCP:LISTEN -t)
+    echo "✅ PocketBase server on port 8090 stopped"
 else
-    echo "ℹ️  No PocketBase server found on port 8091"
+    echo "ℹ️  No PocketBase server found on port 8090"
 fi
 
 # Wait a moment for the port to be free
@@ -26,7 +26,7 @@ echo "✅ Superuser admin@example.com created/updated"
 
 # Start PocketBase in background with output redirected to log file
 echo "🗄️  Starting PocketBase server in background..."
-pocketbase serve --dev --http 0.0.0.0:8091 > pocketbase.log 2>&1 &
+pocketbase serve --dev --http 0.0.0.0:8090 > pocketbase.log 2>&1 &
 PB_PID=$!
 echo "✅ PocketBase server started with PID $PB_PID (logs: pocketbase.log)"
 
@@ -45,7 +45,7 @@ fi
 # Start the frontend development server
 echo "🎨 Starting frontend development server..."
 echo "🌐 Your app will be available at: http://localhost:5176"
-echo "🔧 PocketBase admin: http://localhost:8091/_/"
+echo "🔧 PocketBase admin: http://localhost:8090/_/"
 echo "📧 PocketBase admin login: admin@example.com / Password123"
 echo ""
 echo "Press Ctrl+C to stop both servers"
