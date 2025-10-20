@@ -18,6 +18,7 @@ build/
 pb_data/
 pb_migrations/
 pb_hooks/
+pocketbase.log
 
 # IDE
 .vscode/
