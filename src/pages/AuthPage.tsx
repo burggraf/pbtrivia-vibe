@@ -4,6 +4,7 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
+import ThemeToggle from '@/components/ThemeToggle'
 import pb from '@/lib/pocketbase'
 
 interface AuthFormData {
@@ -110,13 +111,16 @@ export default function AuthPage() {
   const handleSubmit = mode === 'login' ? handleLogin : mode === 'register' ? handleRegister : handleForgotPassword
 
   return (
-    <div className="min-h-screen bg-slate-50 flex items-center justify-center p-4">
-      <Card className="w-full max-w-md">
+    <div className="min-h-screen bg-slate-50 dark:bg-slate-900 flex items-center justify-center p-4">
+      <div className="absolute top-4 right-4">
+        <ThemeToggle />
+      </div>
+      <Card className="w-full max-w-md bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700">
         <CardHeader className="space-y-1">
-          <CardTitle className="text-2xl font-semibold text-slate-800">
+          <CardTitle className="text-2xl font-semibold text-slate-800 dark:text-slate-100">
             {mode === 'login' ? 'Welcome Back' : mode === 'register' ? 'Create Account' : 'Reset Password'}
           </CardTitle>
-          <CardDescription className="text-slate-600">
+          <CardDescription className="text-slate-600 dark:text-slate-400">
             {mode === 'login'
               ? 'Enter your credentials to access your account'
               : mode === 'register'
@@ -129,7 +133,7 @@ export default function AuthPage() {
           <form onSubmit={handleSubmit} className="space-y-4">
             {/* Host/Player Mode Selector */}
             <div className="space-y-3">
-              <Label className="text-slate-700 font-medium">Login as:</Label>
+              <Label className="text-slate-700 dark:text-slate-300 font-medium">Login as:</Label>
               <div className="flex gap-2">
                 <Button
                   type="button"
@@ -137,8 +141,8 @@ export default function AuthPage() {
                   onClick={() => setUserMode('player')}
                   className={`flex-1 ${
                     userMode === 'player'
-                      ? 'bg-slate-700 hover:bg-slate-800 text-white'
-                      : 'border-slate-300 text-slate-700 hover:bg-slate-50'
+                      ? 'bg-slate-700 hover:bg-slate-800 dark:bg-slate-600 dark:hover:bg-slate-700 text-white'
+                      : 'border-slate-300 dark:border-slate-600 text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700'
                   }`}
                 >
                   Player
@@ -149,8 +153,8 @@ export default function AuthPage() {
                   onClick={() => setUserMode('host')}
                   className={`flex-1 ${
                     userMode === 'host'
-                      ? 'bg-slate-700 hover:bg-slate-800 text-white'
-                      : 'border-slate-300 text-slate-700 hover:bg-slate-50'
+                      ? 'bg-slate-700 hover:bg-slate-800 dark:bg-slate-600 dark:hover:bg-slate-700 text-white'
+                      : 'border-slate-300 dark:border-slate-600 text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700'
                   }`}
                 >
                   Host
@@ -159,7 +163,7 @@ export default function AuthPage() {
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="email" className="text-slate-700">Email</Label>
+              <Label htmlFor="email" className="text-slate-700 dark:text-slate-300">Email</Label>
               <Input
                 id="email"
                 name="email"
@@ -168,13 +172,13 @@ export default function AuthPage() {
                 value={formData.email}
                 onChange={handleInputChange}
                 required
-                className="border-slate-200 focus:border-slate-400 focus:ring-slate-200"
+                className="border-slate-200 dark:border-slate-600 dark:bg-slate-700 dark:text-slate-100 focus:border-slate-400 dark:focus:border-slate-500 focus:ring-slate-200 dark:focus:ring-slate-700"
               />
             </div>
 
             {(mode === 'login' || mode === 'register') && (
               <div className="space-y-2">
-                <Label htmlFor="password" className="text-slate-700">Password</Label>
+                <Label htmlFor="password" className="text-slate-700 dark:text-slate-300">Password</Label>
                 <Input
                   id="password"
                   name="password"
@@ -184,14 +188,14 @@ export default function AuthPage() {
                   onChange={handleInputChange}
                   required
                   minLength={8}
-                  className="border-slate-200 focus:border-slate-400 focus:ring-slate-200"
+                  className="border-slate-200 dark:border-slate-600 dark:bg-slate-700 dark:text-slate-100 focus:border-slate-400 dark:focus:border-slate-500 focus:ring-slate-200 dark:focus:ring-slate-700"
                 />
               </div>
             )}
 
             {mode === 'register' && (
               <div className="space-y-2">
-                <Label htmlFor="passwordConfirm" className="text-slate-700">Confirm Password</Label>
+                <Label htmlFor="passwordConfirm" className="text-slate-700 dark:text-slate-300">Confirm Password</Label>
                 <Input
                   id="passwordConfirm"
                   name="passwordConfirm"
@@ -201,33 +205,33 @@ export default function AuthPage() {
                   onChange={handleInputChange}
                   required
                   minLength={8}
-                  className="border-slate-200 focus:border-slate-400 focus:ring-slate-200"
+                  className="border-slate-200 dark:border-slate-600 dark:bg-slate-700 dark:text-slate-100 focus:border-slate-400 dark:focus:border-slate-500 focus:ring-slate-200 dark:focus:ring-slate-700"
                 />
               </div>
             )}
 
             {error && (
-              <div className="bg-red-50 border border-red-200 text-red-700 px-3 py-2 rounded-md text-sm">
+              <div className="bg-red-50 dark:bg-red-900/30 border border-red-200 dark:border-red-800 text-red-700 dark:text-red-300 px-3 py-2 rounded-md text-sm">
                 {error}
               </div>
             )}
 
             {success && (
-              <div className="bg-green-50 border border-green-200 text-green-700 px-3 py-2 rounded-md text-sm">
+              <div className="bg-green-50 dark:bg-green-900/30 border border-green-200 dark:border-green-800 text-green-700 dark:text-green-300 px-3 py-2 rounded-md text-sm">
                 {success}
               </div>
             )}
 
             <Button
               type="submit"
-              className="w-full bg-slate-700 hover:bg-slate-800 text-white"
+              className="w-full bg-slate-700 hover:bg-slate-800 dark:bg-slate-600 dark:hover:bg-slate-700 text-white"
               disabled={loading}
             >
               {loading ? 'Loading...' : mode === 'login' ? 'Sign In' : mode === 'register' ? 'Create Account' : 'Send Reset Link'}
             </Button>
           </form>
 
-          <div className="mt-6 text-center text-sm text-slate-600 space-y-2">
+          <div className="mt-6 text-center text-sm text-slate-600 dark:text-slate-400 space-y-2">
             {mode !== 'login' && (
               <button
                 type="button"
@@ -236,7 +240,7 @@ export default function AuthPage() {
                   setError('')
                   setSuccess('')
                 }}
-                className="text-slate-700 hover:text-slate-900 underline underline-offset-2"
+                className="text-slate-700 dark:text-slate-300 hover:text-slate-900 dark:hover:text-slate-100 underline underline-offset-2"
               >
                 Back to Login
               </button>
@@ -251,7 +255,7 @@ export default function AuthPage() {
                     setError('')
                     setSuccess('')
                   }}
-                  className="text-slate-700 hover:text-slate-900 underline underline-offset-2"
+                  className="text-slate-700 dark:text-slate-300 hover:text-slate-900 dark:hover:text-slate-100 underline underline-offset-2"
                 >
                   Don't have an account? Sign up
                 </button>
@@ -263,7 +267,7 @@ export default function AuthPage() {
                       setError('')
                       setSuccess('')
                     }}
-                    className="text-slate-700 hover:text-slate-900 underline underline-offset-2"
+                    className="text-slate-700 dark:text-slate-300 hover:text-slate-900 dark:hover:text-slate-100 underline underline-offset-2"
                   >
                     Forgot your password?
                   </button>
@@ -279,7 +283,7 @@ export default function AuthPage() {
                   setError('')
                   setSuccess('')
                 }}
-                className="text-slate-700 hover:text-slate-900 underline underline-offset-2"
+                className="text-slate-700 dark:text-slate-300 hover:text-slate-900 dark:hover:text-slate-100 underline underline-offset-2"
               >
                 Already have an account? Sign in
               </button>

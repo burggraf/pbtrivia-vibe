@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
+import ThemeToggle from '@/components/ThemeToggle'
 import pb from '@/lib/pocketbase'
 import { gamesService } from '@/lib/games'
 import { Game, CreateGameData, UpdateGameData } from '@/types/games'
@@ -86,18 +87,19 @@ export default function HostPage() {
   }
 
   return (
-    <div className="min-h-screen bg-slate-50 p-8">
+    <div className="min-h-screen bg-slate-50 dark:bg-slate-900 p-8">
       <div className="max-w-6xl mx-auto">
         <div className="flex justify-between items-center mb-8">
           <div>
-            <h1 className="text-3xl font-bold text-slate-800">Host Dashboard</h1>
-            <p className="text-slate-600 mt-2">Manage your trivia games here</p>
+            <h1 className="text-3xl font-bold text-slate-800 dark:text-slate-100">Host Dashboard</h1>
+            <p className="text-slate-600 dark:text-slate-400 mt-2">Manage your trivia games here</p>
           </div>
           <div className="flex gap-3">
+            <ThemeToggle />
             {currentView === 'list' && (
               <Button
                 onClick={handleCreateGame}
-                className="bg-slate-700 hover:bg-slate-800 text-white"
+                className="bg-slate-700 hover:bg-slate-800 dark:bg-slate-600 dark:hover:bg-slate-700 text-white"
               >
                 Create New Game
               </Button>
@@ -105,7 +107,7 @@ export default function HostPage() {
             <Button
               variant="outline"
               onClick={handleLogout}
-              className="border-slate-300 text-slate-700 hover:bg-slate-50"
+              className="border-slate-300 dark:border-slate-600 text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800"
             >
               Logout
             </Button>
@@ -124,29 +126,29 @@ export default function HostPage() {
         )}
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-8">
-          <Card>
+          <Card className="bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700">
             <CardHeader>
-              <CardTitle className="text-xl text-slate-800">Manage Questions</CardTitle>
-              <CardDescription className="text-slate-600">
+              <CardTitle className="text-xl text-slate-800 dark:text-slate-100">Manage Questions</CardTitle>
+              <CardDescription className="text-slate-600 dark:text-slate-400">
                 Add or edit trivia questions
               </CardDescription>
             </CardHeader>
             <CardContent>
-              <Button variant="outline" className="w-full border-slate-300 text-slate-700 hover:bg-slate-50">
+              <Button variant="outline" className="w-full border-slate-300 dark:border-slate-600 text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700">
                 Question Bank
               </Button>
             </CardContent>
           </Card>
 
-          <Card>
+          <Card className="bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700">
             <CardHeader>
-              <CardTitle className="text-xl text-slate-800">Settings</CardTitle>
-              <CardDescription className="text-slate-600">
+              <CardTitle className="text-xl text-slate-800 dark:text-slate-100">Settings</CardTitle>
+              <CardDescription className="text-slate-600 dark:text-slate-400">
                 Configure game preferences
               </CardDescription>
             </CardHeader>
             <CardContent>
-              <Button variant="outline" className="w-full border-slate-300 text-slate-700 hover:bg-slate-50">
+              <Button variant="outline" className="w-full border-slate-300 dark:border-slate-600 text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700">
                 Game Settings
               </Button>
             </CardContent>

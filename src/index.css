@@ -1,3 +1,26 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+@layer base {
+  /* Smooth color transitions when switching themes */
+  * {
+    @apply transition-colors duration-200;
+  }
+
+  /* Base light mode styles (default) */
+  :root {
+    --background: 248 250 252; /* slate-50 */
+    --foreground: 30 41 59; /* slate-800 */
+  }
+
+  /* Dark mode styles */
+  .dark {
+    --background: 15 23 42; /* slate-900 */
+    --foreground: 226 232 240; /* slate-200 */
+  }
+
+  body {
+    @apply bg-slate-50 dark:bg-slate-900 text-slate-800 dark:text-slate-200;
+  }
+}
