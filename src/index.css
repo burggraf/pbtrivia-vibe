@@ -12,12 +12,36 @@
   :root {
     --background: 248 250 252; /* slate-50 */
     --foreground: 30 41 59; /* slate-800 */
+
+    --primary: 51 65 85; /* slate-700 */
+    --primary-foreground: 248 250 252; /* slate-50 */
+
+    --secondary: 226 232 240; /* slate-200 */
+    --secondary-foreground: 30 41 59; /* slate-800 */
+
+    --destructive: 220 38 38; /* red-600 */
+    --destructive-foreground: 248 250 252; /* slate-50 */
+
+    --border: 226 232 240; /* slate-200 */
+    --ring: 148 163 184; /* slate-400 */
   }
 
   /* Dark mode styles */
   .dark {
     --background: 15 23 42; /* slate-900 */
     --foreground: 226 232 240; /* slate-200 */
+
+    --primary: 71 85 105; /* slate-600 */
+    --primary-foreground: 248 250 252; /* slate-50 */
+
+    --secondary: 51 65 85; /* slate-700 */
+    --secondary-foreground: 226 232 240; /* slate-200 */
+
+    --destructive: 185 28 28; /* red-700 */
+    --destructive-foreground: 248 250 252; /* slate-50 */
+
+    --border: 51 65 85; /* slate-700 */
+    --ring: 100 116 139; /* slate-500 */
   }
 
   body {
