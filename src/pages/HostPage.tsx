@@ -7,14 +7,16 @@ import { gamesService } from '@/lib/games'
 import { Game, CreateGameData, UpdateGameData } from '@/types/games'
 import GameForm from '@/components/games/GameForm'
 import GamesList from '@/components/games/GamesList'
+import GameRounds from '@/components/rounds/GameRounds'
 
 export default function HostPage() {
   const navigate = useNavigate()
   const [games, setGames] = useState<Game[]>([])
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
-  const [currentView, setCurrentView] = useState<'list' | 'create' | 'edit'>('list')
+  const [currentView, setCurrentView] = useState<'list' | 'create' | 'edit' | 'rounds'>('list')
   const [editingGame, setEditingGame] = useState<Game | null>(null)
+  const [selectedGame, setSelectedGame] = useState<Game | null>(null)
 
   const fetchGames = async () => {
     try {
@@ -83,6 +85,12 @@ export default function HostPage() {
   const handleCancel = () => {
     setCurrentView('list')
     setEditingGame(null)
+    setSelectedGame(null)
+  }
+
+  const handleManageRounds = (game: Game) => {
+    setCurrentView('rounds')
+    setSelectedGame(game)
   }
 
   return (
@@ -113,7 +121,7 @@ export default function HostPage() {
           </div>
         </div>
 
-        {currentView === 'list' && <GamesList games={games} onEdit={handleEditGame} onDelete={handleDeleteGame} isLoading={loading} />}
+        {currentView === 'list' && <GamesList games={games} onEdit={handleEditGame} onDelete={handleDeleteGame} onManageRounds={handleManageRounds} isLoading={loading} />}
 
         {(currentView === 'create' || currentView === 'edit') && (
           <GameForm
@@ -121,6 +129,13 @@ export default function HostPage() {
             onSave={handleSaveGame}
             onCancel={handleCancel}
             isLoading={saving}
+          />
+        )}
+
+        {currentView === 'rounds' && selectedGame && (
+          <GameRounds
+            gameId={selectedGame.id}
+            onBack={handleCancel}
           />
         )}
       </div>

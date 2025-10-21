@@ -1,15 +1,17 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Game } from '@/types/games';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
 import { formatDateTime } from '@/lib/utils';
+import { roundsService } from '@/lib/rounds';
 
 interface GamesListProps {
   games: Game[];
   onEdit: (game: Game) => void;
   onDelete: (game: Game) => void;
+  onManageRounds: (game: Game) => void;
   isLoading?: boolean;
 }
 
@@ -42,8 +44,29 @@ function formatDuration(minutes?: number): string {
   return remainingMinutes > 0 ? `${hours}h ${remainingMinutes}m` : `${hours}h`;
 }
 
-export default function GamesList({ games, onEdit, onDelete, isLoading = false }: GamesListProps) {
+export default function GamesList({ games, onEdit, onDelete, onManageRounds, isLoading = false }: GamesListProps) {
   const [deleteConfirm, setDeleteConfirm] = useState<string | null>(null);
+  const [roundsCount, setRoundsCount] = useState<{ [key: string]: number }>({});
+
+  useEffect(() => {
+    const loadRoundsCount = async () => {
+      const counts: { [key: string]: number } = {};
+      for (const game of games) {
+        try {
+          const gameRounds = await roundsService.getRounds(game.id);
+          counts[game.id] = gameRounds.length;
+        } catch (error) {
+          console.error('Failed to load rounds count for game:', game.id);
+          counts[game.id] = 0;
+        }
+      }
+      setRoundsCount(counts);
+    };
+
+    if (games.length > 0) {
+      loadRoundsCount();
+    }
+  }, [games]);
 
   const handleDelete = (game: Game) => {
     if (deleteConfirm === game.id) {
@@ -103,6 +126,7 @@ export default function GamesList({ games, onEdit, onDelete, isLoading = false }
               <TableHead className="text-slate-700 dark:text-slate-300">Name</TableHead>
               <TableHead className="text-slate-700 dark:text-slate-300">Code</TableHead>
               <TableHead className="text-slate-700 dark:text-slate-300">Status</TableHead>
+              <TableHead className="text-slate-700 dark:text-slate-300">Rounds</TableHead>
               <TableHead className="text-slate-700 dark:text-slate-300">Start Date & Time</TableHead>
               <TableHead className="text-slate-700 dark:text-slate-300">Duration</TableHead>
               <TableHead className="text-slate-700 dark:text-slate-300">Location</TableHead>
@@ -122,6 +146,21 @@ export default function GamesList({ games, onEdit, onDelete, isLoading = false }
                   <Badge variant={getStatusBadgeVariant(game.status)}>
                     {formatGameStatus(game.status)}
                   </Badge>
+                </TableCell>
+                <TableCell>
+                  <div className="flex items-center gap-2">
+                    <Badge variant="outline">
+                      {roundsCount[game.id] || 0} round{(roundsCount[game.id] || 0) !== 1 ? 's' : ''}
+                    </Badge>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => onManageRounds(game)}
+                      className="text-slate-600 hover:text-slate-900 dark:text-slate-400 dark:hover:text-slate-100 h-6 px-2"
+                    >
+                      Manage
+                    </Button>
+                  </div>
                 </TableCell>
                 <TableCell className="text-slate-700 dark:text-slate-300">
                   {game.startdate ? formatDateTime(new Date(game.startdate)) : 'Not set'}
