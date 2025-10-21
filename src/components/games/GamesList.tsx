@@ -4,7 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
-import { formatDate } from '@/lib/utils';
+import { formatDateTime } from '@/lib/utils';
 
 interface GamesListProps {
   games: Game[];
@@ -103,7 +103,7 @@ export default function GamesList({ games, onEdit, onDelete, isLoading = false }
               <TableHead className="text-slate-700 dark:text-slate-300">Name</TableHead>
               <TableHead className="text-slate-700 dark:text-slate-300">Code</TableHead>
               <TableHead className="text-slate-700 dark:text-slate-300">Status</TableHead>
-              <TableHead className="text-slate-700 dark:text-slate-300">Start Date</TableHead>
+              <TableHead className="text-slate-700 dark:text-slate-300">Start Date & Time</TableHead>
               <TableHead className="text-slate-700 dark:text-slate-300">Duration</TableHead>
               <TableHead className="text-slate-700 dark:text-slate-300">Location</TableHead>
               <TableHead className="text-right text-slate-700 dark:text-slate-300">Actions</TableHead>
@@ -124,7 +124,7 @@ export default function GamesList({ games, onEdit, onDelete, isLoading = false }
                   </Badge>
                 </TableCell>
                 <TableCell className="text-slate-700 dark:text-slate-300">
-                  {game.startdate ? formatDate(new Date(game.startdate)) : 'Not set'}
+                  {game.startdate ? formatDateTime(new Date(game.startdate)) : 'Not set'}
                 </TableCell>
                 <TableCell className="text-slate-700 dark:text-slate-300">{formatDuration(game.duration)}</TableCell>
                 <TableCell className="text-slate-700 dark:text-slate-300">{game.location || 'Not set'}</TableCell>

@@ -6,6 +6,46 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { CreateGameData, UpdateGameData, Game } from '@/types/games';
 
+// Helper function to combine date and time into ISO string
+function combineDateAndTime(date: string, time: string): string {
+  if (!date) return '';
+
+  // If no time provided, use default time (12:00 PM)
+  const timeToUse = time || '12:00';
+
+  // Create Date object from date string
+  const dateObj = new Date(date);
+
+  // Parse time hours and minutes
+  const [hours, minutes] = timeToUse.split(':').map(Number);
+
+  // Set the time on the date object
+  dateObj.setHours(hours, minutes, 0, 0);
+
+  // Return ISO string
+  return dateObj.toISOString();
+}
+
+// Helper function to generate time options in 15-minute intervals
+function generateTimeOptions(): string[] {
+  const options: string[] = [];
+  for (let hour = 0; hour < 24; hour++) {
+    for (let minute = 0; minute < 60; minute += 15) {
+      const timeString = `${hour.toString().padStart(2, '0')}:${minute.toString().padStart(2, '0')}`;
+      options.push(timeString);
+    }
+  }
+  return options;
+}
+
+// Helper function to format time for display (12-hour format with AM/PM)
+function formatTimeDisplay(time: string): string {
+  const [hours, minutes] = time.split(':').map(Number);
+  const period = hours >= 12 ? 'PM' : 'AM';
+  const displayHours = hours % 12 || 12; // Convert 0 to 12 for 12 AM
+  return `${displayHours}:${minutes.toString().padStart(2, '0')} ${period}`;
+}
+
 interface GameFormProps {
   game?: Game;
   onSave: (data: CreateGameData | UpdateGameData) => void;
@@ -14,9 +54,12 @@ interface GameFormProps {
 }
 
 export default function GameForm({ game, onSave, onCancel, isLoading = false }: GameFormProps) {
+  const timeOptions = generateTimeOptions();
+
   const [formData, setFormData] = useState({
     name: game?.name || '',
     startdate: game?.startdate ? new Date(game.startdate).toISOString().split('T')[0] : '',
+    starttime: game?.startdate ? new Date(game.startdate).toTimeString().slice(0, 5) : '',
     duration: game?.duration?.toString() || '',
     location: game?.location || '',
     status: game?.status || 'setting-up' as const,
@@ -27,7 +70,9 @@ export default function GameForm({ game, onSave, onCancel, isLoading = false }: 
 
     const submitData: CreateGameData | UpdateGameData = {
       name: formData.name,
-      ...(formData.startdate && { startdate: formData.startdate }),
+      ...(formData.startdate && {
+        startdate: combineDateAndTime(formData.startdate, formData.starttime)
+      }),
       ...(formData.duration && { duration: parseInt(formData.duration) }),
       ...(formData.location && { location: formData.location }),
       status: formData.status,
@@ -79,33 +124,56 @@ export default function GameForm({ game, onSave, onCancel, isLoading = false }: 
             </p>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div className="space-y-2">
-              <Label htmlFor="startdate" className="text-slate-700 dark:text-slate-300">Start Date (Optional)</Label>
-              <Input
-                id="startdate"
-                type="date"
-                value={formData.startdate}
-                onChange={(e) => handleChange('startdate', e.target.value)}
-                disabled={isLoading}
-                className="border-slate-200 dark:border-slate-600 dark:bg-slate-700 dark:text-slate-100"
-              />
-            </div>
+          <div className="space-y-2">
+            <Label className="text-slate-700 dark:text-slate-300">Start Date & Time (Optional)</Label>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label htmlFor="startdate" className="text-sm text-slate-600 dark:text-slate-400">Date</Label>
+                <Input
+                  id="startdate"
+                  type="date"
+                  value={formData.startdate}
+                  onChange={(e) => handleChange('startdate', e.target.value)}
+                  disabled={isLoading}
+                  className="border-slate-200 dark:border-slate-600 dark:bg-slate-700 dark:text-slate-100"
+                />
+              </div>
 
-            <div className="space-y-2">
-              <Label htmlFor="duration" className="text-slate-700 dark:text-slate-300">Duration (minutes, Optional)</Label>
-              <Input
-                id="duration"
-                type="number"
-                value={formData.duration}
-                onChange={(e) => handleChange('duration', e.target.value)}
-                placeholder="60"
-                min="1"
-                max="9999"
-                disabled={isLoading}
-                className="border-slate-200 dark:border-slate-600 dark:bg-slate-700 dark:text-slate-100"
-              />
+              <div className="space-y-2">
+                <Label htmlFor="starttime" className="text-sm text-slate-600 dark:text-slate-400">Time</Label>
+                <Select
+                  value={formData.starttime}
+                  onValueChange={(value) => handleChange('starttime', value)}
+                  disabled={isLoading}
+                >
+                  <SelectTrigger className="border-slate-200 dark:border-slate-600 dark:bg-slate-700 dark:text-slate-100">
+                    <SelectValue placeholder="Select time" />
+                  </SelectTrigger>
+                  <SelectContent className="bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700 max-h-60 overflow-y-auto">
+                    {timeOptions.map((time) => (
+                      <SelectItem key={time} value={time} className="dark:text-slate-100 dark:focus:bg-slate-700">
+                        {formatTimeDisplay(time)}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
             </div>
+          </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="duration" className="text-slate-700 dark:text-slate-300">Duration (minutes, Optional)</Label>
+            <Input
+              id="duration"
+              type="number"
+              value={formData.duration}
+              onChange={(e) => handleChange('duration', e.target.value)}
+              placeholder="60"
+              min="1"
+              max="9999"
+              disabled={isLoading}
+              className="border-slate-200 dark:border-slate-600 dark:bg-slate-700 dark:text-slate-100"
+            />
           </div>
 
           <div className="space-y-2">
