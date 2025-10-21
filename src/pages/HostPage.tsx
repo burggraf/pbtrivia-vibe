@@ -124,36 +124,6 @@ export default function HostPage() {
             isLoading={saving}
           />
         )}
-
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-8">
-          <Card className="bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700">
-            <CardHeader>
-              <CardTitle className="text-xl text-slate-800 dark:text-slate-100">Manage Questions</CardTitle>
-              <CardDescription className="text-slate-600 dark:text-slate-400">
-                Add or edit trivia questions
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <Button variant="outline" className="w-full border-slate-300 dark:border-slate-600 text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700">
-                Question Bank
-              </Button>
-            </CardContent>
-          </Card>
-
-          <Card className="bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700">
-            <CardHeader>
-              <CardTitle className="text-xl text-slate-800 dark:text-slate-100">Settings</CardTitle>
-              <CardDescription className="text-slate-600 dark:text-slate-400">
-                Configure game preferences
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <Button variant="outline" className="w-full border-slate-300 dark:border-slate-600 text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700">
-                Game Settings
-              </Button>
-            </CardContent>
-          </Card>
-        </div>
       </div>
     </div>
   )
