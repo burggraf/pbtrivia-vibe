@@ -21,12 +21,12 @@ sleep 1
 
 # Create/upsert superuser
 echo "👤 Creating/updating superuser account..."
-pocketbase superuser upsert admin@example.com Password123
+./pocketbase superuser upsert admin@example.com Password123
 echo "✅ Superuser admin@example.com created/updated"
 
 # Start PocketBase in background with output redirected to log file
 echo "🗄️  Starting PocketBase server in background..."
-pocketbase serve --dev --http 0.0.0.0:8090 > pocketbase.log 2>&1 &
+./pocketbase serve --dev --http 0.0.0.0:8090 > pocketbase.log 2>&1 &
 PB_PID=$!
 echo "✅ PocketBase server started with PID $PB_PID (logs: pocketbase.log)"
 

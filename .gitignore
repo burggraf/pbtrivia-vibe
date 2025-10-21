@@ -20,6 +20,12 @@ pb_migrations/
 pb_hooks/
 pocketbase.log
 
+# PocketBase binary and files
+pocketbase
+pocketbase_*.zip
+CHANGELOG.md
+LICENSE.md
+
 # IDE
 .vscode/
 .idea/

@@ -10,4 +10,12 @@ export default defineConfig({
       "@": path.resolve(__dirname, "./src"),
     },
   },
+  server: {
+    watch: {
+      ignored: ['**/pocketbase', '**/pocketbase_*.zip', '**/CHANGELOG.md', '**/LICENSE.md', '**/pb_data/**', '**/pocketbase.log']
+    }
+  },
+  optimizeDeps: {
+    exclude: ['pocketbase']
+  }
 })
