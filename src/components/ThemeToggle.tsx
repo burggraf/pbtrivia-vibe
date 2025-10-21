@@ -1,18 +1,17 @@
 import { useTheme } from '@/contexts/ThemeContext'
 import { Button } from '@/components/ui/button'
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu'
 
 export default function ThemeToggle() {
   const { theme, setTheme } = useTheme()
 
-  const cycleTheme = () => {
-    const themes: Array<'light' | 'dark' | 'system'> = ['light', 'dark', 'system']
-    const currentIndex = themes.indexOf(theme)
-    const nextIndex = (currentIndex + 1) % themes.length
-    setTheme(themes[nextIndex])
-  }
-
-  const getIcon = () => {
-    switch (theme) {
+  const getIcon = (themeType: 'light' | 'dark' | 'system') => {
+    switch (themeType) {
       case 'light':
         return (
           <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -49,27 +48,41 @@ export default function ThemeToggle() {
     }
   }
 
-  const getLabel = () => {
-    switch (theme) {
-      case 'light':
-        return 'Light'
-      case 'dark':
-        return 'Dark'
-      case 'system':
-        return 'System'
-    }
-  }
-
   return (
-    <Button
-      variant="outline"
-      size="sm"
-      onClick={cycleTheme}
-      className="border-slate-300 dark:border-slate-600 text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 flex items-center gap-2"
-      title={`Current theme: ${getLabel()}. Click to cycle.`}
-    >
-      {getIcon()}
-      <span className="hidden sm:inline">{getLabel()}</span>
-    </Button>
+    <DropdownMenu>
+      <DropdownMenuTrigger asChild>
+        <Button
+          variant="outline"
+          size="sm"
+          className="border-slate-300 dark:border-slate-600 text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800"
+          title={`Current theme: ${theme}. Click to change.`}
+        >
+          {getIcon(theme)}
+        </Button>
+      </DropdownMenuTrigger>
+      <DropdownMenuContent align="end">
+        <DropdownMenuItem
+          onClick={() => setTheme('light')}
+          className="gap-2 cursor-pointer"
+        >
+          {getIcon('light')}
+          <span>Light</span>
+        </DropdownMenuItem>
+        <DropdownMenuItem
+          onClick={() => setTheme('dark')}
+          className="gap-2 cursor-pointer"
+        >
+          {getIcon('dark')}
+          <span>Dark</span>
+        </DropdownMenuItem>
+        <DropdownMenuItem
+          onClick={() => setTheme('system')}
+          className="gap-2 cursor-pointer"
+        >
+          {getIcon('system')}
+          <span>System</span>
+        </DropdownMenuItem>
+      </DropdownMenuContent>
+    </DropdownMenu>
   )
 }
