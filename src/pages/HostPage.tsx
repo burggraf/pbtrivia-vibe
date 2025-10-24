@@ -7,16 +7,14 @@ import { gamesService } from '@/lib/games'
 import { Game, CreateGameData, UpdateGameData } from '@/types/games'
 import GameForm from '@/components/games/GameForm'
 import GamesList from '@/components/games/GamesList'
-import GameRounds from '@/components/rounds/GameRounds'
 
 export default function HostPage() {
   const navigate = useNavigate()
   const [games, setGames] = useState<Game[]>([])
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
-  const [currentView, setCurrentView] = useState<'list' | 'create' | 'edit' | 'rounds'>('list')
+  const [currentView, setCurrentView] = useState<'list' | 'create'>('list')
   const [editingGame, setEditingGame] = useState<Game | null>(null)
-  const [selectedGame, setSelectedGame] = useState<Game | null>(null)
 
   const fetchGames = async () => {
     try {
@@ -49,8 +47,7 @@ export default function HostPage() {
   }
 
   const handleEditGame = (game: Game) => {
-    setCurrentView('edit')
-    setEditingGame(game)
+    navigate(`/host/game/${game.id}`)
   }
 
   const handleSaveGame = async (data: CreateGameData | UpdateGameData) => {
@@ -73,24 +70,10 @@ export default function HostPage() {
     }
   }
 
-  const handleDeleteGame = async (game: Game) => {
-    try {
-      await gamesService.deleteGame(game.id)
-      await fetchGames()
-    } catch (error) {
-      console.error('Failed to delete game:', error)
-    }
-  }
-
+  
   const handleCancel = () => {
     setCurrentView('list')
     setEditingGame(null)
-    setSelectedGame(null)
-  }
-
-  const handleManageRounds = (game: Game) => {
-    setCurrentView('rounds')
-    setSelectedGame(game)
   }
 
   return (
@@ -121,21 +104,14 @@ export default function HostPage() {
           </div>
         </div>
 
-        {currentView === 'list' && <GamesList games={games} onEdit={handleEditGame} onDelete={handleDeleteGame} onManageRounds={handleManageRounds} isLoading={loading} />}
+        {currentView === 'list' && <GamesList games={games} onEdit={handleEditGame} onManageRounds={handleEditGame} isLoading={loading} />}
 
-        {(currentView === 'create' || currentView === 'edit') && (
+        {currentView === 'create' && (
           <GameForm
             game={editingGame || undefined}
             onSave={handleSaveGame}
             onCancel={handleCancel}
             isLoading={saving}
-          />
-        )}
-
-        {currentView === 'rounds' && selectedGame && (
-          <GameRounds
-            gameId={selectedGame.id}
-            onBack={handleCancel}
           />
         )}
       </div>
