@@ -3,13 +3,12 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Round } from '@/types/rounds';
-import { GripVertical, Edit, Trash2, Plus } from 'lucide-react';
+import { GripVertical, Plus } from 'lucide-react';
 
 interface RoundsListProps {
   rounds: Round[];
   onCreateRound: () => void;
   onEditRound: (round: Round) => void;
-  onDeleteRound: (round: Round) => void;
   onReorderRounds: (rounds: Round[]) => void;
   isLoading?: boolean;
 }
@@ -18,7 +17,6 @@ export default function RoundsList({
   rounds,
   onCreateRound,
   onEditRound,
-  onDeleteRound,
   onReorderRounds,
   isLoading = false
 }: RoundsListProps) {
@@ -68,12 +66,7 @@ export default function RoundsList({
     setDragOverIndex(null);
   };
 
-  const handleDelete = (round: Round) => {
-    if (window.confirm(`Are you sure you want to delete "${round.title}"?`)) {
-      onDeleteRound(round);
-    }
-  };
-
+  
   if (rounds.length === 0) {
     return (
       <Card className="bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700">
@@ -129,12 +122,13 @@ export default function RoundsList({
               onDrop={(e) => handleDrop(e, index)}
               onDragEnd={handleDragEnd}
               className={`
-                flex items-center gap-3 p-4 border rounded-lg transition-all
+                flex items-center gap-3 p-4 border rounded-lg transition-all cursor-pointer
                 ${dragOverIndex === index ? 'border-slate-400 bg-slate-50 dark:bg-slate-700' : ''}
                 ${draggedRound?.id === round.id ? 'opacity-50' : ''}
-                ${!draggedRound || draggedRound.id === round.id ? 'cursor-move border-slate-200 dark:border-slate-600 bg-white dark:bg-slate-800' : ''}
-                hover:border-slate-300 dark:hover:border-slate-500
+                ${!draggedRound || draggedRound.id === round.id ? 'border-slate-200 dark:border-slate-600 bg-white dark:bg-slate-800' : ''}
+                hover:border-slate-300 dark:hover:border-slate-500 hover:bg-slate-50 dark:hover:bg-slate-700
               `}
+              onClick={() => onEditRound(round)}
             >
               <div className="flex items-center gap-2 text-slate-400">
                 <GripVertical className="w-4 h-4" />
@@ -166,27 +160,7 @@ export default function RoundsList({
                 </div>
               </div>
 
-              <div className="flex items-center gap-2">
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={() => onEditRound(round)}
-                  disabled={isLoading}
-                  className="text-slate-600 hover:text-slate-900 dark:text-slate-400 dark:hover:text-slate-100"
-                >
-                  <Edit className="w-4 h-4" />
-                </Button>
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={() => handleDelete(round)}
-                  disabled={isLoading}
-                  className="text-red-600 hover:text-red-800 dark:text-red-400 dark:hover:text-red-300"
-                >
-                  <Trash2 className="w-4 h-4" />
-                </Button>
               </div>
-            </div>
           ))}
         </div>
 

@@ -104,7 +104,7 @@ export default function HostPage() {
           </div>
         </div>
 
-        {currentView === 'list' && <GamesList games={games} onEdit={handleEditGame} onManageRounds={handleEditGame} isLoading={loading} />}
+        {currentView === 'list' && <GamesList games={games} onEdit={handleEditGame} isLoading={loading} />}
 
         {currentView === 'create' && (
           <GameForm

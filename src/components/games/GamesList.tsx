@@ -1,6 +1,5 @@
 import { useState, useEffect } from 'react';
 import { Game } from '@/types/games';
-import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
@@ -10,7 +9,6 @@ import { roundsService } from '@/lib/rounds';
 interface GamesListProps {
   games: Game[];
   onEdit: (game: Game) => void;
-  onManageRounds: (game: Game) => void;
   isLoading?: boolean;
 }
 
@@ -43,7 +41,7 @@ function formatDuration(minutes?: number): string {
   return remainingMinutes > 0 ? `${hours}h ${remainingMinutes}m` : `${hours}h`;
 }
 
-export default function GamesList({ games, onEdit, onManageRounds, isLoading = false }: GamesListProps) {
+export default function GamesList({ games, onEdit, isLoading = false }: GamesListProps) {
   const [roundsCount, setRoundsCount] = useState<{ [key: string]: number }>({});
 
   useEffect(() => {

@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { Round } from '@/types/rounds';
 import { roundsService } from '@/lib/rounds';
 import RoundForm from './RoundForm';
@@ -10,6 +11,7 @@ interface GameRoundsProps {
 }
 
 export default function GameRounds({ gameId, onBack }: GameRoundsProps) {
+  const navigate = useNavigate();
   const [rounds, setRounds] = useState<Round[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
@@ -38,8 +40,8 @@ export default function GameRounds({ gameId, onBack }: GameRoundsProps) {
   };
 
   const handleEditRound = (round: Round) => {
-    setEditingRound(round);
-    setShowForm(true);
+    // Navigate to round edit page
+    navigate(`/host/game/${gameId}/round/${round.id}`);
   };
 
   const handleSaveRound = async (data: any) => {
@@ -70,16 +72,7 @@ export default function GameRounds({ gameId, onBack }: GameRoundsProps) {
     }
   };
 
-  const handleDeleteRound = async (round: Round) => {
-    try {
-      await roundsService.deleteRound(round.id);
-      await loadRounds();
-    } catch (error) {
-      console.error('Failed to delete round:', error);
-      alert('Failed to delete round. Please try again.');
-    }
-  };
-
+  
   const handleReorderRounds = async (reorderedRounds: Round[]) => {
     try {
       const reorderData = {
@@ -153,7 +146,6 @@ export default function GameRounds({ gameId, onBack }: GameRoundsProps) {
         rounds={rounds}
         onCreateRound={handleCreateRound}
         onEditRound={handleEditRound}
-        onDeleteRound={handleDeleteRound}
         onReorderRounds={handleReorderRounds}
         isLoading={isLoading}
       />
