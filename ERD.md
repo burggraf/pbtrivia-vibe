@@ -1,0 +1,255 @@
+# PocketBase Database Entity Relationship Diagram (ERD)
+
+## Overview
+This document describes the database schema for the PB Trivia Vibe application, which is built on PocketBase. The database supports a multiplayer trivia game system with hosts, players, teams, games, rounds, and questions.
+
+## Collections (Tables)
+
+### 1. `_pb_users_auth_` (Users)
+**Purpose**: Authentication and user management
+**System Collection**: Yes (PocketBase built-in)
+
+| Field | Type | Constraints | Description |
+|-------|------|-------------|-------------|
+| id | text | PK, auto-generated | Unique user identifier |
+| email | text | Unique, required | User's email address |
+| verified | bool | - | Email verification status |
+| tokenKey | text | - | Authentication token key |
+
+---
+
+### 2. `games`
+**Purpose**: Main game sessions created by hosts
+
+| Field | Type | Constraints | Description |
+|-------|------|-------------|-------------|
+| id | text | PK, auto-generated | Unique game identifier |
+| host | relation → _pb_users_auth_ | Required | Game host/creator |
+| name | text(255) | Required | Game display name |
+| code | text(6) | Required, Unique | 6-character game code |
+| startdate | date | Optional | Scheduled start date |
+| duration | number(1-9999) | Optional | Game duration in minutes |
+| location | text(500) | Optional | Physical/virtual location |
+| status | select | Required | Game status: `setup`, `ready`, `in-progress`, `completed` |
+
+**Indexes**:
+- `idx_games_host` - For finding games by host
+- `idx_games_startdate` - For chronological queries
+- `idx_games_status` - For filtering by status
+- `idx_games_code` - Unique game code lookup
+
+---
+
+### 3. `rounds`
+**Purpose**: Individual rounds within games
+
+| Field | Type | Constraints | Description |
+|-------|------|-------------|-------------|
+| id | text | PK, auto-generated | Unique round identifier |
+| title | text(255) | Required | Round display title |
+| question_count | number(1-100) | Required | Number of questions in round |
+| categories | json | Required | Selected categories for round |
+| sequence_number | number(1-9999) | Required | Order within game |
+| game | relation → games | Required | Parent game |
+| host | relation → _pb_users_auth_ | Required | Round creator |
+| created | autodate | Auto | Creation timestamp |
+| updated | autodate | Auto | Last update timestamp |
+
+**Indexes**:
+- `idx_rounds_game` - For rounds by game
+- `idx_rounds_host` - For rounds by host
+- `idx_rounds_sequence` - For ordering within game
+- `idx_rounds_created` - For chronological queries
+
+**Access Rules**: Only the round host can view, create, update, and delete their own rounds.
+
+---
+
+### 4. `questions`
+**Purpose**: Trivia question bank (60K+ questions)
+
+| Field | Type | Constraints | Description |
+|-------|------|-------------|-------------|
+| id | text | PK, auto-generated | Unique question identifier |
+| external_id | text(255) | Optional, Unique | Source system ID |
+| category | text(255) | Required | Question category |
+| subcategory | text(255) | Required | Question subcategory |
+| difficulty | select | Required | Difficulty: `easy`, `medium`, `hard` |
+| question | text(2000) | Required | Question text |
+| answer_a | text(500) | Required | Multiple choice option A |
+| answer_b | text(500) | Required | Multiple choice option B |
+| answer_c | text(500) | Required | Multiple choice option C |
+| answer_d | text(500) | Required | Multiple choice option D |
+| level | text(100) | Optional | Difficulty level indicator |
+| metadata | text(1000) | Optional | Additional metadata |
+| imported_at | autodate | Auto | Import timestamp |
+
+**Indexes**:
+- `idx_questions_external_id` - Unique external ID lookup
+- `idx_questions_category` - For category filtering
+- `idx_questions_difficulty` - For difficulty filtering
+- `idx_questions_imported_at` - For import tracking
+
+---
+
+### 5. `round_questions`
+**Purpose**: Questions assigned to specific rounds (junction table)
+
+| Field | Type | Constraints | Description |
+|-------|------|-------------|-------------|
+| id | text | PK, auto-generated | Unique round question ID |
+| host | relation → _pb_users_auth_ | Required | Assignment creator |
+| game | relation → games | Required | Parent game |
+| round | relation → rounds | Required | Parent round |
+| question | relation → questions | Required | Question reference |
+| sequence | number(0-9999) | Required | Order within round |
+| category_name | text(255) | Required | Category name snapshot |
+| created | autodate | Auto | Creation timestamp |
+| updated | autodate | Auto | Last update timestamp |
+
+**Indexes**:
+- `idx_round_questions_host` - For host queries
+- `idx_round_questions_game` - For game queries
+- `idx_round_questions_round` - For round queries
+- `idx_round_questions_question` - For question reference
+- `idx_round_questions_sequence` - For ordering within round
+- `idx_round_questions_host_game` - Composite host-game index
+- `idx_round_questions_created` - For chronological queries
+
+**Access Rules**: Only the assignment creator can view, create, update, and delete their own round questions.
+
+---
+
+### 6. `game_teams`
+**Purpose**: Teams participating in games
+
+| Field | Type | Constraints | Description |
+|-------|------|-------------|-------------|
+| id | text | PK, auto-generated | Unique team identifier |
+| host | relation → _pb_users_auth_ | Required | Team creator |
+| game | relation → games | Required | Parent game |
+| name | text(30) | Required | Team name |
+| metadata | json | Optional | Team configuration data |
+| created | autodate | Auto | Creation timestamp |
+| updated | autodate | Auto | Last update timestamp |
+
+---
+
+### 7. `game_players`
+**Purpose**: Players assigned to teams in games
+
+| Field | Type | Constraints | Description |
+|-------|------|-------------|-------------|
+| id | text | PK, auto-generated | Unique player assignment ID |
+| host | relation → _pb_users_auth_ | Required | Assignment creator |
+| game | relation → games | Required | Parent game |
+| player | relation → _pb_users_auth_ | Required | Player user |
+| created | autodate | Auto | Creation timestamp |
+| updated | autodate | Auto | Last update timestamp |
+
+---
+
+## Relationship Diagram
+
+```
+_pb_users_auth_ (Users)
+├─ host ──> games (1:N)
+│          ├─ host ──> rounds (1:N)
+│          │          └─ host ──> round_questions (1:N)
+│          ├─ host ──> game_teams (1:N)
+│          └─ host ──> game_players (1:N)
+│
+├─ host ──> rounds (1:N)
+│          └─ round ──> round_questions (1:N)
+│
+├─ host ──> round_questions (1:N)
+│          ├─ game ──> games (N:1)
+│          ├─ round ──> rounds (N:1)
+│          └─ question ──> questions (N:1)
+│
+├─ host ──> game_teams (1:N)
+│          └─ game ──> games (N:1)
+│
+├─ host ──> game_players (1:N)
+│          ├─ game ──> games (N:1)
+│          └─ player ──> _pb_users_auth_ (N:1) [self-reference]
+│
+└─ player ──> game_players (1:N)
+           └─ game ──> games (N:1)
+
+questions (Standalone, no incoming relations)
+└─ question ──> round_questions (1:N)
+```
+
+## Relationship Summary
+
+### Primary Relationships
+
+1. **User → Games (1:N)**
+   - A user can host multiple games
+   - Each game has exactly one host
+
+2. **Game → Rounds (1:N)**
+   - A game can have multiple rounds
+   - Each round belongs to exactly one game
+
+3. **Round → Round_Questions (1:N)**
+   - A round can have multiple questions assigned
+   - Each round_question belongs to exactly one round
+
+4. **Question → Round_Questions (1:N)**
+   - A question can be assigned to multiple rounds
+   - Each round_question references exactly one question
+
+5. **Game → Game_Teams (1:N)**
+   - A game can have multiple teams
+   - Each team belongs to exactly one game
+
+6. **Game → Game_Players (1:N)**
+   - A game can have multiple player assignments
+   - Each game_player belongs to exactly one game
+
+7. **User → Game_Players (1:N)**
+   - A user can be assigned as player in multiple games
+   - Each game_player references exactly one user
+
+### Junction Tables
+
+- **round_questions**: Many-to-many relationship between rounds and questions
+- **game_players**: Many-to-many relationship between games and users (as players)
+
+## Data Flow Patterns
+
+1. **Game Creation Flow**:
+   ```
+   User (host) → Game → Round(s) → Round_Questions → Questions
+   ```
+
+2. **Team Management Flow**:
+   ```
+   User (host) → Game → Game_Teams
+   ```
+
+3. **Player Assignment Flow**:
+   ```
+   User (player) → Game_Players → Game
+   ```
+
+## Access Control Patterns
+
+- **Host-based Access**: Most collections use `host.id=@request.auth.id` rules, meaning only the creator can access their own records
+- **Game-based Isolation**: Records are scoped by both host and game, ensuring data isolation between different games
+- **Public Read Access**: Questions collection has permissive read rules for game functionality
+
+## Performance Considerations
+
+1. **Strategic Indexing**: All foreign key fields are indexed for optimal join performance
+2. **Composite Indexes**: Important query patterns have composite indexes (e.g., host+game combinations)
+3. **Unique Constraints**: Game codes and external question IDs have unique constraints for data integrity
+4. **JSON Fields**: Categories and metadata use JSON for flexible, semi-structured data storage
+
+## Security Notes
+
+- All user-accessible collections implement row-level security based on the `host` field
+- Game codes are 6-character alphanumeric strings for secure game joining
+- Player assignments are tracked with both host and player references for audit trails
