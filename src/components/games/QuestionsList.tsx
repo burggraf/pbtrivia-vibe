@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
-import { roundQuestionsService } from '@/lib/roundQuestions'
+import { gameQuestionsService } from '@/lib/gameQuestions'
 import { questionsService } from '@/lib/questions'
 import { roundsService } from '@/lib/rounds'
 import { getShuffledAnswers } from '@/lib/answerShuffler'
@@ -44,13 +44,13 @@ export default function QuestionsList({ roundId, roundTitle }: QuestionsListProp
         const roundData = await roundsService.getRound(roundId)
         setRound(roundData)
 
-        // Fetch round questions
-        const roundQuestionsData = await roundQuestionsService.getRoundQuestions(roundId)
-        setRoundQuestions(roundQuestionsData)
+        // Fetch game questions
+        const gameQuestionsData = await gameQuestionsService.getGameQuestions(roundId)
+        setRoundQuestions(gameQuestionsData)
 
         // Fetch the actual question details
-        if (roundQuestionsData.length > 0) {
-          const questionIds = roundQuestionsData.map(rq => rq.question)
+        if (gameQuestionsData.length > 0) {
+          const questionIds = gameQuestionsData.map(rq => rq.question)
 
           // We need to fetch questions one by one since PocketBase doesn't support IN queries easily
           const questionPromises = questionIds.map(async (questionId) => {
@@ -100,15 +100,15 @@ export default function QuestionsList({ roundId, roundTitle }: QuestionsListProp
         return
       }
 
-      // Step 3: Update the existing round_questions record to "deactivate" it
-      await roundQuestionsService.updateRoundQuestion(roundQuestionId, {
+      // Step 3: Update the existing game_questions record to "deactivate" it
+      await gameQuestionsService.updateGameQuestion(roundQuestionId, {
         game: null,
         round: null,
         sequence: 0
       })
 
-      // Step 4: Create a new round_questions record with the new question
-      await roundQuestionsService.createRoundQuestion({
+      // Step 4: Create a new game_questions record with the new question
+      await gameQuestionsService.createGameQuestion({
         host: currentRoundQuestion.host,
         game: currentRoundQuestion.game,
         round: currentRoundQuestion.round,
@@ -137,13 +137,13 @@ export default function QuestionsList({ roundId, roundTitle }: QuestionsListProp
       const roundData = await roundsService.getRound(roundId)
       setRound(roundData)
 
-      // Fetch round questions
-      const roundQuestionsData = await roundQuestionsService.getRoundQuestions(roundId)
-      setRoundQuestions(roundQuestionsData)
+      // Fetch game questions
+      const gameQuestionsData = await gameQuestionsService.getGameQuestions(roundId)
+      setRoundQuestions(gameQuestionsData)
 
       // Fetch the actual question details
-      if (roundQuestionsData.length > 0) {
-        const questionIds = roundQuestionsData.map(rq => rq.question)
+      if (gameQuestionsData.length > 0) {
+        const questionIds = gameQuestionsData.map(rq => rq.question)
 
         // We need to fetch questions one by one since PocketBase doesn't support IN queries easily
         const questionPromises = questionIds.map(async (questionId) => {

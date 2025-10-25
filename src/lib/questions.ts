@@ -78,7 +78,7 @@ export const questionsService = {
       }
 
       // Step 2: Get questions already used by this host
-      const usedQuestionsResult = await pb.collection('round_questions').getFullList(200, {
+      const usedQuestionsResult = await pb.collection('game_questions').getFullList(200, {
         filter: `host = "${currentHostId}"`
       });
 
@@ -119,7 +119,7 @@ export const questionsService = {
       }
 
       // Step 2: Get questions already used by this host in ALL their rounds (including recycled ones)
-      const usedQuestionsResult = await pb.collection('round_questions').getFullList(1000, {
+      const usedQuestionsResult = await pb.collection('game_questions').getFullList(1000, {
         filter: `host = "${currentHostId}"`
       });
 

@@ -15,7 +15,7 @@ import pb from '@/lib/pocketbase'
 import { gamesService } from '@/lib/games'
 import { roundsService } from '@/lib/rounds'
 import { questionsService } from '@/lib/questions'
-import { roundQuestionsService } from '@/lib/roundQuestions'
+import { gameQuestionsService } from '@/lib/gameQuestions'
 import { Game, CreateGameData, UpdateGameData } from '@/types/games'
 import { Round, UpdateRoundData, CreateRoundData } from '@/types/rounds'
 import { formatDateTime } from '@/lib/utils'
@@ -140,10 +140,10 @@ export default function HostPage() {
         // First, get all rounds for this game
         const gameRounds = await roundsService.getRounds(editingGame.id)
 
-        // Delete all associated round_questions and rounds first
+        // Delete all associated game_questions and rounds first
         for (const round of gameRounds) {
-          // Delete round_questions for this round first
-          await roundQuestionsService.deleteRoundQuestions(round.id)
+          // Delete game_questions for this round first
+          await gameQuestionsService.deleteGameQuestions(round.id)
           // Then delete the round itself
           await roundsService.deleteRound(round.id)
         }
@@ -181,14 +181,14 @@ export default function HostPage() {
             )
 
             if (selectedQuestions.length > 0) {
-              // Create round_questions entries
+              // Create game_questions entries
               const questionsForRound = selectedQuestions.map((question, index) => ({
                 questionId: question.id,
                 sequence: index + 1,
                 categoryName: question.category
               }))
 
-              await roundQuestionsService.createRoundQuestionsBatch(createdRound.id, questionsForRound)
+              await gameQuestionsService.createGameQuestionsBatch(createdRound.id, questionsForRound)
               console.log(`Added ${selectedQuestions.length} questions to round "${createdRound.title}"`)
             } else {
               console.warn(`No available questions found for categories: ${data.categories.join(', ')}`)
@@ -219,8 +219,8 @@ export default function HostPage() {
       try {
         setSaving(true)
 
-        // First, delete all round_questions associated with this round
-        await roundQuestionsService.deleteRoundQuestions(editingRound.id)
+        // First, delete all game_questions associated with this round
+        await gameQuestionsService.deleteGameQuestions(editingRound.id)
 
         // Then delete the round itself
         await roundsService.deleteRound(editingRound.id)

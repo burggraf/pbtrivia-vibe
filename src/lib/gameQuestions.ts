@@ -1,6 +1,6 @@
 import pb from './pocketbase';
 
-export interface RoundQuestion {
+export interface GameQuestion {
   id: string;
   host: string;
   game: string | null;
@@ -12,7 +12,7 @@ export interface RoundQuestion {
   updated: string;
 }
 
-export interface CreateRoundQuestionData {
+export interface CreateGameQuestionData {
   host: string;
   game: string;
   round: string;
@@ -21,36 +21,36 @@ export interface CreateRoundQuestionData {
   category_name: string;
 }
 
-export const roundQuestionsService = {
-  async getRoundQuestions(roundId: string): Promise<RoundQuestion[]> {
+export const gameQuestionsService = {
+  async getGameQuestions(roundId: string): Promise<GameQuestion[]> {
     try {
-      const result = await pb.collection('round_questions').getList<RoundQuestion>(1, 200, {
+      const result = await pb.collection('game_questions').getList<GameQuestion>(1, 200, {
         filter: `round = "${roundId}" && host = "${pb.authStore.model?.id}" && sequence > 0 && game != "" && round != ""`
       });
 
       // Sort by sequence number
       return result.items.sort((a, b) => a.sequence - b.sequence);
     } catch (error) {
-      console.error('Failed to fetch round questions:', error);
+      console.error('Failed to fetch game questions:', error);
       return [];
     }
   },
 
-  async createRoundQuestion(data: CreateRoundQuestionData): Promise<RoundQuestion> {
+  async createGameQuestion(data: CreateGameQuestionData): Promise<GameQuestion> {
     try {
-      const record = await pb.collection('round_questions').create<RoundQuestion>(data);
+      const record = await pb.collection('game_questions').create<GameQuestion>(data);
       return record;
     } catch (error) {
-      console.error('Failed to create round question:', error);
+      console.error('Failed to create game question:', error);
       throw error;
     }
   },
 
-  async updateRoundQuestion(id: string, data: {
+  async updateGameQuestion(id: string, data: {
     game?: string | null;
     round?: string | null;
     sequence?: number;
-  }): Promise<RoundQuestion> {
+  }): Promise<GameQuestion> {
     try {
       // For PocketBase, to clear relation fields, we need to send empty strings
       const updateData: any = {
@@ -65,19 +65,19 @@ export const roundQuestionsService = {
         updateData.round = '';
       }
 
-      const record = await pb.collection('round_questions').update<RoundQuestion>(id, updateData);
+      const record = await pb.collection('game_questions').update<GameQuestion>(id, updateData);
       return record;
     } catch (error) {
-      console.error('Failed to update round question:', error);
+      console.error('Failed to update game question:', error);
       throw error;
     }
   },
 
-  async createRoundQuestionsBatch(roundId: string, questions: Array<{
+  async createGameQuestionsBatch(roundId: string, questions: Array<{
     questionId: string;
     sequence: number;
     categoryName: string;
-  }>): Promise<RoundQuestion[]> {
+  }>): Promise<GameQuestion[]> {
     try {
       const hostId = pb.authStore.model?.id;
       if (!hostId) throw new Error('User not authenticated');
@@ -86,7 +86,7 @@ export const roundQuestionsService = {
       const round = await pb.collection('rounds').getOne(roundId);
 
       const createPromises = questions.map(q =>
-        this.createRoundQuestion({
+        this.createGameQuestion({
           host: hostId,
           game: round.game,
           round: roundId,
@@ -98,20 +98,20 @@ export const roundQuestionsService = {
 
       return await Promise.all(createPromises);
     } catch (error) {
-      console.error('Failed to create round questions batch:', error);
+      console.error('Failed to create game questions batch:', error);
       throw error;
     }
   },
 
-  async deleteRoundQuestions(roundId: string): Promise<void> {
+  async deleteGameQuestions(roundId: string): Promise<void> {
     try {
-      const questions = await this.getRoundQuestions(roundId);
+      const questions = await this.getGameQuestions(roundId);
       const deletePromises = questions.map(q =>
-        pb.collection('round_questions').delete(q.id)
+        pb.collection('game_questions').delete(q.id)
       );
       await Promise.all(deletePromises);
     } catch (error) {
-      console.error('Failed to delete round questions:', error);
+      console.error('Failed to delete game questions:', error);
       throw error;
     }
   }
