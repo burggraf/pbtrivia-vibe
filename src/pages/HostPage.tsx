@@ -9,6 +9,7 @@ import GameEditModal from '@/components/games/GameEditModal'
 import RoundEditModal from '@/components/games/RoundEditModal'
 import QuestionsList from '@/components/games/QuestionsList'
 import GameForm from '@/components/games/GameForm'
+import CategoryIconShowcase from '@/components/ui/CategoryIconShowcase'
 import { Info } from 'lucide-react'
 import pb from '@/lib/pocketbase'
 import { gamesService } from '@/lib/games'
@@ -325,6 +326,9 @@ export default function HostPage() {
             isLoading={saving}
           />
         )}
+
+        {/* Category Icons Preview - Temporary */}
+        <CategoryIconShowcase />
 
         {/* Modals */}
         <GameEditModal
