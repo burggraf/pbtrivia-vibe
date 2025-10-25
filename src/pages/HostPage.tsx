@@ -8,10 +8,9 @@ import ThemeToggle from '@/components/ThemeToggle'
 import GameEditModal from '@/components/games/GameEditModal'
 import RoundEditModal from '@/components/games/RoundEditModal'
 import QuestionsList from '@/components/games/QuestionsList'
-import GameForm from '@/components/games/GameForm'
 import CategoryIconShowcase from '@/components/ui/CategoryIconShowcase'
 import CategoryIcon, { getAvailableCategories } from '@/components/ui/CategoryIcon'
-import { Info } from 'lucide-react'
+import { Info, Plus } from 'lucide-react'
 import pb from '@/lib/pocketbase'
 import { gamesService } from '@/lib/games'
 import { roundsService } from '@/lib/rounds'
@@ -25,11 +24,11 @@ export default function HostPage() {
   const [rounds, setRounds] = useState<{ [key: string]: Round[] }>({})
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
-  const [currentView, setCurrentView] = useState<'list' | 'create'>('list')
   const [editingGame, setEditingGame] = useState<Game | null>(null)
   const [editingRound, setEditingRound] = useState<Round | null>(null)
   const [gameModalOpen, setGameModalOpen] = useState(false)
   const [roundModalOpen, setRoundModalOpen] = useState(false)
+  const [isCreateMode, setIsCreateMode] = useState(false)
   
   const fetchGames = async () => {
     try {
@@ -70,11 +69,13 @@ export default function HostPage() {
   }
 
   const handleCreateGame = () => {
-    setCurrentView('create')
+    setIsCreateMode(true)
     setEditingGame(null)
+    setGameModalOpen(true)
   }
 
   const handleEditGame = (game: Game) => {
+    setIsCreateMode(false)
     setEditingGame(game)
     setGameModalOpen(true)
   }
@@ -84,13 +85,17 @@ export default function HostPage() {
     setRoundModalOpen(true)
   }
 
-  const handleSaveGame = async (data: UpdateGameData) => {
+  const handleSaveGame = async (data: UpdateGameData | CreateGameData) => {
     try {
       setSaving(true)
-      if (editingGame) {
-        await gamesService.updateGame(editingGame.id, data)
-        await fetchGames()
+      if (isCreateMode) {
+        await gamesService.createGame(data as CreateGameData)
+      } else if (editingGame) {
+        await gamesService.updateGame(editingGame.id, data as UpdateGameData)
       }
+      await fetchGames()
+      setGameModalOpen(false)
+      setIsCreateMode(false)
     } catch (error) {
       console.error('Failed to save game:', error)
     } finally {
@@ -112,32 +117,7 @@ export default function HostPage() {
     }
   }
 
-  const handleSaveNewGame = async (data: CreateGameData | UpdateGameData) => {
-    try {
-      setSaving(true)
-
-      if (editingGame) {
-        await gamesService.updateGame(editingGame.id, data as UpdateGameData)
-      } else {
-        await gamesService.createGame(data as CreateGameData)
-      }
-
-      await fetchGames()
-      setCurrentView('list')
-      setEditingGame(null)
-    } catch (error) {
-      console.error('Failed to save game:', error)
-    } finally {
-      setSaving(false)
-    }
-  }
-
   
-  const handleCancel = () => {
-    setCurrentView('list')
-    setEditingGame(null)
-  }
-
   const getStatusBadgeVariant = (status: string) => {
     switch (status) {
       case 'setting-up': return 'secondary'
@@ -173,14 +153,6 @@ export default function HostPage() {
           </div>
           <div className="flex gap-3">
             <ThemeToggle />
-            {currentView === 'list' && (
-              <Button
-                onClick={handleCreateGame}
-                className="bg-slate-700 hover:bg-slate-800 dark:bg-slate-600 dark:hover:bg-slate-700 text-white"
-              >
-                Create New Game
-              </Button>
-            )}
             <Button
               variant="outline"
               onClick={handleLogout}
@@ -191,10 +163,20 @@ export default function HostPage() {
           </div>
         </div>
 
-        {currentView === 'list' && (
-          <Card className="bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700">
+        <Card className="bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700">
             <CardHeader>
-              <CardTitle className="text-slate-800 dark:text-slate-100">My Games</CardTitle>
+              <div className="flex items-center justify-between">
+                <CardTitle className="text-slate-800 dark:text-slate-100">My Games</CardTitle>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={handleCreateGame}
+                  className="flex items-center gap-2 text-slate-600 dark:text-slate-400 border-slate-300 dark:border-slate-600 hover:bg-slate-50 dark:hover:bg-slate-800"
+                >
+                  <Plus className="h-4 w-4" />
+                  New Game
+                </Button>
+              </div>
               <CardDescription className="text-slate-600 dark:text-slate-400">Manage your trivia games and rounds</CardDescription>
             </CardHeader>
             <CardContent>
@@ -318,25 +300,19 @@ export default function HostPage() {
               )}
             </CardContent>
           </Card>
-        )}
 
-        {currentView === 'create' && (
-          <GameForm
-            game={editingGame || undefined}
-            onSave={handleSaveNewGame}
-            onCancel={handleCancel}
-            isLoading={saving}
-          />
-        )}
-
+        
         {/* Category Icons Preview - Temporary */}
         <CategoryIconShowcase />
 
         {/* Modals */}
         <GameEditModal
-          game={editingGame}
+          game={isCreateMode ? null : editingGame}
           isOpen={gameModalOpen}
-          onClose={() => setGameModalOpen(false)}
+          onClose={() => {
+            setGameModalOpen(false)
+            setIsCreateMode(false)
+          }}
           onSave={handleSaveGame}
           isLoading={saving}
         />

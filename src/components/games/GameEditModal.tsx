@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { Game, UpdateGameData } from '@/types/games'
+import { Game, CreateGameData, UpdateGameData } from '@/types/games'
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -10,12 +10,13 @@ interface GameEditModalProps {
   game: Game | null
   isOpen: boolean
   onClose: () => void
-  onSave: (data: UpdateGameData) => Promise<void>
+  onSave: (data: UpdateGameData | CreateGameData) => Promise<void>
   isLoading?: boolean
 }
 
 export default function GameEditModal({ game, isOpen, onClose, onSave, isLoading = false }: GameEditModalProps) {
-  const [formData, setFormData] = useState<UpdateGameData>({
+  const isEdit = !!game
+  const [formData, setFormData] = useState<UpdateGameData | CreateGameData>({
     name: '',
     startdate: '',
     duration: undefined,
@@ -37,9 +38,8 @@ export default function GameEditModal({ game, isOpen, onClose, onSave, isLoading
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    if (!game) return
 
-    const submitData: UpdateGameData = {
+    const submitData = {
       ...formData,
       startdate: formData.startdate ? new Date(formData.startdate).toISOString() : undefined
     }
@@ -52,15 +52,16 @@ export default function GameEditModal({ game, isOpen, onClose, onSave, isLoading
     setFormData(prev => ({ ...prev, [field]: value }))
   }
 
-  if (!game) return null
-
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="sm:max-w-[425px]">
         <DialogHeader>
-          <DialogTitle>Edit Game</DialogTitle>
+          <DialogTitle>{isEdit ? 'Edit Game' : 'Create Game'}</DialogTitle>
           <DialogDescription>
-            Make changes to game information here. Click save when you're done.
+            {isEdit
+              ? 'Make changes to game information here. Click save when you\'re done.'
+              : 'Create a new trivia game. Fill in the details below.'
+            }
           </DialogDescription>
         </DialogHeader>
         <form onSubmit={handleSubmit}>
@@ -135,7 +136,7 @@ export default function GameEditModal({ game, isOpen, onClose, onSave, isLoading
               Cancel
             </Button>
             <Button type="submit" disabled={isLoading}>
-              {isLoading ? 'Saving...' : 'Save Changes'}
+              {isLoading ? 'Saving...' : (isEdit ? 'Save Changes' : 'Create Game')}
             </Button>
           </DialogFooter>
         </form>
