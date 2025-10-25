@@ -8,7 +8,6 @@ import ThemeToggle from '@/components/ThemeToggle'
 import GameEditModal from '@/components/games/GameEditModal'
 import RoundEditModal from '@/components/games/RoundEditModal'
 import QuestionsList from '@/components/games/QuestionsList'
-import CategoryIconShowcase from '@/components/ui/CategoryIconShowcase'
 import CategoryIcon, { getAvailableCategories } from '@/components/ui/CategoryIcon'
 import { Info, Plus } from 'lucide-react'
 import pb from '@/lib/pocketbase'
@@ -426,9 +425,7 @@ export default function HostPage() {
           </Card>
 
         
-        {/* Category Icons Preview - Temporary */}
-        <CategoryIconShowcase />
-
+  
         {/* Modals */}
         <GameEditModal
           game={isCreateMode ? null : editingGame}
