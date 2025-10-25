@@ -6,6 +6,7 @@ import { Badge } from '@/components/ui/badge'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import ThemeToggle from '@/components/ThemeToggle'
 import GameEditModal from '@/components/games/GameEditModal'
+import GameStatusModal from '@/components/games/GameStatusModal'
 import RoundEditModal from '@/components/games/RoundEditModal'
 import QuestionsList from '@/components/games/QuestionsList'
 import CategoryIcon, { getAvailableCategories } from '@/components/ui/CategoryIcon'
@@ -29,6 +30,8 @@ export default function HostPage() {
   const [editingRound, setEditingRound] = useState<Round | null>(null)
   const [gameModalOpen, setGameModalOpen] = useState(false)
   const [roundModalOpen, setRoundModalOpen] = useState(false)
+  const [statusModalOpen, setStatusModalOpen] = useState(false)
+  const [statusGame, setStatusGame] = useState<Game | null>(null)
   const [isCreateMode, setIsCreateMode] = useState(false)
   const [isRoundCreateMode, setIsRoundCreateMode] = useState(false)
   const [currentGameId, setCurrentGameId] = useState<string | null>(null)
@@ -231,14 +234,39 @@ export default function HostPage() {
     }
   }
 
+  const handleStatusClick = (game: Game) => {
+    if (game.status === 'setup' || game.status === 'ready') {
+      if (rounds[game.id]?.length > 0) {
+        setStatusGame(game)
+        setStatusModalOpen(true)
+      }
+    }
+  }
+
+  const handleStatusChange = async (newStatus: 'setup' | 'ready') => {
+    if (statusGame) {
+      try {
+        setSaving(true)
+        await gamesService.updateGame(statusGame.id, { status: newStatus })
+        await fetchGames()
+        setStatusModalOpen(false)
+        setStatusGame(null)
+      } catch (error) {
+        console.error('Failed to update game status:', error)
+      } finally {
+        setSaving(false)
+      }
+    }
+  }
+
   
-  const getStatusBadgeVariant = (status: string) => {
+  const getStatusBadgeClasses = (status: string) => {
     switch (status) {
-      case 'setup': return 'secondary'
-      case 'ready': return 'default'
-      case 'in-progress': return 'outline'
-      case 'completed': return 'destructive'
-      default: return 'secondary'
+      case 'setup': return 'border-transparent bg-secondary text-secondary-foreground hover:bg-secondary/80'
+      case 'ready': return 'border-transparent bg-primary text-primary-foreground hover:bg-primary/80'
+      case 'in-progress': return 'text-foreground'
+      case 'completed': return 'border-transparent bg-destructive text-destructive-foreground hover:bg-destructive/80'
+      default: return 'border-transparent bg-secondary text-secondary-foreground hover:bg-secondary/80'
     }
   }
 
@@ -316,9 +344,26 @@ export default function HostPage() {
                             <code className="px-2 py-1 bg-slate-100 dark:bg-slate-700 rounded text-sm font-mono text-slate-800 dark:text-slate-100">
                               {game.code}
                             </code>
-                            <Badge variant={getStatusBadgeVariant(game.status)}>
+                            <span
+                              className={`inline-flex items-center rounded-full border px-2.5 py-0.5 text-xs font-semibold transition-colors focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 ${
+                                (game.status === 'setup' || game.status === 'ready') && rounds[game.id]?.length > 0
+                                  ? 'cursor-pointer hover:opacity-80'
+                                  : 'cursor-not-allowed opacity-50'
+                              } ${getStatusBadgeClasses(game.status)}`}
+                              onClick={(e) => {
+                                e.stopPropagation()
+                                handleStatusClick(game)
+                              }}
+                              title={
+                                (game.status === 'setup' || game.status === 'ready') && rounds[game.id]?.length === 0
+                                  ? "Add rounds before changing status"
+                                  : game.status !== 'setup' && game.status !== 'ready'
+                                  ? "Status cannot be changed"
+                                  : "Click to change game status"
+                              }
+                            >
                               {formatGameStatus(game.status)}
-                            </Badge>
+                            </span>
                           </div>
                           <div className="flex items-center gap-2 text-sm text-slate-600 dark:text-slate-400">
                             {[
@@ -451,6 +496,17 @@ export default function HostPage() {
           onDelete={!isRoundCreateMode ? handleDeleteRound : undefined}
           isLoading={saving}
           isCreateMode={isRoundCreateMode}
+        />
+
+        <GameStatusModal
+          game={statusGame}
+          isOpen={statusModalOpen}
+          onClose={() => {
+            setStatusModalOpen(false)
+            setStatusGame(null)
+          }}
+          onSave={handleStatusChange}
+          isLoading={saving}
         />
       </div>
     </div>
