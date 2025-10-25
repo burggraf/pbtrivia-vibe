@@ -33,8 +33,8 @@ function formatGameStatus(status: string): string {
   ).join(' ');
 }
 
-function formatDuration(minutes?: number): string {
-  if (!minutes) return 'Not set';
+function formatDuration(minutes?: number): string | null {
+  if (!minutes) return null;
   if (minutes < 60) return `${minutes} min`;
   const hours = Math.floor(minutes / 60);
   const remainingMinutes = minutes % 60;
@@ -143,10 +143,10 @@ export default function GamesList({ games, onEdit, isLoading = false }: GamesLis
                   </Badge>
                 </TableCell>
                 <TableCell className="text-slate-700 dark:text-slate-300">
-                  {game.startdate ? formatDateTime(new Date(game.startdate)) : 'Not set'}
+                  {game.startdate ? formatDateTime(new Date(game.startdate)) : null}
                 </TableCell>
                 <TableCell className="text-slate-700 dark:text-slate-300">{formatDuration(game.duration)}</TableCell>
-                <TableCell className="text-slate-700 dark:text-slate-300">{game.location || 'Not set'}</TableCell>
+                <TableCell className="text-slate-700 dark:text-slate-300">{game.location}</TableCell>
               </TableRow>
             ))}
           </TableBody>

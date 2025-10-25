@@ -208,7 +208,7 @@ export default function HostPage() {
   }
 
   const formatDuration = (minutes?: number) => {
-    if (!minutes) return 'Not set'
+    if (!minutes) return null
     if (minutes < 60) return `${minutes} min`
     const hours = Math.floor(minutes / 60)
     const remainingMinutes = minutes % 60
@@ -280,11 +280,18 @@ export default function HostPage() {
                             </Badge>
                           </div>
                           <div className="flex items-center gap-2 text-sm text-slate-600 dark:text-slate-400">
-                            <span>{game.startdate ? formatDateTime(new Date(game.startdate)) : 'Not set'}</span>
-                            <span>•</span>
-                            <span>{formatDuration(game.duration)}</span>
-                            <span>•</span>
-                            <span>{game.location || 'No location'}</span>
+                            {[
+                              game.startdate ? formatDateTime(new Date(game.startdate)) : null,
+                              formatDuration(game.duration),
+                              game.location
+                            ]
+                              .filter(Boolean)
+                              .map((item, index, filtered) => (
+                                <span key={index}>
+                                  {item}
+                                  {index < filtered.length - 1 && <span className="mx-2">•</span>}
+                                </span>
+                              ))}
                             <div
                               className="h-8 w-8 p-0 ml-2 flex items-center justify-center rounded-sm hover:bg-slate-100 dark:hover:bg-slate-800 cursor-pointer"
                               onClick={(e) => {
