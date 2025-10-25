@@ -4,7 +4,6 @@ import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, D
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 
 interface GameEditModalProps {
   game: Game | null
@@ -21,8 +20,7 @@ export default function GameEditModal({ game, isOpen, onClose, onSave, onDelete,
     name: '',
     startdate: '',
     duration: undefined,
-    location: '',
-    status: 'setup'
+    location: ''
   })
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false)
 
@@ -32,8 +30,7 @@ export default function GameEditModal({ game, isOpen, onClose, onSave, onDelete,
         name: game.name || '',
         startdate: game.startdate ? new Date(game.startdate).toISOString().slice(0, 16) : '',
         duration: game.duration || undefined,
-        location: game.location || '',
-        status: game.status
+        location: game.location || ''
       })
     }
   }, [game])
@@ -133,24 +130,6 @@ export default function GameEditModal({ game, isOpen, onClose, onSave, onDelete,
                   className="col-span-3"
                 />
               </div>
-              {isEdit && (
-                <div className="grid grid-cols-4 items-center gap-4">
-                  <Label htmlFor="status" className="text-right">
-                    Status
-                  </Label>
-                  <Select value={formData.status} onValueChange={(value) => handleInputChange('status', value)}>
-                    <SelectTrigger className="col-span-3">
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="setup">Setup</SelectItem>
-                      <SelectItem value="ready">Ready</SelectItem>
-                      <SelectItem value="in-progress">In Progress</SelectItem>
-                      <SelectItem value="completed">Completed</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-              )}
             </div>
             <DialogFooter>
               <div className="flex flex-col-reverse sm:flex-row sm:justify-end sm:space-x-2 w-full">
