@@ -151,6 +151,20 @@ export default function HostPage() {
     }
   }
 
+  const handleDeleteRound = async () => {
+    if (editingRound) {
+      try {
+        setSaving(true)
+        await roundsService.deleteRound(editingRound.id)
+        await fetchGames()
+      } catch (error) {
+        console.error('Failed to delete round:', error)
+      } finally {
+        setSaving(false)
+      }
+    }
+  }
+
   
   const getStatusBadgeVariant = (status: string) => {
     switch (status) {
@@ -374,6 +388,7 @@ export default function HostPage() {
             setCurrentGameId(null)
           }}
           onSave={handleSaveRound}
+          onDelete={!isRoundCreateMode ? handleDeleteRound : undefined}
           isLoading={saving}
           isCreateMode={isRoundCreateMode}
         />
