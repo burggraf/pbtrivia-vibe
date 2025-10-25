@@ -10,6 +10,7 @@ import RoundEditModal from '@/components/games/RoundEditModal'
 import QuestionsList from '@/components/games/QuestionsList'
 import GameForm from '@/components/games/GameForm'
 import CategoryIconShowcase from '@/components/ui/CategoryIconShowcase'
+import CategoryIcon, { getAvailableCategories } from '@/components/ui/CategoryIcon'
 import { Info } from 'lucide-react'
 import pb from '@/lib/pocketbase'
 import { gamesService } from '@/lib/games'
@@ -212,84 +213,85 @@ export default function HostPage() {
                 <Accordion type="multiple" className="space-y-2">
                   {games.map((game) => (
                     <AccordionItem key={game.id} value={game.id} className="border-slate-200 dark:border-slate-700">
-                      <div className="flex items-center gap-2 pr-4">
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          className="h-8 w-8 p-0"
-                          onClick={(e) => {
-                            e.stopPropagation()
-                            handleEditGame(game)
-                          }}
-                        >
-                          <Info className="h-4 w-4" />
-                        </Button>
-                        <AccordionTrigger className="hover:no-underline">
-                          <div className="flex items-center justify-between w-full mr-4">
-                            <div className="flex items-center gap-3">
-                              <span className="font-medium text-slate-800 dark:text-slate-100">{game.name}</span>
-                              <code className="px-2 py-1 bg-slate-100 dark:bg-slate-700 rounded text-sm font-mono text-slate-800 dark:text-slate-100">
-                                {game.code}
-                              </code>
-                              <Badge variant={getStatusBadgeVariant(game.status)}>
-                                {formatGameStatus(game.status)}
-                              </Badge>
-                            </div>
-                            <div className="flex items-center gap-2 text-sm text-slate-600 dark:text-slate-400">
-                              <span>{game.startdate ? formatDateTime(new Date(game.startdate)) : 'Not set'}</span>
-                              <span>•</span>
-                              <span>{formatDuration(game.duration)}</span>
-                              <span>•</span>
-                              <span>{game.location || 'No location'}</span>
-                            </div>
+                      <AccordionTrigger className="hover:no-underline">
+                        <div className="flex items-center justify-between w-full">
+                          <div className="flex items-center gap-3">
+                            <span className="font-medium text-slate-800 dark:text-slate-100">{game.name}</span>
+                            <code className="px-2 py-1 bg-slate-100 dark:bg-slate-700 rounded text-sm font-mono text-slate-800 dark:text-slate-100">
+                              {game.code}
+                            </code>
+                            <Badge variant={getStatusBadgeVariant(game.status)}>
+                              {formatGameStatus(game.status)}
+                            </Badge>
                           </div>
-                        </AccordionTrigger>
-                      </div>
+                          <div className="flex items-center gap-2 text-sm text-slate-600 dark:text-slate-400">
+                            <span>{game.startdate ? formatDateTime(new Date(game.startdate)) : 'Not set'}</span>
+                            <span>•</span>
+                            <span>{formatDuration(game.duration)}</span>
+                            <span>•</span>
+                            <span>{game.location || 'No location'}</span>
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              className="h-8 w-8 p-0 ml-2"
+                              onClick={(e) => {
+                                e.stopPropagation()
+                                handleEditGame(game)
+                              }}
+                            >
+                              <Info className="h-4 w-4" />
+                            </Button>
+                          </div>
+                        </div>
+                      </AccordionTrigger>
                       <AccordionContent className="pl-12">
                         {rounds[game.id] && rounds[game.id].length > 0 ? (
                           <Accordion type="multiple" className="space-y-2">
                             {rounds[game.id].map((round) => (
                               <AccordionItem key={round.id} value={round.id} className="border-slate-200 dark:border-slate-700">
-                                <div className="flex items-center gap-2 pr-4">
-                                  <Button
-                                    variant="ghost"
-                                    size="sm"
-                                    className="h-8 w-8 p-0"
-                                    onClick={(e) => {
-                                      e.stopPropagation()
-                                      handleEditRound(round)
-                                    }}
-                                  >
-                                    <Info className="h-4 w-4" />
-                                  </Button>
-                                  <AccordionTrigger className="hover:no-underline">
-                                    <div className="flex items-center justify-between w-full mr-4">
+                                <AccordionTrigger className="hover:no-underline">
+                                    <div className="flex items-center justify-between w-full">
                                       <div className="flex items-center gap-3">
                                         <span className="font-medium text-slate-700 dark:text-slate-200">{round.title}</span>
                                         <Badge variant="outline">
                                           {round.question_count} questions
                                         </Badge>
-                                        {round.categories && round.categories.length > 0 && (
-                                          <div className="flex gap-1">
-                                            {round.categories.slice(0, 2).map((category, index) => (
-                                              <Badge key={index} variant="secondary" className="text-xs">
-                                                {category}
-                                              </Badge>
-                                            ))}
-                                            {round.categories.length > 2 && (
-                                              <Badge variant="secondary" className="text-xs">
-                                                +{round.categories.length - 2}
-                                              </Badge>
-                                            )}
+                                        <div className="flex gap-1">
+                                            {getAvailableCategories().map((category) => {
+                                              const isUsed = round.categories && round.categories.includes(category)
+                                              return (
+                                                <div key={category} title={category}>
+                                                  <CategoryIcon
+                                                    category={category}
+                                                    size={16}
+                                                    className={`${isUsed
+                                                      ? 'text-slate-700 dark:text-slate-300'
+                                                      : 'text-slate-300 dark:text-slate-600'
+                                                    }`}
+                                                  />
+                                                </div>
+                                              )
+                                            })}
                                           </div>
-                                        )}
                                       </div>
-                                      <span className="text-sm text-slate-500 dark:text-slate-400">
-                                        Round {round.sequence_number}
-                                      </span>
+                                      <div className="flex items-center gap-2">
+                                        <span className="text-sm text-slate-500 dark:text-slate-400">
+                                          Round {round.sequence_number}
+                                        </span>
+                                        <Button
+                                          variant="ghost"
+                                          size="sm"
+                                          className="h-8 w-8 p-0"
+                                          onClick={(e) => {
+                                            e.stopPropagation()
+                                            handleEditRound(round)
+                                          }}
+                                        >
+                                          <Info className="h-4 w-4" />
+                                        </Button>
+                                      </div>
                                     </div>
                                   </AccordionTrigger>
-                                </div>
                                 <AccordionContent className="pl-12">
                                   <QuestionsList roundTitle={round.title} />
                                 </AccordionContent>
