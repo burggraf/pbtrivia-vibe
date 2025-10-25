@@ -4,6 +4,7 @@ import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { roundQuestionsService } from '@/lib/roundQuestions'
 import { questionsService } from '@/lib/questions'
+import { getShuffledAnswers } from '@/lib/answerShuffler'
 import { Question } from '@/lib/questions'
 
 interface QuestionsListProps {
@@ -101,7 +102,7 @@ export default function QuestionsList({ roundId, roundTitle }: QuestionsListProp
           {loading
             ? 'Loading questions...'
             : questionsWithDetails.length > 0
-              ? `${questionsWithDetails.length} question${questionsWithDetails.length === 1 ? '' : 's'} in this round`
+              ? `${questionsWithDetails.length} question${questionsWithDetails.length === 1 ? '' : 's'} in this round (answers shuffled)`
               : 'No questions assigned to this round yet'
           }
         </CardDescription>
@@ -144,14 +145,38 @@ export default function QuestionsList({ roundId, roundTitle }: QuestionsListProp
                   <p className="text-sm font-medium text-slate-800 dark:text-slate-100">
                     {roundQuestion.questionDetails?.question || 'Question not found'}
                   </p>
-                  {roundQuestion.questionDetails?.answer_a && (
-                    <div className="mt-2 text-xs text-slate-600 dark:text-slate-400">
-                      <div>A) {roundQuestion.questionDetails.answer_a}</div>
-                      <div>B) {roundQuestion.questionDetails.answer_b}</div>
-                      <div>C) {roundQuestion.questionDetails.answer_c}</div>
-                      <div>D) {roundQuestion.questionDetails.answer_d}</div>
-                    </div>
-                  )}
+                  {roundQuestion.questionDetails?.answer_a && (() => {
+                    const shuffledResult = getShuffledAnswers(
+                      roundQuestion.id,
+                      roundQuestion.questionDetails.answer_a,
+                      roundQuestion.questionDetails.answer_b,
+                      roundQuestion.questionDetails.answer_c,
+                      roundQuestion.questionDetails.answer_d
+                    );
+
+                    return (
+                      <div className="mt-2 text-xs text-slate-600 dark:text-slate-400">
+                        {shuffledResult.shuffledAnswers.map((answer, index) => (
+                          <div
+                            key={index}
+                            className={`
+                              ${answer.originalIndex === 0
+                                ? 'font-semibold text-green-700 dark:text-green-400'
+                                : ''
+                              }
+                            `}
+                          >
+                            {answer.label}) {answer.text}
+                            {answer.originalIndex === 0 && (
+                              <span className="ml-2 text-green-600 dark:text-green-400">
+                                ✓ Correct
+                              </span>
+                            )}
+                          </div>
+                        ))}
+                      </div>
+                    );
+                  })()}
                 </div>
                 <Button
                   variant="ghost"
