@@ -4,25 +4,22 @@ migrate((app) => {
   const collection = app.findCollectionByNameOrId("games")
 
   // add new field
-  collection.add(
-    "scoreboard",
-    new SchemaField({
-      type: "json",
-      required: false,
-      default: () => ({
-        teams: {}
-      })
-    })
-  )
+  collection.fields.addAt(7, new Field({
+    "hidden": false,
+    "id": "json1234567890",
+    "name": "scoreboard",
+    "presentable": false,
+    "required": false,
+    "system": false,
+    "type": "json"
+  }))
 
-  // update collection
-  app.save(collection)
+  return app.save(collection)
 }, (app) => {
   const collection = app.findCollectionByNameOrId("games")
 
   // remove field
-  collection.remove("scoreboard")
+  collection.fields.removeById("json1234567890")
 
-  // update collection
-  app.save(collection)
+  return app.save(collection)
 })
