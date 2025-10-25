@@ -90,7 +90,7 @@ function getTeamPlayers(dao, gameId, teamId) {
     // Find all game_players for this game and team
     const gamePlayers = dao.findRecordsByFilter(
       "game_players",
-      `game = "${gameId}"${teamId ? ` && team = "${teamId}"` : ` && team = null || team = ""`}`
+      `game = "${gameId}"${teamId ? ` && team = "${teamId}"` : ` && (team = null || team = "")`}`
     )
 
     for (const gamePlayer of gamePlayers) {
@@ -186,7 +186,9 @@ function updateTeamInScoreboard(dao, gameId, teamId, teamName) {
  * Handle game_teams after create success
  */
 onModelAfterCreateSuccess((e) => {
-  if (e.collectionName !== "game_teams") return
+  if (e.model?.collectionName !== "game_teams") {
+    return e.next()
+  }
 
   const team = e.model
   const gameId = team.get("game")
@@ -200,13 +202,17 @@ onModelAfterCreateSuccess((e) => {
   } catch (error) {
     console.error("Error updating scoreboard after team creation:", error)
   }
-}, "scoreboard")
+
+  return e.next()
+}, "game_teams")
 
 /**
  * Handle game_teams after update success
  */
 onModelAfterUpdateSuccess((e) => {
-  if (e.collectionName !== "game_teams") return
+  if (e.model?.collectionName !== "game_teams") {
+    return e.next()
+  }
 
   const team = e.model
   const gameId = team.get("game")
@@ -220,13 +226,17 @@ onModelAfterUpdateSuccess((e) => {
   } catch (error) {
     console.error("Error updating scoreboard after team update:", error)
   }
-}, "scoreboard")
+
+  return e.next()
+}, "game_teams")
 
 /**
  * Handle game_teams after delete success
  */
 onModelAfterDeleteSuccess((e) => {
-  if (e.collectionName !== "game_teams") return
+  if (e.model?.collectionName !== "game_teams") {
+    return e.next()
+  }
 
   const team = e.model
   const gameId = team.get("game")
@@ -240,7 +250,9 @@ onModelAfterDeleteSuccess((e) => {
   } catch (error) {
     console.error("Error updating scoreboard after team deletion:", error)
   }
-}, "scoreboard")
+
+  return e.next()
+}, "game_teams")
 
 // ============================================================================
 // GAME_PLAYERS EVENT HOOKS
@@ -250,7 +262,9 @@ onModelAfterDeleteSuccess((e) => {
  * Handle game_players after create success
  */
 onModelAfterCreateSuccess((e) => {
-  if (e.collectionName !== "game_players") return
+  if (e.model?.collectionName !== "game_players") {
+    return e.next()
+  }
 
   const gamePlayer = e.model
   const gameId = gamePlayer.get("game")
@@ -259,8 +273,7 @@ onModelAfterCreateSuccess((e) => {
   console.log(`Player added to game ${gameId}, team: ${teamId || "no team"}`)
 
   try {
-    // Get the game to check if it has any teams
-    const game = $app.dao().findRecordById("games", gameId)
+    // Get the game teams to check if any exist
     const gameTeams = $app.dao().findRecordsByFilter("game_teams", `game = "${gameId}"`)
 
     if (gameTeams.length === 0) {
@@ -307,13 +320,17 @@ onModelAfterCreateSuccess((e) => {
   } catch (error) {
     console.error("Error updating scoreboard after player creation:", error)
   }
-}, "scoreboard")
+
+  return e.next()
+}, "game_players")
 
 /**
  * Handle game_players after update success
  */
 onModelAfterUpdateSuccess((e) => {
-  if (e.collectionName !== "game_players") return
+  if (e.model?.collectionName !== "game_players") {
+    return e.next()
+  }
 
   const gamePlayer = e.model
   const gameId = gamePlayer.get("game")
@@ -347,13 +364,17 @@ onModelAfterUpdateSuccess((e) => {
   } catch (error) {
     console.error("Error updating scoreboard after player update:", error)
   }
-}, "scoreboard")
+
+  return e.next()
+}, "game_players")
 
 /**
  * Handle game_players after delete success
  */
 onModelAfterDeleteSuccess((e) => {
-  if (e.collectionName !== "game_players") return
+  if (e.model?.collectionName !== "game_players") {
+    return e.next()
+  }
 
   const gamePlayer = e.model
   const gameId = gamePlayer.get("game")
@@ -383,7 +404,9 @@ onModelAfterDeleteSuccess((e) => {
   } catch (error) {
     console.error("Error updating scoreboard after player deletion:", error)
   }
-}, "scoreboard")
+
+  return e.next()
+}, "game_players")
 
 // ============================================================================
 // ERROR HANDLING
@@ -393,21 +416,24 @@ onModelAfterDeleteSuccess((e) => {
  * Handle errors for all scoreboard operations
  */
 onRecordAfterCreateError((e) => {
-  if (e.record.collectionName === "game_teams" || e.record.collectionName === "game_players") {
+  if (e.record?.collectionName === "game_teams" || e.record?.collectionName === "game_players") {
     console.error(`Error creating ${e.record.collectionName}:`, e.error)
   }
+  return e.next()
 }, "scoreboard")
 
 onRecordAfterUpdateError((e) => {
-  if (e.record.collectionName === "game_teams" || e.record.collectionName === "game_players") {
+  if (e.record?.collectionName === "game_teams" || e.record?.collectionName === "game_players") {
     console.error(`Error updating ${e.record.collectionName}:`, e.error)
   }
+  return e.next()
 }, "scoreboard")
 
 onRecordAfterDeleteError((e) => {
-  if (e.record.collectionName === "game_teams" || e.record.collectionName === "game_players") {
+  if (e.record?.collectionName === "game_teams" || e.record?.collectionName === "game_players") {
     console.error(`Error deleting ${e.record.collectionName}:`, e.error)
   }
+  return e.next()
 }, "scoreboard")
 
 console.log("Scoreboard hooks loaded successfully!")
