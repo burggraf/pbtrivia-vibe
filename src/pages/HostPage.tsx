@@ -15,7 +15,7 @@ import pb from '@/lib/pocketbase'
 import { gamesService } from '@/lib/games'
 import { roundsService } from '@/lib/rounds'
 import { Game, CreateGameData, UpdateGameData } from '@/types/games'
-import { Round, UpdateRoundData } from '@/types/rounds'
+import { Round, UpdateRoundData, CreateRoundData } from '@/types/rounds'
 import { formatDateTime } from '@/lib/utils'
 
 export default function HostPage() {
@@ -29,6 +29,8 @@ export default function HostPage() {
   const [gameModalOpen, setGameModalOpen] = useState(false)
   const [roundModalOpen, setRoundModalOpen] = useState(false)
   const [isCreateMode, setIsCreateMode] = useState(false)
+  const [isRoundCreateMode, setIsRoundCreateMode] = useState(false)
+  const [currentGameId, setCurrentGameId] = useState<string | null>(null)
   
   const fetchGames = async () => {
     try {
@@ -82,7 +84,30 @@ export default function HostPage() {
 
   const handleEditRound = (round: Round) => {
     setEditingRound(round)
+    setIsRoundCreateMode(false)
     setRoundModalOpen(true)
+  }
+
+  const handleAddRound = async (gameId: string) => {
+    try {
+      const nextSequenceNumber = await roundsService.getNextSequenceNumber(gameId)
+      setCurrentGameId(gameId)
+      setIsRoundCreateMode(true)
+      setEditingRound({
+        id: '',
+        title: '',
+        question_count: 10,
+        categories: [],
+        sequence_number: nextSequenceNumber,
+        game: gameId,
+        host: pb.authStore.model?.id || '',
+        created: '',
+        updated: ''
+      })
+      setRoundModalOpen(true)
+    } catch (error) {
+      console.error('Failed to get next sequence number:', error)
+    }
   }
 
   const handleSaveGame = async (data: UpdateGameData | CreateGameData) => {
@@ -106,10 +131,19 @@ export default function HostPage() {
   const handleSaveRound = async (data: UpdateRoundData) => {
     try {
       setSaving(true)
-      if (editingRound) {
+      if (isRoundCreateMode && currentGameId) {
+        await roundsService.createRound({
+          ...data,
+          game: currentGameId
+        } as CreateRoundData)
+        await fetchGames()
+      } else if (editingRound && !isRoundCreateMode) {
         await roundsService.updateRound(editingRound.id, data)
         await fetchGames()
       }
+      setRoundModalOpen(false)
+      setIsRoundCreateMode(false)
+      setCurrentGameId(null)
     } catch (error) {
       console.error('Failed to save round:', error)
     } finally {
@@ -227,6 +261,20 @@ export default function HostPage() {
                         </div>
                       </AccordionTrigger>
                       <AccordionContent className="pl-12">
+                        <div className="mb-4">
+                          <div className="flex items-center justify-between">
+                            <h3 className="text-lg font-semibold text-slate-700 dark:text-slate-300">Rounds</h3>
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              onClick={() => handleAddRound(game.id)}
+                              className="flex items-center gap-2 text-slate-600 dark:text-slate-400 border-slate-300 dark:border-slate-600 hover:bg-slate-50 dark:hover:bg-slate-800"
+                            >
+                              <Plus className="h-4 w-4" />
+                              Add Round
+                            </Button>
+                          </div>
+                        </div>
                         {rounds[game.id] && rounds[game.id].length > 0 ? (
                           <Accordion type="multiple" className="space-y-2">
                             {rounds[game.id].map((round) => (
@@ -320,9 +368,14 @@ export default function HostPage() {
         <RoundEditModal
           round={editingRound}
           isOpen={roundModalOpen}
-          onClose={() => setRoundModalOpen(false)}
+          onClose={() => {
+            setRoundModalOpen(false)
+            setIsRoundCreateMode(false)
+            setCurrentGameId(null)
+          }}
           onSave={handleSaveRound}
           isLoading={saving}
+          isCreateMode={isRoundCreateMode}
         />
       </div>
     </div>

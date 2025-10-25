@@ -4,6 +4,9 @@ import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, D
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
+import { Checkbox } from '@/components/ui/checkbox'
+import { getAvailableCategories } from '@/components/ui/CategoryIcon'
+import CategoryIcon from '@/components/ui/CategoryIcon'
 
 interface RoundEditModalProps {
   round: Round | null
@@ -11,9 +14,10 @@ interface RoundEditModalProps {
   onClose: () => void
   onSave: (data: UpdateRoundData) => Promise<void>
   isLoading?: boolean
+  isCreateMode?: boolean
 }
 
-export default function RoundEditModal({ round, isOpen, onClose, onSave, isLoading = false }: RoundEditModalProps) {
+export default function RoundEditModal({ round, isOpen, onClose, onSave, isLoading = false, isCreateMode = false }: RoundEditModalProps) {
   const [formData, setFormData] = useState<UpdateRoundData>({
     title: '',
     question_count: 10,
@@ -29,12 +33,20 @@ export default function RoundEditModal({ round, isOpen, onClose, onSave, isLoadi
         categories: round.categories || [],
         sequence_number: round.sequence_number || 1
       })
+    } else if (isCreateMode) {
+      // Reset form for create mode
+      setFormData({
+        title: '',
+        question_count: 10,
+        categories: [],
+        sequence_number: 1
+      })
     }
-  }, [round])
+  }, [round, isCreateMode])
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    if (!round) return
+    if (!round && !isCreateMode) return
 
     await onSave(formData)
     onClose()
@@ -44,20 +56,41 @@ export default function RoundEditModal({ round, isOpen, onClose, onSave, isLoadi
     setFormData(prev => ({ ...prev, [field]: value }))
   }
 
-  const handleCategoriesChange = (value: string) => {
-    const categories = value.split(',').map(cat => cat.trim()).filter(cat => cat.length > 0)
-    handleInputChange('categories', categories)
+  const handleCategoryToggle = (category: string, checked: boolean) => {
+    const currentCategories = formData.categories || []
+    if (checked) {
+      handleInputChange('categories', [...currentCategories, category])
+    } else {
+      handleInputChange('categories', currentCategories.filter(cat => cat !== category))
+    }
   }
 
-  if (!round) return null
+  const handleToggleAllCategories = () => {
+    if (isAllCategoriesSelected()) {
+      handleInputChange('categories', [])
+    } else {
+      handleInputChange('categories', getAvailableCategories())
+    }
+  }
+
+  const isAllCategoriesSelected = () => {
+    const allCategories = getAvailableCategories()
+    const currentCategories = formData.categories || []
+    return allCategories.length > 0 && allCategories.every(category => currentCategories.includes(category))
+  }
+
+  if (!round && !isCreateMode) return null
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="sm:max-w-[425px]">
         <DialogHeader>
-          <DialogTitle>Edit Round</DialogTitle>
+          <DialogTitle>{isCreateMode ? 'Add Round' : 'Edit Round'}</DialogTitle>
           <DialogDescription>
-            Make changes to round information here. Click save when you're done.
+            {isCreateMode
+              ? 'Create a new round for your game. Click save when you\'re done.'
+              : 'Make changes to round information here. Click save when you\'re done.'
+            }
           </DialogDescription>
         </DialogHeader>
         <form onSubmit={handleSubmit}>
@@ -102,17 +135,46 @@ export default function RoundEditModal({ round, isOpen, onClose, onSave, isLoadi
                 required
               />
             </div>
-            <div className="grid grid-cols-4 items-center gap-4">
-              <Label htmlFor="categories" className="text-right">
-                Categories
-              </Label>
-              <Input
-                id="categories"
-                value={formData.categories?.join(', ') || ''}
-                onChange={(e) => handleCategoriesChange(e.target.value)}
-                className="col-span-3"
-                placeholder="Comma-separated categories"
-              />
+          </div>
+
+          {/* Categories Section - Full Width at Bottom */}
+          <div className="border-t pt-4">
+            <div className="mb-4">
+              <div className="flex items-center justify-between mb-4">
+                <Label className="text-base font-medium">Categories</Label>
+                <div className="flex items-center gap-2">
+                  <span className="text-xs text-slate-500 dark:text-slate-400">
+                    {formData.categories?.length || 0} of {getAvailableCategories().length} selected
+                  </span>
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    onClick={handleToggleAllCategories}
+                    className="text-xs h-7"
+                  >
+                    {isAllCategoriesSelected() ? 'Check None' : 'Check All'}
+                  </Button>
+                </div>
+              </div>
+              <div className="grid grid-cols-2 gap-3">
+                {getAvailableCategories().map((category) => (
+                  <div key={category} className="flex items-center space-x-2">
+                    <Checkbox
+                      id={category}
+                      checked={formData.categories?.includes(category) || false}
+                      onCheckedChange={(checked) => handleCategoryToggle(category, checked as boolean)}
+                    />
+                    <Label
+                      htmlFor={category}
+                      className="text-sm font-normal cursor-pointer flex items-center gap-2"
+                    >
+                      <CategoryIcon category={category} size={14} />
+                      {category}
+                    </Label>
+                  </div>
+                ))}
+              </div>
             </div>
           </div>
           <DialogFooter>
@@ -120,7 +182,7 @@ export default function RoundEditModal({ round, isOpen, onClose, onSave, isLoadi
               Cancel
             </Button>
             <Button type="submit" disabled={isLoading}>
-              {isLoading ? 'Saving...' : 'Save Changes'}
+              {isLoading ? 'Saving...' : (isCreateMode ? 'Add Round' : 'Save Changes')}
             </Button>
           </DialogFooter>
         </form>
