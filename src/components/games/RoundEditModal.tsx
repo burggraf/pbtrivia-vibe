@@ -202,7 +202,7 @@ export default function RoundEditModal({ round, isOpen, onClose, onSave, onDelet
                   <Button type="button" variant="outline" onClick={onClose}>
                     Cancel
                   </Button>
-                  <Button type="submit" disabled={isLoading}>
+                  <Button type="submit" disabled={isLoading || !formData.categories || formData.categories.length === 0}>
                     {isLoading ? 'Saving...' : (isCreateMode ? 'Add Round' : 'Save Changes')}
                   </Button>
                 </div>
