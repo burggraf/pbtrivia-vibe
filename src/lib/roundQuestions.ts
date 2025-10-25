@@ -3,8 +3,8 @@ import pb from './pocketbase';
 export interface RoundQuestion {
   id: string;
   host: string;
-  game: string;
-  round: string;
+  game: string | null;
+  round: string | null;
   question: string;
   sequence: number;
   category_name: string;
@@ -25,7 +25,7 @@ export const roundQuestionsService = {
   async getRoundQuestions(roundId: string): Promise<RoundQuestion[]> {
     try {
       const result = await pb.collection('round_questions').getList<RoundQuestion>(1, 200, {
-        filter: `round = "${roundId}" && host = "${pb.authStore.model?.id}"`
+        filter: `round = "${roundId}" && host = "${pb.authStore.model?.id}" && sequence > 0 && game != "" && round != ""`
       });
 
       // Sort by sequence number
@@ -42,6 +42,33 @@ export const roundQuestionsService = {
       return record;
     } catch (error) {
       console.error('Failed to create round question:', error);
+      throw error;
+    }
+  },
+
+  async updateRoundQuestion(id: string, data: {
+    game?: string | null;
+    round?: string | null;
+    sequence?: number;
+  }): Promise<RoundQuestion> {
+    try {
+      // For PocketBase, to clear relation fields, we need to send empty strings
+      const updateData: any = {
+        sequence: data.sequence,
+        updated: new Date().toISOString() // Set updated field to current date/time
+      };
+
+      if (data.game === null) {
+        updateData.game = '';
+      }
+      if (data.round === null) {
+        updateData.round = '';
+      }
+
+      const record = await pb.collection('round_questions').update<RoundQuestion>(id, updateData);
+      return record;
+    } catch (error) {
+      console.error('Failed to update round question:', error);
       throw error;
     }
   },

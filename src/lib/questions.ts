@@ -118,14 +118,14 @@ export const questionsService = {
         return [];
       }
 
-      // Step 2: Get questions already used by this host in ALL their rounds
+      // Step 2: Get questions already used by this host in ALL their rounds (including recycled ones)
       const usedQuestionsResult = await pb.collection('round_questions').getFullList(1000, {
         filter: `host = "${currentHostId}"`
       });
 
       const usedQuestionIds = new Set(usedQuestionsResult.map(rq => rq.question));
 
-      // Step 3: Filter out used questions to ensure no reuse
+      // Step 3: Filter out used questions to ensure no reuse (including recycled questions)
       const availableQuestions = allQuestionsResult.filter(q => !usedQuestionIds.has(q.id));
 
       if (availableQuestions.length < questionCount) {

@@ -4,8 +4,10 @@ import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { roundQuestionsService } from '@/lib/roundQuestions'
 import { questionsService } from '@/lib/questions'
+import { roundsService } from '@/lib/rounds'
 import { getShuffledAnswers } from '@/lib/answerShuffler'
 import { Question } from '@/lib/questions'
+import { RotateCcw } from 'lucide-react'
 
 interface QuestionsListProps {
   roundId?: string
@@ -25,6 +27,8 @@ export default function QuestionsList({ roundId, roundTitle }: QuestionsListProp
   const [roundQuestions, setRoundQuestions] = useState<any[]>([])
   const [questions, setQuestions] = useState<Question[]>([])
   const [loading, setLoading] = useState(true)
+  const [recyclingQuestionId, setRecyclingQuestionId] = useState<string | null>(null)
+  const [round, setRound] = useState<any>(null)
 
   useEffect(() => {
     const fetchQuestions = async () => {
@@ -35,6 +39,10 @@ export default function QuestionsList({ roundId, roundTitle }: QuestionsListProp
 
       try {
         setLoading(true)
+
+        // Fetch round details to get categories
+        const roundData = await roundsService.getRound(roundId)
+        setRound(roundData)
 
         // Fetch round questions
         const roundQuestionsData = await roundQuestionsService.getRoundQuestions(roundId)
@@ -67,6 +75,96 @@ export default function QuestionsList({ roundId, roundTitle }: QuestionsListProp
 
     fetchQuestions()
   }, [roundId])
+
+  const handleRecycleQuestion = async (roundQuestionId: string) => {
+    if (!round) return
+
+    try {
+      setRecyclingQuestionId(roundQuestionId)
+
+      // Step 1: Get a new random question from the round's categories
+      const newQuestion = await questionsService.getRandomQuestionsFromCategories(
+        round.categories,
+        1
+      )
+
+      if (newQuestion.length === 0) {
+        console.warn('No new questions available from categories:', round.categories)
+        return
+      }
+
+      // Step 2: Find the current round question to get its sequence
+      const currentRoundQuestion = roundQuestions.find(rq => rq.id === roundQuestionId)
+      if (!currentRoundQuestion) {
+        console.error('Could not find current round question')
+        return
+      }
+
+      // Step 3: Update the existing round_questions record to "deactivate" it
+      await roundQuestionsService.updateRoundQuestion(roundQuestionId, {
+        game: null,
+        round: null,
+        sequence: 0
+      })
+
+      // Step 4: Create a new round_questions record with the new question
+      await roundQuestionsService.createRoundQuestion({
+        host: currentRoundQuestion.host,
+        game: currentRoundQuestion.game,
+        round: currentRoundQuestion.round,
+        question: newQuestion[0].id,
+        sequence: currentRoundQuestion.sequence,
+        category_name: newQuestion[0].category
+      })
+
+      // Step 5: Refresh the questions list
+      await fetchQuestions()
+    } catch (error) {
+      console.error('Failed to recycle question:', error)
+    } finally {
+      setRecyclingQuestionId(null)
+    }
+  }
+
+  // Extracted fetch logic for reuse
+  const fetchQuestions = async () => {
+    if (!roundId) return
+
+    try {
+      setLoading(true)
+
+      // Fetch round details to get categories
+      const roundData = await roundsService.getRound(roundId)
+      setRound(roundData)
+
+      // Fetch round questions
+      const roundQuestionsData = await roundQuestionsService.getRoundQuestions(roundId)
+      setRoundQuestions(roundQuestionsData)
+
+      // Fetch the actual question details
+      if (roundQuestionsData.length > 0) {
+        const questionIds = roundQuestionsData.map(rq => rq.question)
+
+        // We need to fetch questions one by one since PocketBase doesn't support IN queries easily
+        const questionPromises = questionIds.map(async (questionId) => {
+          try {
+            return await questionsService.getQuestionById(questionId)
+          } catch (error) {
+            console.error(`Failed to fetch question ${questionId}:`, error)
+            return null
+          }
+        })
+
+        const fetchedQuestions = await Promise.all(questionPromises)
+        const validQuestions = fetchedQuestions.filter((q): q is Question => q !== null)
+        setQuestions(validQuestions)
+      }
+    } catch (error) {
+      console.error('Failed to fetch round questions:', error)
+    } finally {
+      setLoading(false)
+    }
+  }
 
   // Combine round questions with their question details
   const questionsWithDetails = roundQuestions.map(rq => {
@@ -181,10 +279,18 @@ export default function QuestionsList({ roundId, roundTitle }: QuestionsListProp
                 <Button
                   variant="ghost"
                   size="sm"
+                  onClick={() => handleRecycleQuestion(roundQuestion.id)}
+                  disabled={recyclingQuestionId === roundQuestion.id || !round?.categories || round.categories.length === 0}
                   className="text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200"
-                  disabled
+                  title="Replace with a new question"
                 >
-                  Edit
+                  {recyclingQuestionId === roundQuestion.id ? (
+                    <div className="animate-spin">
+                      <RotateCcw className="h-4 w-4" />
+                    </div>
+                  ) : (
+                    <RotateCcw className="h-4 w-4" />
+                  )}
                 </Button>
               </div>
             ))}
