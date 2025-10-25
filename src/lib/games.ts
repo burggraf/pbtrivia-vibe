@@ -1,5 +1,5 @@
 import pb from './pocketbase';
-import { Game, CreateGameData, UpdateGameData } from '@/types/games';
+import { Game, CreateGameData, UpdateGameData, GameTeam, CreateGameTeamData, GamePlayer, CreateGamePlayerData } from '@/types/games';
 
 export const gamesService = {
   async getGames(): Promise<Game[]> {
@@ -57,6 +57,79 @@ export const gamesService = {
       await pb.collection('games').delete(id);
     } catch (error) {
       console.error('Failed to delete game:', error);
+      throw error;
+    }
+  },
+
+  async findGameByCode(code: string): Promise<Game | null> {
+    try {
+      // Get the first page of games and filter by code and status
+      const result = await pb.collection('games').getList<Game>(1, 50, {
+        filter: `code = "${code}" && status = "ready"`
+      });
+
+      if (result.items.length > 0) {
+        return result.items[0];
+      }
+      return null;
+    } catch (error) {
+      console.error('Failed to find game by code:', error);
+      throw error;
+    }
+  },
+};
+
+export const gameTeamsService = {
+  async getTeamsByGame(gameId: string): Promise<GameTeam[]> {
+    try {
+      const result = await pb.collection('game_teams').getList<GameTeam>(1, 50, {
+        filter: `game = "${gameId}"`
+      });
+      return result.items;
+    } catch (error) {
+      console.error('Failed to fetch teams for game:', error);
+      throw error;
+    }
+  },
+
+  async createTeam(data: CreateGameTeamData): Promise<GameTeam> {
+    try {
+      const teamData = {
+        ...data,
+        host: pb.authStore.model?.id,
+      };
+
+      const record = await pb.collection('game_teams').create<GameTeam>(teamData);
+      return record;
+    } catch (error) {
+      console.error('Failed to create team:', error);
+      throw error;
+    }
+  },
+};
+
+export const gamePlayersService = {
+  async createPlayer(data: CreateGamePlayerData): Promise<GamePlayer> {
+    try {
+      const playerData = {
+        ...data,
+        host: pb.authStore.model?.id,
+      };
+
+      const record = await pb.collection('game_players').create<GamePlayer>(playerData);
+      return record;
+    } catch (error) {
+      console.error('Failed to create player:', error);
+      throw error;
+    }
+  },
+
+  async updatePlayer(id: string, data: Partial<CreateGamePlayerData>): Promise<GamePlayer> {
+    try {
+      const record = await pb.collection('game_players').update<GamePlayer>(id, data);
+      return record;
+    } catch (error) {
+      console.error('Failed to update player:', error);
       throw error;
     }
   },
