@@ -346,73 +346,77 @@ export default function HostPage() {
                           </div>
                         </div>
                       </AccordionTrigger>
-                      <AccordionContent className="pl-12">
-                        <div className="mb-4">
-                          <div className="flex items-center justify-between">
-                            <h3 className="text-lg font-semibold text-slate-700 dark:text-slate-300">Rounds</h3>
-                            <Button
-                              variant="outline"
-                              size="sm"
-                              onClick={() => handleAddRound(game.id)}
-                              className="flex items-center gap-2 text-slate-600 dark:text-slate-400 border-slate-300 dark:border-slate-600 hover:bg-slate-50 dark:hover:bg-slate-800"
-                            >
-                              <Plus className="h-4 w-4" />
-                              Add Round
-                            </Button>
+                      <AccordionContent>
+                        <div className="border-l-4 border-slate-200 dark:border-slate-600 bg-slate-50 dark:bg-slate-800/50 -ml-4 pl-4 rounded-r-lg">
+                          <div className="mb-4 pt-2">
+                            <div className="flex items-center justify-between">
+                              <h3 className="text-lg font-semibold text-slate-700 dark:text-slate-300">Rounds</h3>
+                              <Button
+                                variant="outline"
+                                size="sm"
+                                onClick={() => handleAddRound(game.id)}
+                                className="flex items-center gap-2 text-slate-600 dark:text-slate-400 border-slate-300 dark:border-slate-600 hover:bg-slate-50 dark:hover:bg-slate-800"
+                              >
+                                <Plus className="h-4 w-4" />
+                                Add Round
+                              </Button>
+                            </div>
                           </div>
-                        </div>
-                        {rounds[game.id] && rounds[game.id].length > 0 ? (
-                          <Accordion type="multiple" className="space-y-2">
-                            {rounds[game.id].map((round) => (
-                              <AccordionItem key={round.id} value={round.id} className="border-slate-200 dark:border-slate-700">
-                                <AccordionTrigger className="hover:no-underline">
-                                    <div className="flex items-center justify-between w-full">
-                                      <div className="flex items-center gap-3">
-                                        <span className="font-medium text-slate-700 dark:text-slate-200">{round.title}</span>
-                                        <Badge variant="outline">
-                                          {round.question_count} questions
-                                        </Badge>
-                                        <div className="flex gap-1">
-                                            {getAvailableCategories().map((category) => {
-                                              const isUsed = round.categories && round.categories.includes(category)
-                                              return (
-                                                <div key={category} title={category}>
-                                                  <CategoryIcon
-                                                    category={category}
-                                                    size={16}
-                                                    className={`${isUsed
-                                                      ? 'text-slate-700 dark:text-slate-300'
-                                                      : 'text-slate-300 dark:text-slate-600'
-                                                    }`}
-                                                  />
-                                                </div>
-                                              )
-                                            })}
+                          {rounds[game.id] && rounds[game.id].length > 0 ? (
+                            <Accordion type="multiple" className="space-y-2">
+                              {rounds[game.id].map((round) => (
+                                <AccordionItem key={round.id} value={round.id} className="border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 rounded-lg">
+                                  <AccordionTrigger className="hover:no-underline px-2">
+                                      <div className="flex items-center justify-between w-full">
+                                        <div className="flex items-center gap-3">
+                                          <span className="font-medium text-slate-700 dark:text-slate-200">{round.title}</span>
+                                          <Badge variant="outline">
+                                            {round.question_count} questions
+                                          </Badge>
+                                          <div className="flex gap-1">
+                                              {getAvailableCategories().map((category) => {
+                                                const isUsed = round.categories && round.categories.includes(category)
+                                                return (
+                                                  <div key={category} title={category}>
+                                                    <CategoryIcon
+                                                      category={category}
+                                                      size={16}
+                                                      className={`${isUsed
+                                                        ? 'text-slate-700 dark:text-slate-300'
+                                                        : 'text-slate-300 dark:text-slate-600'
+                                                      }`}
+                                                    />
+                                                  </div>
+                                                )
+                                              })}
+                                            </div>
+                                        </div>
+                                        <div className="flex items-center gap-2">
+                                          <span className="text-sm text-slate-500 dark:text-slate-400">
+                                            Round {round.sequence_number}
+                                          </span>
+                                          <div
+                                            className="h-8 w-8 p-0 flex items-center justify-center rounded-sm hover:bg-slate-100 dark:hover:bg-slate-800 cursor-pointer"
+                                            onClick={(e) => {
+                                              e.stopPropagation()
+                                              handleEditRound(round)
+                                            }}
+                                          >
+                                            <Info className="h-4 w-4 text-slate-600 dark:text-slate-400" />
                                           </div>
-                                      </div>
-                                      <div className="flex items-center gap-2">
-                                        <span className="text-sm text-slate-500 dark:text-slate-400">
-                                          Round {round.sequence_number}
-                                        </span>
-                                        <div
-                                          className="h-8 w-8 p-0 flex items-center justify-center rounded-sm hover:bg-slate-100 dark:hover:bg-slate-800 cursor-pointer"
-                                          onClick={(e) => {
-                                            e.stopPropagation()
-                                            handleEditRound(round)
-                                          }}
-                                        >
-                                          <Info className="h-4 w-4 text-slate-600 dark:text-slate-400" />
                                         </div>
                                       </div>
+                                    </AccordionTrigger>
+                                  <AccordionContent>
+                                    <div className="border-l-4 border-blue-200 dark:border-blue-800 bg-blue-50 dark:bg-blue-950/30 -ml-2 pl-2 mr-2 rounded-r-lg">
+                                      <QuestionsList roundId={round.id} roundTitle={round.title} />
                                     </div>
-                                  </AccordionTrigger>
-                                <AccordionContent className="pl-12">
-                                  <QuestionsList roundId={round.id} roundTitle={round.title} />
-                                </AccordionContent>
-                              </AccordionItem>
-                            ))}
-                          </Accordion>
-                        ) : null}
+                                  </AccordionContent>
+                                </AccordionItem>
+                              ))}
+                            </Accordion>
+                          ) : null}
+                        </div>
                       </AccordionContent>
                     </AccordionItem>
                   ))}
