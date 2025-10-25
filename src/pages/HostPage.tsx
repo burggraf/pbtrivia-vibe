@@ -235,7 +235,7 @@ export default function HostPage() {
   
   const getStatusBadgeVariant = (status: string) => {
     switch (status) {
-      case 'setting-up': return 'secondary'
+      case 'setup': return 'secondary'
       case 'ready': return 'default'
       case 'in-progress': return 'outline'
       case 'completed': return 'destructive'

@@ -44,7 +44,7 @@ This is a trivia game application built with React + TypeScript frontend and Poc
 
 ### Key Data Models
 
-- **Games**: Host-created trivia sessions with status tracking (`setting-up`, `ready`, `in-progress`, `completed`)
+- **Games**: Host-created trivia sessions with status tracking (`setup`, `ready`, `in-progress`, `completed`)
 - **Rounds**: Individual rounds within games containing questions and answers
 - **Questions**: 60K+ trivia questions imported from TSV with categories, difficulty levels, and multiple choice answers
 

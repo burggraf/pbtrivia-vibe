@@ -30,7 +30,7 @@ export const gamesService = {
       const gameData = {
         ...data,
         host: pb.authStore.model?.id,
-        status: data.status || 'setting-up',
+        status: data.status || 'setup',
         code: generateGameCode(),
       };
 

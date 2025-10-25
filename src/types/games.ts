@@ -6,7 +6,7 @@ export interface Game {
   startdate?: string;
   duration?: number;
   location?: string;
-  status: 'setting-up' | 'ready' | 'in-progress' | 'completed';
+  status: 'setup' | 'ready' | 'in-progress' | 'completed';
   created: string;
   updated: string;
 }
@@ -16,7 +16,7 @@ export interface CreateGameData {
   startdate?: string;
   duration?: number;
   location?: string;
-  status?: 'setting-up' | 'ready' | 'in-progress' | 'completed';
+  status?: 'setup' | 'ready' | 'in-progress' | 'completed';
 }
 
 export interface UpdateGameData {
@@ -24,5 +24,5 @@ export interface UpdateGameData {
   startdate?: string;
   duration?: number;
   location?: string;
-  status?: 'setting-up' | 'ready' | 'in-progress' | 'completed';
+  status?: 'setup' | 'ready' | 'in-progress' | 'completed';
 }

@@ -22,7 +22,7 @@ export default function GameEditModal({ game, isOpen, onClose, onSave, onDelete,
     startdate: '',
     duration: undefined,
     location: '',
-    status: 'setting-up'
+    status: 'setup'
   })
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false)
 
@@ -143,7 +143,7 @@ export default function GameEditModal({ game, isOpen, onClose, onSave, onDelete,
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="setting-up">Setting Up</SelectItem>
+                      <SelectItem value="setup">Setup</SelectItem>
                       <SelectItem value="ready">Ready</SelectItem>
                       <SelectItem value="in-progress">In Progress</SelectItem>
                       <SelectItem value="completed">Completed</SelectItem>

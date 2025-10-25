@@ -14,7 +14,7 @@ interface GamesListProps {
 
 function getStatusBadgeVariant(status: string): "default" | "secondary" | "destructive" | "outline" {
   switch (status) {
-    case 'setting-up':
+    case 'setup':
       return 'secondary';
     case 'ready':
       return 'default';
