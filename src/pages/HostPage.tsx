@@ -14,6 +14,8 @@ import { Info, Plus } from 'lucide-react'
 import pb from '@/lib/pocketbase'
 import { gamesService } from '@/lib/games'
 import { roundsService } from '@/lib/rounds'
+import { questionsService } from '@/lib/questions'
+import { roundQuestionsService } from '@/lib/roundQuestions'
 import { Game, CreateGameData, UpdateGameData } from '@/types/games'
 import { Round, UpdateRoundData, CreateRoundData } from '@/types/rounds'
 import { formatDateTime } from '@/lib/utils'
@@ -136,8 +138,11 @@ export default function HostPage() {
         // First, get all rounds for this game
         const gameRounds = await roundsService.getRounds(editingGame.id)
 
-        // Delete all associated rounds first
+        // Delete all associated round_questions and rounds first
         for (const round of gameRounds) {
+          // Delete round_questions for this round first
+          await roundQuestionsService.deleteRoundQuestions(round.id)
+          // Then delete the round itself
           await roundsService.deleteRound(round.id)
         }
 
@@ -157,10 +162,41 @@ export default function HostPage() {
     try {
       setSaving(true)
       if (isRoundCreateMode && currentGameId) {
-        await roundsService.createRound({
+        // Create the round first
+        const createdRound = await roundsService.createRound({
           ...data,
           game: currentGameId
         } as CreateRoundData)
+
+        // If categories and question count are specified, add questions to the round
+        if (data.categories && data.categories.length > 0 && data.question_count && data.question_count > 0) {
+          try {
+            // Get random questions from the selected categories that haven't been used by this host
+            const selectedQuestions = await questionsService.getRandomQuestionsFromCategories(
+              data.categories,
+              data.question_count,
+              pb.authStore.model?.id
+            )
+
+            if (selectedQuestions.length > 0) {
+              // Create round_questions entries
+              const questionsForRound = selectedQuestions.map((question, index) => ({
+                questionId: question.id,
+                sequence: index + 1,
+                categoryName: question.category
+              }))
+
+              await roundQuestionsService.createRoundQuestionsBatch(createdRound.id, questionsForRound)
+              console.log(`Added ${selectedQuestions.length} questions to round "${createdRound.title}"`)
+            } else {
+              console.warn(`No available questions found for categories: ${data.categories.join(', ')}`)
+            }
+          } catch (questionError) {
+            console.error('Failed to add questions to round:', questionError)
+            // Note: We don't throw here to allow the round creation to succeed even if question assignment fails
+          }
+        }
+
         await fetchGames()
       } else if (editingRound && !isRoundCreateMode) {
         await roundsService.updateRound(editingRound.id, data)
@@ -180,7 +216,13 @@ export default function HostPage() {
     if (editingRound) {
       try {
         setSaving(true)
+
+        // First, delete all round_questions associated with this round
+        await roundQuestionsService.deleteRoundQuestions(editingRound.id)
+
+        // Then delete the round itself
         await roundsService.deleteRound(editingRound.id)
+
         await fetchGames()
       } catch (error) {
         console.error('Failed to delete round:', error)
@@ -365,7 +407,7 @@ export default function HostPage() {
                                     </div>
                                   </AccordionTrigger>
                                 <AccordionContent className="pl-12">
-                                  <QuestionsList roundTitle={round.title} />
+                                  <QuestionsList roundId={round.id} roundTitle={round.title} />
                                 </AccordionContent>
                               </AccordionItem>
                             ))}
