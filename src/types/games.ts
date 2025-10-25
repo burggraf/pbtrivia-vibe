@@ -1,3 +1,18 @@
+export interface ScoreboardPlayer {
+  id: string;
+  name: string;
+  email: string;
+}
+
+export interface ScoreboardTeam {
+  name: string;
+  players: ScoreboardPlayer[];
+}
+
+export interface GameScoreboard {
+  teams: Record<string, ScoreboardTeam>;
+}
+
 export interface Game {
   id: string;
   host: string;
@@ -7,6 +22,7 @@ export interface Game {
   duration?: number;
   location?: string;
   status: 'setup' | 'ready' | 'in-progress' | 'completed';
+  scoreboard?: GameScoreboard;
   created: string;
   updated: string;
 }
