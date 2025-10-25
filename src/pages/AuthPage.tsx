@@ -106,7 +106,7 @@ export default function AuthPage() {
       }, 1500)
       return () => clearTimeout(timer)
     }
-  }, [pb.authStore.isValid, success, userMode, navigate])
+  }, [success, userMode, navigate])
 
   const handleSubmit = mode === 'login' ? handleLogin : mode === 'register' ? handleRegister : handleForgotPassword
 
