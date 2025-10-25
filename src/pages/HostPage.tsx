@@ -128,6 +128,31 @@ export default function HostPage() {
     }
   }
 
+  const handleDeleteGame = async () => {
+    if (editingGame) {
+      try {
+        setSaving(true)
+
+        // First, get all rounds for this game
+        const gameRounds = await roundsService.getRounds(editingGame.id)
+
+        // Delete all associated rounds first
+        for (const round of gameRounds) {
+          await roundsService.deleteRound(round.id)
+        }
+
+        // Now delete the game
+        await gamesService.deleteGame(editingGame.id)
+
+        await fetchGames()
+      } catch (error) {
+        console.error('Failed to delete game:', error)
+      } finally {
+        setSaving(false)
+      }
+    }
+  }
+
   const handleSaveRound = async (data: UpdateRoundData) => {
     try {
       setSaving(true)
@@ -260,17 +285,15 @@ export default function HostPage() {
                             <span>{formatDuration(game.duration)}</span>
                             <span>•</span>
                             <span>{game.location || 'No location'}</span>
-                            <Button
-                              variant="ghost"
-                              size="sm"
-                              className="h-8 w-8 p-0 ml-2"
+                            <div
+                              className="h-8 w-8 p-0 ml-2 flex items-center justify-center rounded-sm hover:bg-slate-100 dark:hover:bg-slate-800 cursor-pointer"
                               onClick={(e) => {
                                 e.stopPropagation()
                                 handleEditGame(game)
                               }}
                             >
-                              <Info className="h-4 w-4" />
-                            </Button>
+                              <Info className="h-4 w-4 text-slate-600 dark:text-slate-400" />
+                            </div>
                           </div>
                         </div>
                       </AccordionTrigger>
@@ -322,17 +345,15 @@ export default function HostPage() {
                                         <span className="text-sm text-slate-500 dark:text-slate-400">
                                           Round {round.sequence_number}
                                         </span>
-                                        <Button
-                                          variant="ghost"
-                                          size="sm"
-                                          className="h-8 w-8 p-0"
+                                        <div
+                                          className="h-8 w-8 p-0 flex items-center justify-center rounded-sm hover:bg-slate-100 dark:hover:bg-slate-800 cursor-pointer"
                                           onClick={(e) => {
                                             e.stopPropagation()
                                             handleEditRound(round)
                                           }}
                                         >
-                                          <Info className="h-4 w-4" />
-                                        </Button>
+                                          <Info className="h-4 w-4 text-slate-600 dark:text-slate-400" />
+                                        </div>
                                       </div>
                                     </div>
                                   </AccordionTrigger>
@@ -342,19 +363,7 @@ export default function HostPage() {
                               </AccordionItem>
                             ))}
                           </Accordion>
-                        ) : (
-                          <div className="text-center py-8">
-                            <p className="text-sm text-slate-500 dark:text-slate-400">No rounds created yet</p>
-                            <Button
-                              variant="outline"
-                              size="sm"
-                              className="mt-2"
-                              onClick={() => navigate(`/host/game/${game.id}`)}
-                            >
-                              Manage Rounds
-                            </Button>
-                          </div>
-                        )}
+                        ) : null}
                       </AccordionContent>
                     </AccordionItem>
                   ))}
@@ -376,6 +385,7 @@ export default function HostPage() {
             setIsCreateMode(false)
           }}
           onSave={handleSaveGame}
+          onDelete={!isCreateMode ? handleDeleteGame : undefined}
           isLoading={saving}
         />
 

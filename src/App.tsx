@@ -4,8 +4,6 @@ import { Navigate, Route, BrowserRouter as Router, Routes } from 'react-router-d
 import pb from './lib/pocketbase'
 import AuthPage from './pages/AuthPage'
 import HostPage from './pages/HostPage'
-import GameEditPage from './pages/GameEditPage'
-import RoundEditPage from './pages/RoundEditPage'
 import LobbyPage from './pages/LobbyPage'
 
 function App() {
@@ -78,15 +76,7 @@ function App() {
 					path='/host'
 					element={isAuthenticated ? <HostPage /> : <Navigate to='/' replace />}
 				/>
-				<Route
-					path='/host/game/:gameId'
-					element={isAuthenticated ? <GameEditPage /> : <Navigate to='/' replace />}
-				/>
-				<Route
-					path='/host/game/:gameId/round/:roundId'
-					element={isAuthenticated ? <RoundEditPage /> : <Navigate to='/' replace />}
-				/>
-				<Route
+								<Route
 					path='/lobby'
 					element={isAuthenticated ? <LobbyPage /> : <Navigate to='/' replace />}
 				/>
