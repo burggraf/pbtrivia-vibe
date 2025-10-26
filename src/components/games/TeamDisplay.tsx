@@ -29,46 +29,52 @@ export default function TeamDisplay({ scoreboard, isLoading = false, className =
     )
   }
 
+  // Filter teams to only include those with players
+  const teamsWithPlayers = Object.entries(scoreboard.teams).filter(([_, teamData]) => teamData.players.length > 0)
+
+  if (teamsWithPlayers.length === 0) {
+    return (
+      <div className={`text-center py-12 ${className}`}>
+        <div className="bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700 rounded-xl shadow-lg p-8">
+          <p className="text-slate-600 dark:text-slate-400">
+            No players have joined teams yet. Check back soon!
+          </p>
+        </div>
+      </div>
+    )
+  }
+
   return (
     <div className={`grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 ${className}`}>
-      {Object.entries(scoreboard.teams).map(([teamId, teamData]) => (
+      {teamsWithPlayers.map(([teamId, teamData]) => (
         <Card key={teamId} className="bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700 shadow-lg">
           <CardHeader className="pb-3">
             <CardTitle className="text-lg font-semibold text-slate-800 dark:text-slate-100">
               {teamData.name}
             </CardTitle>
             <CardDescription>
-              {teamData.players.length === 0 ? 'No players yet' :
-               teamData.players.length === 1 ? '1 player' : `${teamData.players.length} players`}
+              {teamData.players.length === 1 ? '1 player' : `${teamData.players.length} players`}
             </CardDescription>
           </CardHeader>
           <CardContent className="pt-0">
-            {teamData.players.length > 0 ? (
-              <div className="space-y-2">
-                {teamData.players.map((player) => (
-                  <div
-                    key={player.id}
-                    className="flex items-center gap-2 p-2 rounded bg-slate-50 dark:bg-slate-700"
-                  >
-                    <div className="w-2 h-2 rounded-full bg-green-500"></div>
-                    <div className="flex-1 min-w-0">
-                      <p className="text-sm font-medium text-slate-800 dark:text-slate-100 truncate">
-                        {player.name}
-                      </p>
-                      <p className="text-xs text-slate-500 dark:text-slate-400 truncate">
-                        {player.email}
-                      </p>
-                    </div>
+            <div className="space-y-2">
+              {teamData.players.map((player) => (
+                <div
+                  key={player.id}
+                  className="flex items-center gap-2 p-2 rounded bg-slate-50 dark:bg-slate-700"
+                >
+                  <div className="w-2 h-2 rounded-full bg-green-500"></div>
+                  <div className="flex-1 min-w-0">
+                    <p className="text-sm font-medium text-slate-800 dark:text-slate-100 truncate">
+                      {player.name}
+                    </p>
+                    <p className="text-xs text-slate-500 dark:text-slate-400 truncate">
+                      {player.email}
+                    </p>
                   </div>
-                ))}
-              </div>
-            ) : (
-              <div className="text-center py-4">
-                <p className="text-sm text-slate-500 dark:text-slate-400">
-                  Waiting for players to join...
-                </p>
-              </div>
-            )}
+                </div>
+              ))}
+            </div>
           </CardContent>
         </Card>
       ))}
