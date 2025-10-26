@@ -10,38 +10,104 @@ onRecordAfterCreateSuccess((e) => {
 
   const gameId = e.record?.get("game")
   if (gameId) {
-    console.log("=== UPDATING SCOREBOARD FOR GAME:", gameId, " ===")
+    console.log("=== REBUILDING SCOREBOARD FOR GAME:", gameId, " ===")
 
     try {
       const game = $app.findRecordById("pbc_879072730", gameId)
 
-      // Get current scoreboard or create new one
-      let currentScoreboard = game.get("scoreboard") || {}
-
-      // Team created - add to teams section
-      const teamId = e.record?.id
-      const teamName = e.record?.get("name") || "Unknown Team"
-
-      const updateData = {
-        updated: new Date().toISOString(),
-        teams: {
-          ...(currentScoreboard.teams || {}),
-          [teamId]: {
-            name: teamName,
-            players: []
-          },
-          "no-team": {
-            name: "No Team",
-            players: currentScoreboard.teams?.["no-team"]?.players || []
-          }
+      // Start with empty teams structure
+      let teams = {
+        "no-team": {
+          name: "No Team",
+          players: []
         }
       }
 
-      game.set("scoreboard", updateData)
+      // Get all teams for this game
+      try {
+        const teamsRecords = $app.findRecordsByFilter("pbc_1514236743", `game="${gameId}"`)
+        console.log("Found", teamsRecords.length, "teams for game")
+
+        teamsRecords.forEach(team => {
+          const teamId = team.id
+          const teamName = team.get("name") || "Unknown Team"
+          teams[teamId] = {
+            name: teamName,
+            players: []
+          }
+        })
+      } catch (teamsError) {
+        console.log("Error fetching teams:", teamsError.message)
+      }
+
+      // Get all players for this game
+      try {
+        const playersRecords = $app.findRecordsByFilter("pbc_3826546831", `game="${gameId}"`)
+        console.log("Found", playersRecords.length, "player records for game")
+
+        // Deduplicate players by user ID - keep the latest record for each user
+        const uniquePlayers = {}
+        playersRecords.forEach(player => {
+          const playerRef = player.get("player")
+          if (playerRef) {
+            // If this user doesn't exist yet, or this record is newer, keep it
+            if (!uniquePlayers[playerRef] || player.created > uniquePlayers[playerRef].created) {
+              uniquePlayers[playerRef] = player
+            }
+          }
+        })
+
+        console.log("Found", Object.keys(uniquePlayers).length, "unique players for game")
+
+        Object.values(uniquePlayers).forEach(player => {
+          const playerRef = player.get("player")
+          const assignedTeamId = player.get("team") || "no-team"
+
+          let playerInfo = { id: playerRef, name: "", email: "" }
+
+          // Get player details
+          if (playerRef) {
+            try {
+              const playerRecord = $app.findRecordById("_pb_users_auth_", playerRef)
+              playerInfo = {
+                id: playerRef,
+                name: playerRecord.get("name") || "",
+                email: playerRecord.get("email") || ""
+              }
+            } catch (playerError) {
+              console.log("Could not fetch details for player", playerRef)
+            }
+          }
+
+          // Ensure the team exists
+          if (!teams[assignedTeamId]) {
+            teams[assignedTeamId] = {
+              name: assignedTeamId === "no-team" ? "No Team" : "Unknown Team",
+              players: []
+            }
+          }
+
+          // Add player to their team
+          teams[assignedTeamId].players.push(playerInfo)
+          console.log("Added player", playerInfo.email || playerRef, "to team", assignedTeamId)
+        })
+      } catch (playersError) {
+        console.log("Error fetching players:", playersError.message)
+      }
+
+      // Create the final scoreboard object
+      const scoreboardData = {
+        updated: new Date().toISOString(),
+        teams: teams
+      }
+
+      // Save to game
+      game.set("scoreboard", scoreboardData)
       $app.save(game)
-      console.log("Scoreboard updated successfully with team:", teamName)
+
+      console.log("Scoreboard rebuilt successfully with", Object.keys(teams).length, "teams")
     } catch (error) {
-      console.error("Error updating scoreboard:", error.message)
+      console.error("Error rebuilding scoreboard:", error.message)
     }
   }
 
@@ -57,93 +123,111 @@ onRecordAfterCreateSuccess((e) => {
 
   const gameId = e.record?.get("game")
   if (gameId) {
-    console.log("=== UPDATING SCOREBOARD FOR GAME:", gameId, " ===")
+    console.log("=== REBUILDING SCOREBOARD FOR GAME:", gameId, " ===")
 
     try {
       const game = $app.findRecordById("pbc_879072730", gameId)
 
-      // Get current scoreboard or create new one
-      let currentScoreboard = game.get("scoreboard") || {}
-
-      // Player created - get player details
-      const playerId = e.record?.id
-      const playerRef = e.record?.get("player")
-      const assignedTeamId = e.record?.get("team")
-
-      let playerInfo = { id: playerId, name: "", email: "" }
-
-      // Try to get player details if we have the player reference
-      if (playerRef) {
-        try {
-          const playerRecord = $app.findRecordById("_pb_users_auth_", playerRef)
-          playerInfo = {
-            id: playerId,
-            name: playerRecord.get("name") || "",
-            email: playerRecord.get("email") || ""
-          }
-        } catch (playerError) {
-          console.log("Could not fetch player details, using basic info")
+      // Start with empty teams structure
+      let teams = {
+        "no-team": {
+          name: "No Team",
+          players: []
         }
       }
 
-      // Start with current teams structure
-      let updatedTeams = { ...(currentScoreboard.teams || {}) }
+      // Get all teams for this game
+      try {
+        const teamsRecords = $app.findRecordsByFilter("pbc_1514236743", `game="${gameId}"`)
+        console.log("Found", teamsRecords.length, "teams for game")
 
-      // Remove player from all teams and no-team first (to handle duplicates)
-      Object.keys(updatedTeams).forEach(teamId => {
-        if (updatedTeams[teamId].players) {
-          updatedTeams[teamId].players = updatedTeams[teamId].players.filter(p => p.id !== playerId)
-        }
-      })
-
-      // Add player to appropriate team
-      if (assignedTeamId && assignedTeamId !== "") {
-        // Player was created with a team assignment
-        if (!updatedTeams[assignedTeamId]) {
-          // Try to get the actual team name
-          let teamName = "Unknown Team"
-          try {
-            const teamRecord = $app.findRecordById("pbc_1514236743", assignedTeamId)
-            teamName = teamRecord.get("name") || "Unknown Team"
-          } catch (teamError) {
-            console.log("Could not fetch team details, using default name")
+        teamsRecords.forEach(team => {
+          const teamId = team.id
+          const teamName = team.get("name") || "Unknown Team"
+          teams[teamId] = {
+            name: teamName,
+            players: []
           }
-          updatedTeams[assignedTeamId] = { name: teamName, players: [] }
-        }
-        if (!updatedTeams[assignedTeamId].players) {
-          updatedTeams[assignedTeamId].players = []
-        }
-        updatedTeams[assignedTeamId].players.push(playerInfo)
-        console.log("Player added to assigned team:", assignedTeamId)
-      } else {
-        // Player has no team - add to no-team
-        if (!updatedTeams["no-team"]) {
-          updatedTeams["no-team"] = { name: "No Team", players: [] }
-        }
-        if (!updatedTeams["no-team"].players) {
-          updatedTeams["no-team"].players = []
-        }
-        updatedTeams["no-team"].players.push(playerInfo)
-        console.log("Player added to no-team")
+        })
+      } catch (teamsError) {
+        console.log("Error fetching teams:", teamsError.message)
       }
 
-      const updateData = {
+      // Get all players for this game
+      try {
+        const playersRecords = $app.findRecordsByFilter("pbc_3826546831", `game="${gameId}"`)
+        console.log("Found", playersRecords.length, "player records for game")
+
+        // Deduplicate players by user ID - keep the latest record for each user
+        const uniquePlayers = {}
+        playersRecords.forEach(player => {
+          const playerRef = player.get("player")
+          if (playerRef) {
+            // If this user doesn't exist yet, or this record is newer, keep it
+            if (!uniquePlayers[playerRef] || player.created > uniquePlayers[playerRef].created) {
+              uniquePlayers[playerRef] = player
+            }
+          }
+        })
+
+        console.log("Found", Object.keys(uniquePlayers).length, "unique players for game")
+
+        Object.values(uniquePlayers).forEach(player => {
+          const playerRef = player.get("player")
+          const assignedTeamId = player.get("team") || "no-team"
+
+          let playerInfo = { id: playerRef, name: "", email: "" }
+
+          // Get player details
+          if (playerRef) {
+            try {
+              const playerRecord = $app.findRecordById("_pb_users_auth_", playerRef)
+              playerInfo = {
+                id: playerRef,
+                name: playerRecord.get("name") || "",
+                email: playerRecord.get("email") || ""
+              }
+            } catch (playerError) {
+              console.log("Could not fetch details for player", playerRef)
+            }
+          }
+
+          // Ensure the team exists
+          if (!teams[assignedTeamId]) {
+            teams[assignedTeamId] = {
+              name: assignedTeamId === "no-team" ? "No Team" : "Unknown Team",
+              players: []
+            }
+          }
+
+          // Add player to their team
+          teams[assignedTeamId].players.push(playerInfo)
+          console.log("Added player", playerInfo.email || playerRef, "to team", assignedTeamId)
+        })
+      } catch (playersError) {
+        console.log("Error fetching players:", playersError.message)
+      }
+
+      // Create the final scoreboard object
+      const scoreboardData = {
         updated: new Date().toISOString(),
-        teams: updatedTeams
+        teams: teams
       }
 
-      game.set("scoreboard", updateData)
+      // Save to game
+      game.set("scoreboard", scoreboardData)
       $app.save(game)
-      console.log("Scoreboard updated successfully with player:", playerInfo.email || playerId)
+
+      console.log("Scoreboard rebuilt successfully with", Object.keys(teams).length, "teams")
     } catch (error) {
-      console.error("Error updating scoreboard:", error.message)
+      console.error("Error rebuilding scoreboard:", error.message)
     }
   }
 
   return e.next()
 }, "pbc_3826546831")
 
-// Player update hook - handles when player joins/leaves teams
+// Player update hook
 onRecordAfterUpdateSuccess((e) => {
   console.log("=== PLAYER UPDATED ===")
   console.log("Player ID:", e.record?.id)
@@ -152,87 +236,332 @@ onRecordAfterUpdateSuccess((e) => {
 
   const gameId = e.record?.get("game")
   if (gameId) {
-    console.log("=== UPDATING SCOREBOARD FOR PLAYER TEAM ASSIGNMENT:", gameId, " ===")
+    console.log("=== REBUILDING SCOREBOARD FOR GAME:", gameId, " ===")
 
     try {
       const game = $app.findRecordById("pbc_879072730", gameId)
-      const currentScoreboard = game.get("scoreboard") || { teams: {} }
 
-      const playerId = e.record?.id
-      const newTeamId = e.record?.get("team")
-      const playerRef = e.record?.get("player")
-
-      let playerInfo = { id: playerId, name: "", email: "" }
-
-      // Get player details
-      if (playerRef) {
-        try {
-          const playerRecord = $app.findRecordById("_pb_users_auth_", playerRef)
-          playerInfo = {
-            id: playerId,
-            name: playerRecord.get("name") || "",
-            email: playerRecord.get("email") || ""
-          }
-        } catch (playerError) {
-          console.log("Could not fetch player details, using basic info")
+      // Start with empty teams structure
+      let teams = {
+        "no-team": {
+          name: "No Team",
+          players: []
         }
       }
 
-      // Start with current teams structure
-      let updatedTeams = { ...(currentScoreboard.teams || {}) }
+      // Get all teams for this game
+      try {
+        const teamsRecords = $app.findRecordsByFilter("pbc_1514236743", `game="${gameId}"`)
+        console.log("Found", teamsRecords.length, "teams for game")
 
-      // Remove player from all teams and no-team first
-      Object.keys(updatedTeams).forEach(teamId => {
-        if (updatedTeams[teamId].players) {
-          updatedTeams[teamId].players = updatedTeams[teamId].players.filter(p => p.id !== playerId)
-        }
-      })
-
-      // Add player to appropriate team
-      if (newTeamId && newTeamId !== "") {
-        // Player joined a specific team
-        if (!updatedTeams[newTeamId]) {
-          // Try to get the actual team name
-          let teamName = "Unknown Team"
-          try {
-            const teamRecord = $app.findRecordById("pbc_1514236743", newTeamId)
-            teamName = teamRecord.get("name") || "Unknown Team"
-          } catch (teamError) {
-            console.log("Could not fetch team details, using default name")
+        teamsRecords.forEach(team => {
+          const teamId = team.id
+          const teamName = team.get("name") || "Unknown Team"
+          teams[teamId] = {
+            name: teamName,
+            players: []
           }
-          updatedTeams[newTeamId] = { name: teamName, players: [] }
-        }
-        if (!updatedTeams[newTeamId].players) {
-          updatedTeams[newTeamId].players = []
-        }
-        updatedTeams[newTeamId].players.push(playerInfo)
-        console.log("Player added to team:", newTeamId)
-      } else {
-        // Player has no team - add to no-team
-        if (!updatedTeams["no-team"]) {
-          updatedTeams["no-team"] = { name: "No Team", players: [] }
-        }
-        if (!updatedTeams["no-team"].players) {
-          updatedTeams["no-team"].players = []
-        }
-        updatedTeams["no-team"].players.push(playerInfo)
-        console.log("Player added to no-team")
+        })
+      } catch (teamsError) {
+        console.log("Error fetching teams:", teamsError.message)
       }
 
-      const updateData = {
+      // Get all players for this game
+      try {
+        const playersRecords = $app.findRecordsByFilter("pbc_3826546831", `game="${gameId}"`)
+        console.log("Found", playersRecords.length, "player records for game")
+
+        // Deduplicate players by user ID - keep the latest record for each user
+        const uniquePlayers = {}
+        playersRecords.forEach(player => {
+          const playerRef = player.get("player")
+          if (playerRef) {
+            // If this user doesn't exist yet, or this record is newer, keep it
+            if (!uniquePlayers[playerRef] || player.created > uniquePlayers[playerRef].created) {
+              uniquePlayers[playerRef] = player
+            }
+          }
+        })
+
+        console.log("Found", Object.keys(uniquePlayers).length, "unique players for game")
+
+        Object.values(uniquePlayers).forEach(player => {
+          const playerRef = player.get("player")
+          const assignedTeamId = player.get("team") || "no-team"
+
+          let playerInfo = { id: playerRef, name: "", email: "" }
+
+          // Get player details
+          if (playerRef) {
+            try {
+              const playerRecord = $app.findRecordById("_pb_users_auth_", playerRef)
+              playerInfo = {
+                id: playerRef,
+                name: playerRecord.get("name") || "",
+                email: playerRecord.get("email") || ""
+              }
+            } catch (playerError) {
+              console.log("Could not fetch details for player", playerRef)
+            }
+          }
+
+          // Ensure the team exists
+          if (!teams[assignedTeamId]) {
+            teams[assignedTeamId] = {
+              name: assignedTeamId === "no-team" ? "No Team" : "Unknown Team",
+              players: []
+            }
+          }
+
+          // Add player to their team
+          teams[assignedTeamId].players.push(playerInfo)
+          console.log("Added player", playerInfo.email || playerRef, "to team", assignedTeamId)
+        })
+      } catch (playersError) {
+        console.log("Error fetching players:", playersError.message)
+      }
+
+      // Create the final scoreboard object
+      const scoreboardData = {
         updated: new Date().toISOString(),
-        teams: updatedTeams
+        teams: teams
       }
 
-      game.set("scoreboard", updateData)
+      // Save to game
+      game.set("scoreboard", scoreboardData)
       $app.save(game)
-      console.log("Scoreboard updated successfully for player team assignment")
+
+      console.log("Scoreboard rebuilt successfully with", Object.keys(teams).length, "teams")
     } catch (error) {
-      console.error("Error updating scoreboard for player assignment:", error.message)
+      console.error("Error rebuilding scoreboard:", error.message)
     }
   }
 
   return e.next()
 }, "pbc_3826546831")
+
+// Player delete hook
+onRecordAfterDeleteSuccess((e) => {
+  console.log("=== PLAYER DELETED ===")
+  console.log("Player ID:", e.record?.id)
+  console.log("Game ID:", e.record?.get("game"))
+
+  const gameId = e.record?.get("game")
+  if (gameId) {
+    console.log("=== REBUILDING SCOREBOARD FOR GAME:", gameId, " ===")
+
+    try {
+      const game = $app.findRecordById("pbc_879072730", gameId)
+
+      // Start with empty teams structure
+      let teams = {
+        "no-team": {
+          name: "No Team",
+          players: []
+        }
+      }
+
+      // Get all teams for this game
+      try {
+        const teamsRecords = $app.findRecordsByFilter("pbc_1514236743", `game="${gameId}"`)
+        console.log("Found", teamsRecords.length, "teams for game")
+
+        teamsRecords.forEach(team => {
+          const teamId = team.id
+          const teamName = team.get("name") || "Unknown Team"
+          teams[teamId] = {
+            name: teamName,
+            players: []
+          }
+        })
+      } catch (teamsError) {
+        console.log("Error fetching teams:", teamsError.message)
+      }
+
+      // Get all players for this game
+      try {
+        const playersRecords = $app.findRecordsByFilter("pbc_3826546831", `game="${gameId}"`)
+        console.log("Found", playersRecords.length, "player records for game")
+
+        // Deduplicate players by user ID - keep the latest record for each user
+        const uniquePlayers = {}
+        playersRecords.forEach(player => {
+          const playerRef = player.get("player")
+          if (playerRef) {
+            // If this user doesn't exist yet, or this record is newer, keep it
+            if (!uniquePlayers[playerRef] || player.created > uniquePlayers[playerRef].created) {
+              uniquePlayers[playerRef] = player
+            }
+          }
+        })
+
+        console.log("Found", Object.keys(uniquePlayers).length, "unique players for game")
+
+        Object.values(uniquePlayers).forEach(player => {
+          const playerRef = player.get("player")
+          const assignedTeamId = player.get("team") || "no-team"
+
+          let playerInfo = { id: playerRef, name: "", email: "" }
+
+          // Get player details
+          if (playerRef) {
+            try {
+              const playerRecord = $app.findRecordById("_pb_users_auth_", playerRef)
+              playerInfo = {
+                id: playerRef,
+                name: playerRecord.get("name") || "",
+                email: playerRecord.get("email") || ""
+              }
+            } catch (playerError) {
+              console.log("Could not fetch details for player", playerRef)
+            }
+          }
+
+          // Ensure the team exists
+          if (!teams[assignedTeamId]) {
+            teams[assignedTeamId] = {
+              name: assignedTeamId === "no-team" ? "No Team" : "Unknown Team",
+              players: []
+            }
+          }
+
+          // Add player to their team
+          teams[assignedTeamId].players.push(playerInfo)
+          console.log("Added player", playerInfo.email || playerRef, "to team", assignedTeamId)
+        })
+      } catch (playersError) {
+        console.log("Error fetching players:", playersError.message)
+      }
+
+      // Create the final scoreboard object
+      const scoreboardData = {
+        updated: new Date().toISOString(),
+        teams: teams
+      }
+
+      // Save to game
+      game.set("scoreboard", scoreboardData)
+      $app.save(game)
+
+      console.log("Scoreboard rebuilt successfully with", Object.keys(teams).length, "teams")
+    } catch (error) {
+      console.error("Error rebuilding scoreboard:", error.message)
+    }
+  }
+
+  return e.next()
+}, "pbc_3826546831")
+
+// Team delete hook
+onRecordAfterDeleteSuccess((e) => {
+  console.log("=== TEAM DELETED ===")
+  console.log("Team ID:", e.record?.id)
+  console.log("Game ID:", e.record?.get("game"))
+
+  const gameId = e.record?.get("game")
+  if (gameId) {
+    console.log("=== REBUILDING SCOREBOARD FOR GAME:", gameId, " ===")
+
+    try {
+      const game = $app.findRecordById("pbc_879072730", gameId)
+
+      // Start with empty teams structure
+      let teams = {
+        "no-team": {
+          name: "No Team",
+          players: []
+        }
+      }
+
+      // Get all teams for this game
+      try {
+        const teamsRecords = $app.findRecordsByFilter("pbc_1514236743", `game="${gameId}"`)
+        console.log("Found", teamsRecords.length, "teams for game")
+
+        teamsRecords.forEach(team => {
+          const teamId = team.id
+          const teamName = team.get("name") || "Unknown Team"
+          teams[teamId] = {
+            name: teamName,
+            players: []
+          }
+        })
+      } catch (teamsError) {
+        console.log("Error fetching teams:", teamsError.message)
+      }
+
+      // Get all players for this game
+      try {
+        const playersRecords = $app.findRecordsByFilter("pbc_3826546831", `game="${gameId}"`)
+        console.log("Found", playersRecords.length, "player records for game")
+
+        // Deduplicate players by user ID - keep the latest record for each user
+        const uniquePlayers = {}
+        playersRecords.forEach(player => {
+          const playerRef = player.get("player")
+          if (playerRef) {
+            // If this user doesn't exist yet, or this record is newer, keep it
+            if (!uniquePlayers[playerRef] || player.created > uniquePlayers[playerRef].created) {
+              uniquePlayers[playerRef] = player
+            }
+          }
+        })
+
+        console.log("Found", Object.keys(uniquePlayers).length, "unique players for game")
+
+        Object.values(uniquePlayers).forEach(player => {
+          const playerRef = player.get("player")
+          const assignedTeamId = player.get("team") || "no-team"
+
+          let playerInfo = { id: playerRef, name: "", email: "" }
+
+          // Get player details
+          if (playerRef) {
+            try {
+              const playerRecord = $app.findRecordById("_pb_users_auth_", playerRef)
+              playerInfo = {
+                id: playerRef,
+                name: playerRecord.get("name") || "",
+                email: playerRecord.get("email") || ""
+              }
+            } catch (playerError) {
+              console.log("Could not fetch details for player", playerRef)
+            }
+          }
+
+          // Ensure the team exists
+          if (!teams[assignedTeamId]) {
+            teams[assignedTeamId] = {
+              name: assignedTeamId === "no-team" ? "No Team" : "Unknown Team",
+              players: []
+            }
+          }
+
+          // Add player to their team
+          teams[assignedTeamId].players.push(playerInfo)
+          console.log("Added player", playerInfo.email || playerRef, "to team", assignedTeamId)
+        })
+      } catch (playersError) {
+        console.log("Error fetching players:", playersError.message)
+      }
+
+      // Create the final scoreboard object
+      const scoreboardData = {
+        updated: new Date().toISOString(),
+        teams: teams
+      }
+
+      // Save to game
+      game.set("scoreboard", scoreboardData)
+      $app.save(game)
+
+      console.log("Scoreboard rebuilt successfully with", Object.keys(teams).length, "teams")
+    } catch (error) {
+      console.error("Error rebuilding scoreboard:", error.message)
+    }
+  }
+
+  return e.next()
+}, "pbc_1514236743")
 
 console.log("=== SCOREBOARD MANAGER HOOK LOADED ===")
