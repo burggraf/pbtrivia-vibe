@@ -7,6 +7,7 @@ export interface ScoreboardPlayer {
 export interface ScoreboardTeam {
   name: string;
   players: ScoreboardPlayer[];
+  score: number;
 }
 
 export interface GameScoreboard {

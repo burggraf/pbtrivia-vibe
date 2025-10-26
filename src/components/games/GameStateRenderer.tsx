@@ -1,5 +1,9 @@
 import GameStart from './states/GameStart'
 import RoundStart from './states/RoundStart'
+import RoundPlay from './states/RoundPlay'
+import RoundEnd from './states/RoundEnd'
+import GameEnd from './states/GameEnd'
+import Thanks from './states/Thanks'
 import WaitingState from './states/WaitingState'
 import TeamDisplay from './TeamDisplay'
 import { GameScoreboard } from '@/types/games'
@@ -20,6 +24,26 @@ export default function GameStateRenderer({ gameData, scoreboard, isLoading }: G
     // Handle round-start state
     if (gameData?.state === 'round-start') {
       return <RoundStart gameData={gameData} />
+    }
+
+    // Handle round-play state
+    if (gameData?.state === 'round-play') {
+      return <RoundPlay gameData={gameData} />
+    }
+
+    // Handle round-end state
+    if (gameData?.state === 'round-end') {
+      return <RoundEnd gameData={gameData} scoreboard={scoreboard} />
+    }
+
+    // Handle game-end state
+    if (gameData?.state === 'game-end') {
+      return <GameEnd gameData={gameData} scoreboard={scoreboard} />
+    }
+
+    // Handle thanks state
+    if (gameData?.state === 'thanks') {
+      return <Thanks gameData={gameData} />
     }
 
     // Handle waiting state (no game data or not started)

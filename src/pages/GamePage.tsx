@@ -121,11 +121,11 @@ export default function GamePage() {
           isLoading={isLoading}
         />
 
-        {/* Start Game Button */}
-        {game?.scoreboard && Object.keys(game.scoreboard.teams).length > 0 && (
+        {/* Start Game Button - Only show when game is ready and not started */}
+        {game?.status === 'ready' && game?.scoreboard && Object.keys(game.scoreboard.teams).length > 0 && (
           <div className="text-center">
             <Button className="bg-slate-700 hover:bg-slate-800 dark:bg-slate-600 dark:hover:bg-slate-700 text-white">
-              Start Game (Coming Soon)
+              Start Game
             </Button>
           </div>
         )}

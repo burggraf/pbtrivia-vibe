@@ -1,0 +1,214 @@
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { Badge } from '@/components/ui/badge'
+import { Trophy, Medal, Award, Crown, Star } from 'lucide-react'
+import { GameScoreboard } from '@/types/games'
+
+interface GameEndProps {
+  gameData: {
+    state: 'game-end'
+    gameName?: string
+    totalRounds?: number
+  }
+  scoreboard?: GameScoreboard
+}
+
+export default function GameEnd({ gameData, scoreboard }: GameEndProps) {
+  const getTopTeams = () => {
+    if (!scoreboard?.teams) return []
+
+    return Object.entries(scoreboard.teams)
+      .map(([teamId, teamData]) => ({
+        id: teamId,
+        name: teamData.name,
+        score: teamData.score,
+        players: teamData.players.length
+      }))
+      .sort((a, b) => b.score - a.score)
+  }
+
+  const topTeams = getTopTeams()
+  const firstPlace = topTeams[0]
+
+  const getWinnerIcon = (position: number) => {
+    switch (position) {
+      case 1:
+        return <Crown className="h-8 w-8 text-yellow-500" />
+      case 2:
+        return <Trophy className="h-6 w-6 text-gray-400" />
+      case 3:
+        return <Medal className="h-6 w-6 text-amber-600" />
+      default:
+        return <Award className="h-6 w-6 text-slate-400" />
+    }
+  }
+
+  return (
+    <div className="text-center mb-8">
+      {/* Winner Announcement */}
+      <div className="mb-8">
+        <div className="flex justify-center items-center gap-4 mb-4">
+          <Crown className="h-12 w-12 text-yellow-500" />
+          <h1 className="text-4xl font-bold text-slate-800 dark:text-slate-100">
+            Game Over!
+          </h1>
+          <Crown className="h-12 w-12 text-yellow-500" />
+        </div>
+
+        {gameData.gameName && (
+          <p className="text-xl text-slate-600 dark:text-slate-400 mb-2">
+            {gameData.gameName}
+          </p>
+        )}
+
+        {gameData.totalRounds && (
+          <p className="text-lg text-slate-500 dark:text-slate-500">
+            {gameData.totalRounds} round{gameData.totalRounds !== 1 ? 's' : ''} completed
+          </p>
+        )}
+      </div>
+
+      {/* Winner Display */}
+      {firstPlace && (
+        <div className="max-w-4xl mx-auto mb-8">
+          <Card className="bg-gradient-to-r from-yellow-50 via-yellow-100 to-yellow-50 dark:from-yellow-900/20 dark:via-yellow-800/30 dark:to-yellow-900/20 border-2 border-yellow-300 dark:border-yellow-600">
+            <CardContent className="pt-8 pb-8">
+              <div className="flex justify-center items-center gap-4 mb-4">
+                {getWinnerIcon(1)}
+                <h2 className="text-3xl font-bold text-yellow-600 dark:text-yellow-400">
+                  🏆 Winner 🏆
+                </h2>
+                {getWinnerIcon(1)}
+              </div>
+
+              <h3 className="text-2xl font-bold text-slate-800 dark:text-slate-100 mb-2">
+                {firstPlace.name}
+              </h3>
+
+              <div className="flex justify-center items-center gap-4 mb-4">
+                <span className="text-3xl font-bold text-yellow-600 dark:text-yellow-400">
+                  {firstPlace.score}
+                </span>
+                <span className="text-lg text-slate-600 dark:text-slate-400">
+                  points
+                </span>
+              </div>
+
+              <div className="flex justify-center gap-2 mb-4">
+                {[...Array(Math.min(5, Math.floor(firstPlace.score / 100)))].map((_, i) => (
+                  <Star key={i} className="h-5 w-5 text-yellow-500 fill-yellow-500" />
+                ))}
+              </div>
+
+              <Badge variant="default" className="bg-yellow-600 hover:bg-yellow-700 text-lg px-4 py-2">
+                {firstPlace.players} player{firstPlace.players !== 1 ? 's' : ''}
+              </Badge>
+            </CardContent>
+          </Card>
+        </div>
+      )}
+
+      {/* Final Rankings */}
+      {topTeams.length > 1 && (
+        <div className="max-w-4xl mx-auto">
+          <Card>
+            <CardHeader>
+              <CardTitle className="text-xl">Final Rankings</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-3">
+                {topTeams.map((team, index) => (
+                  <div
+                    key={team.id}
+                    className={`flex items-center justify-between p-4 rounded-lg ${
+                      index === 0
+                        ? 'bg-gradient-to-r from-yellow-50 to-yellow-100 dark:from-yellow-900/20 dark:to-yellow-800/20 border border-yellow-200 dark:border-yellow-700'
+                        : 'bg-slate-50 dark:bg-slate-800'
+                    }`}
+                  >
+                    <div className="flex items-center gap-4">
+                      <div className="flex items-center justify-center w-10 h-10">
+                        {getWinnerIcon(index + 1)}
+                      </div>
+                      <div>
+                        <h3 className={`font-semibold ${
+                          index === 0
+                            ? 'text-lg text-yellow-700 dark:text-yellow-400'
+                            : 'text-slate-800 dark:text-slate-100'
+                        }`}>
+                          {team.name}
+                        </h3>
+                        <div className="flex items-center gap-2 mt-1">
+                          <Badge variant="outline" className="text-xs">
+                            {team.players} player{team.players !== 1 ? 's' : ''}
+                          </Badge>
+                          {index === 0 && (
+                            <Badge variant="default" className="bg-yellow-600 hover:bg-yellow-700 text-xs">
+                              Champion
+                            </Badge>
+                          )}
+                        </div>
+                      </div>
+                    </div>
+                    <div className="text-right">
+                      <span className={`text-xl font-bold ${
+                        index === 0
+                          ? 'text-yellow-600 dark:text-yellow-400'
+                          : 'text-slate-700 dark:text-slate-300'
+                      }`}>
+                        {team.score}
+                      </span>
+                      <p className="text-sm text-slate-500 dark:text-slate-400">
+                        points
+                      </p>
+                    </div>
+                  </div>
+                ))}
+              </div>
+
+              {/* Game Statistics */}
+              <div className="mt-8 p-4 bg-slate-50 dark:bg-slate-800 rounded-lg">
+                <h4 className="text-lg font-semibold text-slate-800 dark:text-slate-100 mb-3">
+                  Game Statistics
+                </h4>
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-center">
+                  <div>
+                    <p className="text-2xl font-bold text-slate-700 dark:text-slate-300">
+                      {topTeams.length}
+                    </p>
+                    <p className="text-sm text-slate-500 dark:text-slate-400">
+                      Teams
+                    </p>
+                  </div>
+                  <div>
+                    <p className="text-2xl font-bold text-slate-700 dark:text-slate-300">
+                      {topTeams.reduce((sum, team) => sum + team.players, 0)}
+                    </p>
+                    <p className="text-sm text-slate-500 dark:text-slate-400">
+                      Players
+                    </p>
+                  </div>
+                  <div>
+                    <p className="text-2xl font-bold text-slate-700 dark:text-slate-300">
+                      {topTeams.reduce((sum, team) => sum + team.score, 0)}
+                    </p>
+                    <p className="text-sm text-slate-500 dark:text-slate-400">
+                      Total Points
+                    </p>
+                  </div>
+                  <div>
+                    <p className="text-2xl font-bold text-slate-700 dark:text-slate-300">
+                      {firstPlace ? Math.round((firstPlace.score / topTeams.reduce((sum, team) => sum + team.score, 0)) * 100) : 0}%
+                    </p>
+                    <p className="text-sm text-slate-500 dark:text-slate-400">
+                      Winner Score Share
+                    </p>
+                  </div>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+      )}
+    </div>
+  )
+}

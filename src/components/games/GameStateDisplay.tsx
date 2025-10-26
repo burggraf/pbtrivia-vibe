@@ -1,22 +1,54 @@
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Trophy, Clock, Users, Star, ChevronRight, PartyPopper } from 'lucide-react'
+import { GameScoreboard, ScoreboardTeam } from '@/types/games'
 
 type GameState = 'game-start' | 'round-start' | 'round-play' | 'round-end' | 'game-end' | 'thanks' | 'return-to-lobby'
 
 interface GameData {
   state: GameState
+  name?: string
+  rounds?: number
   currentRound?: number
   currentQuestion?: number
-  round?: any
-  question?: any
+  questions?: number
+  categories?: string[]
+  roundData?: any
   showAnswer?: boolean
+  gameName?: string
+  totalRounds?: number
+  roundScores?: { [teamId: string]: number }
+  playerTeam?: string
+  submittedAnswers?: { [key: string]: string }
+  // New round-play structure
+  round?: {
+    round_number: number
+    rounds: number
+    question_count: number
+    title: string
+  }
+  question?: {
+    id: string
+    question_number: number
+    category: string
+    question: string
+    difficulty: string
+    a: string
+    b: string
+    c: string
+    d: string
+    correct_answer?: string
+    submitted_answer?: string
+  }
 }
 
 interface GameStateDisplayProps {
   gameData: GameData | null
   rounds: any[]
-  game: any
+  game: {
+    code: string
+    scoreboard?: GameScoreboard
+  }
 }
 
 export default function GameStateDisplay({ gameData, rounds, game }: GameStateDisplayProps) {
@@ -136,25 +168,30 @@ export default function GameStateDisplay({ gameData, rounds, game }: GameStateDi
                 </CardHeader>
                 <CardContent>
                   <div className="space-y-3">
-                    {gameData.question.answers?.map((answer: string, index: number) => (
+                    {gameData.question && [
+                      { key: 'A', text: gameData.question.a },
+                      { key: 'B', text: gameData.question.b },
+                      { key: 'C', text: gameData.question.c },
+                      { key: 'D', text: gameData.question.d }
+                    ].map((answer) => (
                       <div
-                        key={index}
+                        key={answer.key}
                         className={`p-4 rounded-lg border-2 transition-colors ${
-                          gameData.showAnswer
-                            ? answer === gameData.question.correctAnswer
+                          gameData.showAnswer && gameData.question?.correct_answer
+                            ? answer.key === gameData.question.correct_answer
                               ? 'bg-green-100 border-green-500 text-green-800 dark:bg-green-900 dark:text-green-200'
                               : 'bg-slate-50 border-slate-300 text-slate-700 dark:bg-slate-800 dark:text-slate-300'
-                            : 'bg-blue-50 border-blue-300 text-blue-700 hover:bg-blue-100 dark:bg-blue-900 dark:text-blue-200 cursor-pointer'
+                            : 'bg-blue-50 border-blue-300 text-blue-700 hover:bg-blue-100 dark:bg-blue-900'
                         }`}
                       >
-                        <span className="font-medium">{String.fromCharCode(65 + index)}.</span> {answer}
+                        <span className="font-medium">{answer.key}.</span> {answer.text}
                       </div>
                     ))}
                   </div>
-                  {gameData.showAnswer && (
+                  {gameData.showAnswer && gameData.question?.correct_answer && (
                     <div className="mt-4 p-3 bg-green-100 dark:bg-green-900 rounded-lg">
                       <p className="text-green-800 dark:text-green-200 font-medium">
-                        Correct Answer: {gameData.question.correctAnswer}
+                        Correct Answer: {gameData.question.correct_answer}
                       </p>
                     </div>
                   )}
@@ -180,7 +217,7 @@ export default function GameStateDisplay({ gameData, rounds, game }: GameStateDi
               </h3>
               {game?.scoreboard && Object.keys(game.scoreboard.teams).length > 0 ? (
                 <div className="space-y-3">
-                  {Object.entries(game.scoreboard.teams).map(([teamId, teamData]) => (
+                  {Object.entries(game.scoreboard.teams).map(([teamId, teamData]: [string, ScoreboardTeam]) => (
                     <div
                       key={teamId}
                       className="flex items-center justify-between p-3 bg-slate-50 dark:bg-slate-700 rounded-lg"
@@ -219,7 +256,7 @@ export default function GameStateDisplay({ gameData, rounds, game }: GameStateDi
               </h3>
               {game?.scoreboard && Object.keys(game.scoreboard.teams).length > 0 ? (
                 <div className="space-y-3">
-                  {Object.entries(game.scoreboard.teams).map(([teamId, teamData]) => (
+                  {Object.entries(game.scoreboard.teams).map(([teamId, teamData]: [string, ScoreboardTeam]) => (
                     <div
                       key={teamId}
                       className="flex items-center justify-between p-3 bg-slate-50 dark:bg-slate-700 rounded-lg"

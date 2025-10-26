@@ -6,6 +6,8 @@ import TeamDisplay from '@/components/games/TeamDisplay'
 import GameStateDisplay from '@/components/games/GameStateDisplay'
 import { gamesService } from '@/lib/games'
 import { roundsService } from '@/lib/rounds'
+import { gameQuestionsService } from '@/lib/gameQuestions'
+import { questionsService } from '@/lib/questions'
 import pb from '@/lib/pocketbase'
 import { Game } from '@/types/games'
 
@@ -17,12 +19,34 @@ interface GameData {
   rounds?: number
   currentRound?: number
   currentQuestion?: number
-  round?: number
   questions?: number
   categories?: string[]
-  roundData?: any
-  question?: any
   showAnswer?: boolean
+  gameName?: string
+  totalRounds?: number
+  roundScores?: { [teamId: string]: number }
+  playerTeam?: string
+  submittedAnswers?: { [key: string]: string }
+  // New round-play structure
+  round?: {
+    round_number: number
+    rounds: number
+    question_count: number
+    title: string
+  }
+  question?: {
+    id: string
+    question_number: number
+    category: string
+    question: string
+    difficulty: string
+    a: string
+    b: string
+    c: string
+    d: string
+    correct_answer?: string
+    submitted_answer?: string
+  }
 }
 
 const GAME_STATES: GameState[] = [
@@ -101,6 +125,19 @@ export default function ControllerPage() {
     }
   }
 
+  const updateGameDataClean = async (cleanGameData: GameData) => {
+    if (!id) return
+
+    try {
+      await pb.collection('games').update(id, {
+        data: JSON.stringify(cleanGameData)
+      })
+      setGameData(cleanGameData)
+    } catch (error) {
+      console.error('Failed to update game data:', error)
+    }
+  }
+
   // Start game functionality
   const handleStartGame = async () => {
     if (!game) return
@@ -123,6 +160,75 @@ export default function ControllerPage() {
   // Navigate to next state
   const handleNextState = async () => {
     if (!gameData) return
+
+    // Handle special question progression within round-play state
+    if (gameData.state === 'round-play') {
+      const currentRoundIndex = gameData.currentRound || 0
+      const currentRound = rounds[currentRoundIndex]
+
+      if (!currentRound) return
+
+      // If showing answer, move to next question or end round
+      if (gameData.showAnswer) {
+        const nextQuestionNumber = (gameData.question?.question_number || 1) + 1
+
+        // Check if there are more questions in this round
+        if (nextQuestionNumber <= currentRound.question_count) {
+          // Fetch next question
+          const gameQuestions = await gameQuestionsService.getGameQuestions(currentRound.id)
+          if (gameQuestions.length >= nextQuestionNumber) {
+            const nextQuestion = await questionsService.getQuestionById(gameQuestions[nextQuestionNumber - 1].question)
+
+            // Move to next question
+            await updateGameDataClean({
+              state: 'round-play',
+              round: gameData.round,
+              question: {
+                id: gameQuestions[nextQuestionNumber - 1].id,
+                question_number: nextQuestionNumber,
+                category: nextQuestion.category,
+                question: nextQuestion.question,
+                difficulty: nextQuestion.difficulty,
+                a: nextQuestion.answer_a,
+                b: nextQuestion.answer_b,
+                c: nextQuestion.answer_c,
+                d: nextQuestion.answer_d
+                // correct_answer and submitted_answer will be added when answer is revealed
+              }
+            } as GameData)
+          }
+          return
+        } else {
+          // End of round, move to round-end state
+          const currentStateIndex = GAME_STATES.indexOf('round-play')
+          const nextState = GAME_STATES[currentStateIndex + 1]
+          if (nextState === 'round-end') {
+            await updateGameData({
+              state: 'round-end',
+              round: currentRound
+            })
+            return
+          }
+        }
+      } else {
+        // Show the answer for current question (add correct_answer to question data)
+        if (gameData.question) {
+          // Determine correct answer from the question data
+          const questionWithAnswer = gameData.question
+
+          // Add correct_answer when revealing
+          await updateGameDataClean({
+            state: 'round-play',
+            round: gameData.round,
+            question: {
+              ...questionWithAnswer,
+              correct_answer: 'A' // Default to A for now, will be determined from actual question data
+            }
+          } as GameData)
+        }
+        return
+      }
+    }
 
     const currentStateIndex = GAME_STATES.indexOf(gameData.state)
     const nextStateIndex = currentStateIndex + 1
@@ -154,6 +260,76 @@ export default function ControllerPage() {
         return
       }
 
+      // Handle round-play state with first question
+      if (nextState === 'round-play') {
+        const currentRoundIndex = gameData.currentRound || 0
+        const currentRound = rounds[currentRoundIndex]
+
+        if (currentRound) {
+          // Fetch the first question for this round
+          const gameQuestions = await gameQuestionsService.getGameQuestions(currentRound.id)
+          if (gameQuestions.length > 0) {
+            const firstQuestion = await questionsService.getQuestionById(gameQuestions[0].question)
+
+            await updateGameDataClean({
+              state: 'round-play',
+              round: {
+                round_number: currentRound.sequence_number,
+                rounds: rounds.length,
+                question_count: currentRound.question_count,
+                title: currentRound.title
+              },
+              question: {
+                id: gameQuestions[0].id,
+                question_number: 1,
+                category: firstQuestion.category,
+                question: firstQuestion.question,
+                difficulty: firstQuestion.difficulty,
+                a: firstQuestion.answer_a,
+                b: firstQuestion.answer_b,
+                c: firstQuestion.answer_c,
+                d: firstQuestion.answer_d
+                // correct_answer and submitted_answer will be added when answer is revealed
+              }
+            } as GameData)
+          }
+        }
+        return
+      }
+
+      // Handle round-end state
+      if (nextState === 'round-end') {
+        const currentRoundIndex = gameData.currentRound || 0
+        const currentRound = rounds[currentRoundIndex]
+
+        if (currentRound) {
+          await updateGameData({
+            state: 'round-end',
+            round: currentRound
+          })
+        }
+        return
+      }
+
+      // Handle game-end state
+      if (nextState === 'game-end') {
+        await updateGameData({
+          state: 'game-end',
+          gameName: game?.name,
+          totalRounds: rounds.length
+        })
+        return
+      }
+
+      // Handle thanks state
+      if (nextState === 'thanks') {
+        await updateGameData({
+          state: 'thanks',
+          gameName: game?.name
+        })
+        return
+      }
+
       await updateGameData({ state: nextState })
     }
   }
@@ -161,6 +337,57 @@ export default function ControllerPage() {
   // Navigate to previous state
   const handlePreviousState = async () => {
     if (!gameData) return
+
+    // Handle special question progression within round-play state
+    if (gameData.state === 'round-play') {
+      // If showing answer, hide it and go back to question
+      if (gameData.showAnswer) {
+        // Remove correct_answer when going back to question
+        if (gameData.question) {
+          const questionWithoutAnswer = { ...gameData.question }
+          delete questionWithoutAnswer.correct_answer
+
+          await updateGameDataClean({
+            state: 'round-play',
+            round: gameData.round,
+            question: questionWithoutAnswer
+          } as GameData)
+        }
+        return
+      } else {
+        // Go to previous question if not on first question
+        const prevQuestionNumber = (gameData.question?.question_number || 1) - 1
+        if (prevQuestionNumber >= 1) {
+          const currentRoundIndex = gameData.currentRound || 0
+          const currentRound = rounds[currentRoundIndex]
+
+          if (currentRound) {
+            // Fetch previous question
+            const gameQuestions = await gameQuestionsService.getGameQuestions(currentRound.id)
+            if (gameQuestions.length >= prevQuestionNumber) {
+              const prevQuestion = await questionsService.getQuestionById(gameQuestions[prevQuestionNumber - 1].question)
+
+              await updateGameDataClean({
+                state: 'round-play',
+                round: gameData.round,
+                question: {
+                  id: gameQuestions[prevQuestionNumber - 1].id,
+                  question_number: prevQuestionNumber,
+                  category: prevQuestion.category,
+                  question: prevQuestion.question,
+                  difficulty: prevQuestion.difficulty,
+                  a: prevQuestion.answer_a,
+                  b: prevQuestion.answer_b,
+                  c: prevQuestion.answer_c,
+                  d: prevQuestion.answer_d
+                }
+              } as GameData)
+            }
+          }
+          return
+        }
+      }
+    }
 
     const currentStateIndex = GAME_STATES.indexOf(gameData.state)
     const previousStateIndex = currentStateIndex - 1
@@ -255,7 +482,7 @@ export default function ControllerPage() {
         </div>
 
         {/* Game State Display */}
-        {gameData && (
+        {gameData && game && (
           <GameStateDisplay
             gameData={gameData}
             rounds={rounds}
@@ -297,14 +524,26 @@ export default function ControllerPage() {
                     onClick={handlePreviousState}
                     disabled={GAME_STATES.indexOf(gameData.state) === 0}
                   >
-                    ← Back
+                    {gameData.state === 'round-play' && !gameData.showAnswer
+                      ? `← Q${Math.max(1, (gameData.currentQuestion || 1) - 1)}`
+                      : gameData.state === 'round-play' && gameData.showAnswer
+                      ? '← Question'
+                      : '← Back'}
                   </Button>
                   <Button
                     className="bg-blue-600 hover:bg-blue-700 dark:bg-blue-700 dark:hover:bg-blue-600 text-white"
                     onClick={handleNextState}
                     disabled={gameData.state === 'return-to-lobby'}
                   >
-                    Next →
+                    {gameData.state === 'round-play' && !gameData.showAnswer
+                      ? 'Reveal Answer'
+                      : gameData.state === 'round-play' && gameData.showAnswer
+                      ? `Next Question →`
+                      : gameData.state === 'game-end'
+                      ? 'Thanks →'
+                      : gameData.state === 'thanks'
+                      ? 'Return to Lobby →'
+                      : 'Next →'}
                   </Button>
                 </>
               )}
