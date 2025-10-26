@@ -133,6 +133,23 @@ export const gamePlayersService = {
       throw error;
     }
   },
+
+  async findPlayerInGame(gameId: string, playerId: string): Promise<GamePlayer | null> {
+    try {
+      const result = await pb.collection('game_players').getList<GamePlayer>(1, 50, {
+        filter: `game = "${gameId}" && player = "${playerId}"`
+      });
+
+      if (result.items.length > 0) {
+        // Return the most recent record (sorted by created date descending by default)
+        return result.items[0];
+      }
+      return null;
+    } catch (error) {
+      console.error('Failed to find player in game:', error);
+      throw error;
+    }
+  },
 };
 
 function generateGameCode(): string {

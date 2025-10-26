@@ -44,6 +44,28 @@ export default function LobbyPage() {
         return
       }
 
+      // Check if player is already in this game
+      if (pb.authStore.model?.id) {
+        const existingPlayer = await gamePlayersService.findPlayerInGame(game.id, pb.authStore.model.id)
+
+        if (existingPlayer) {
+          // Player is already in the game
+          if (existingPlayer.team) {
+            // Player is on a team - go directly to game page
+            console.log('Player already in game with team, redirecting to game page')
+            navigate(`/game/${game.id}`)
+            return
+          } else {
+            // Player is in game but not on a team - show team selection
+            console.log('Player already in game but no team, showing team selection')
+            setCurrentGame(game)
+            setShowTeamModal(true)
+            return
+          }
+        }
+      }
+
+      // New player - show team selection
       setCurrentGame(game)
       setShowTeamModal(true)
     } catch (error) {
@@ -72,12 +94,24 @@ export default function LobbyPage() {
         finalTeamId = newTeam.id
       }
 
-      // Create player record
-      await gamePlayersService.createPlayer({
-        game: currentGame.id,
-        player: pb.authStore.model.id,
-        team: finalTeamId || undefined
-      })
+      // Check if player already exists in this game
+      const existingPlayer = await gamePlayersService.findPlayerInGame(currentGame.id, pb.authStore.model.id)
+
+      if (existingPlayer) {
+        // Update existing player record with team assignment
+        await gamePlayersService.updatePlayer(existingPlayer.id, {
+          team: finalTeamId || undefined
+        })
+        console.log('Updated existing player with team assignment')
+      } else {
+        // Create new player record
+        await gamePlayersService.createPlayer({
+          game: currentGame.id,
+          player: pb.authStore.model.id,
+          team: finalTeamId || undefined
+        })
+        console.log('Created new player record')
+      }
 
       // Redirect to game page
       navigate(`/game/${currentGame.id}`)
