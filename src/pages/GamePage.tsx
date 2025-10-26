@@ -134,9 +134,20 @@ export default function GamePage() {
       }
     })
 
-    // Cleanup subscriptions on unmount
+    // Also refresh data when page becomes visible (focus change, tab switch, etc.)
+    const handleVisibilityChange = () => {
+      fetchGameData()
+    }
+
+    // Add visibility change listener
+    document.addEventListener('visibilitychange', handleVisibilityChange)
+    window.addEventListener('focus', handleVisibilityChange)
+
+    // Cleanup subscriptions and listeners on unmount
     return () => {
       unsubscribeGame.then((unsub) => unsub())
+      document.removeEventListener('visibilitychange', handleVisibilityChange)
+      window.removeEventListener('focus', handleVisibilityChange)
     }
   }, [id])
 
