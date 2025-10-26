@@ -11,6 +11,7 @@ export default function GamePage() {
   const { id } = useParams<{ id: string }>()
   const [game, setGame] = useState<Game | null>(null)
   const [isLoading, setIsLoading] = useState(true)
+  const [gameData, setGameData] = useState<any>(null)
 
   const handleLogout = async () => {
     try {
@@ -29,6 +30,17 @@ export default function GamePage() {
       // Get game data (includes scoreboard)
       const gameData = await gamesService.getGame(id)
       setGame(gameData)
+
+      // Parse game data if exists
+      if (gameData.data) {
+        try {
+          const parsedData = typeof gameData.data === 'string' ? JSON.parse(gameData.data) : gameData.data
+          setGameData(parsedData)
+        } catch (error) {
+          console.error('Failed to parse game data:', error)
+          setGameData(null)
+        }
+      }
     } catch (error) {
       console.error('Failed to fetch game data:', error)
     } finally {
@@ -48,6 +60,16 @@ export default function GamePage() {
       if (e.action === 'update' && e.record.id === id) {
         const updatedGame = e.record as unknown as Game
         setGame(updatedGame)
+
+        // Parse updated game data
+        if (updatedGame.data) {
+          try {
+            const parsedData = typeof updatedGame.data === 'string' ? JSON.parse(updatedGame.data) : updatedGame.data
+            setGameData(parsedData)
+          } catch (error) {
+            console.error('Failed to parse game data:', error)
+          }
+        }
       }
     })
 
@@ -94,12 +116,28 @@ export default function GamePage() {
 
         {/* Welcome Section */}
         <div className="text-center mb-8">
-          <h2 className="text-2xl font-bold text-slate-800 dark:text-slate-100 mb-4">
-            Welcome to the Game!
-          </h2>
-          <p className="text-slate-600 dark:text-slate-400">
-            Waiting for the game to start. Teams and players will appear here in real-time.
-          </p>
+          {gameData?.state === 'game-start' ? (
+            <>
+              <h2 className="text-3xl font-bold text-slate-800 dark:text-slate-100 mb-4">
+                Welcome to {gameData?.name || game?.name}!
+              </h2>
+              <p className="text-xl text-slate-600 dark:text-slate-400 mb-2">
+                There will be {gameData?.rounds || 0} rounds
+              </p>
+              <p className="text-lg text-slate-500 dark:text-slate-500 font-medium">
+                Get ready to play!
+              </p>
+            </>
+          ) : (
+            <>
+              <h2 className="text-2xl font-bold text-slate-800 dark:text-slate-100 mb-4">
+                Welcome to the Game!
+              </h2>
+              <p className="text-slate-600 dark:text-slate-400">
+                Waiting for the game to start. Teams and players will appear here in real-time.
+              </p>
+            </>
+          )}
         </div>
 
         {/* Teams and Players Section */}
