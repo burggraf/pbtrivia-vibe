@@ -217,6 +217,7 @@ export default function ControllerPage() {
           const questionWithAnswer = gameData.question
 
           // Add correct_answer when revealing - use the actual correct answer from the question
+          console.log('Reveal answer clicked in controller, current question:', gameData.question)
           await updateGameDataClean({
             state: 'round-play',
             round: gameData.round,
@@ -225,6 +226,7 @@ export default function ControllerPage() {
               correct_answer: questionWithAnswer.correct_answer || 'A'
             }
           } as GameData)
+          console.log('Updated game data with correct answer:', questionWithAnswer.correct_answer || 'A')
         }
         return
       }
