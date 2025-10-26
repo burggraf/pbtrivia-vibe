@@ -216,13 +216,13 @@ export default function ControllerPage() {
           // Determine correct answer from the question data
           const questionWithAnswer = gameData.question
 
-          // Add correct_answer when revealing
+          // Add correct_answer when revealing - use the actual correct answer from the question
           await updateGameDataClean({
             state: 'round-play',
             round: gameData.round,
             question: {
               ...questionWithAnswer,
-              correct_answer: 'A' // Default to A for now, will be determined from actual question data
+              correct_answer: questionWithAnswer.correct_answer || 'A'
             }
           } as GameData)
         }
