@@ -23,6 +23,7 @@ export interface Game {
   location?: string;
   status: 'setup' | 'ready' | 'in-progress' | 'completed';
   scoreboard?: GameScoreboard;
+  data?: string | Record<string, any>;
   created: string;
   updated: string;
 }
