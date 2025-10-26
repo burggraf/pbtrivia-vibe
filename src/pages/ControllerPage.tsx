@@ -13,6 +13,8 @@ type GameState = 'game-start' | 'round-start' | 'round-play' | 'round-end' | 'ga
 
 interface GameData {
   state: GameState
+  name?: string
+  rounds?: number
   currentRound?: number
   currentQuestion?: number
   round?: any
@@ -107,8 +109,8 @@ export default function ControllerPage() {
       // Initialize game data
       await updateGameData({
         state: 'game-start',
-        currentRound: 0,
-        currentQuestion: 0
+        name: game.name,
+        rounds: rounds.length
       })
     } catch (error) {
       console.error('Failed to start game:', error)

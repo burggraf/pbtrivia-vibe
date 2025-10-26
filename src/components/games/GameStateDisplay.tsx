@@ -38,7 +38,7 @@ export default function GameStateDisplay({ gameData, rounds, game }: GameStateDi
                 Welcome to the Game!
               </h1>
               <p className="text-xl text-slate-600 dark:text-slate-400">
-                {game?.name}
+                {gameData?.name}
               </p>
               <p className="text-lg text-slate-500 dark:text-slate-500 mt-2">
                 Game Code: <span className="font-mono font-bold">{game?.code}</span>
@@ -63,7 +63,7 @@ export default function GameStateDisplay({ gameData, rounds, game }: GameStateDi
                 </CardHeader>
                 <CardContent>
                   <p className="text-2xl font-bold text-slate-800 dark:text-slate-100">
-                    {rounds.length}
+                    {gameData?.rounds || rounds.length}
                   </p>
                 </CardContent>
               </Card>
