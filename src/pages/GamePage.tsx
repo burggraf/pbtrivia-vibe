@@ -2,7 +2,7 @@ import { useParams } from 'react-router-dom'
 import { useState, useEffect } from 'react'
 import { Button } from '@/components/ui/button'
 import ThemeToggle from '@/components/ThemeToggle'
-import TeamDisplay from '@/components/games/TeamDisplay'
+import GameStateRenderer from '@/components/games/GameStateRenderer'
 import { gamesService } from '@/lib/games'
 import pb from '@/lib/pocketbase'
 import { Game } from '@/types/games'
@@ -114,37 +114,11 @@ export default function GamePage() {
           </div>
         </div>
 
-        {/* Welcome Section */}
-        <div className="text-center mb-8">
-          {gameData?.state === 'game-start' ? (
-            <>
-              <h2 className="text-3xl font-bold text-slate-800 dark:text-slate-100 mb-4">
-                Welcome to {gameData?.name || game?.name}!
-              </h2>
-              <p className="text-xl text-slate-600 dark:text-slate-400 mb-2">
-                There will be {gameData?.rounds || 0} rounds
-              </p>
-              <p className="text-lg text-slate-500 dark:text-slate-500 font-medium">
-                Get ready to play!
-              </p>
-            </>
-          ) : (
-            <>
-              <h2 className="text-2xl font-bold text-slate-800 dark:text-slate-100 mb-4">
-                Welcome to the Game!
-              </h2>
-              <p className="text-slate-600 dark:text-slate-400">
-                Waiting for the game to start. Teams and players will appear here in real-time.
-              </p>
-            </>
-          )}
-        </div>
-
-        {/* Teams and Players Section */}
-        <TeamDisplay
+        {/* Game State Renderer */}
+        <GameStateRenderer
+          gameData={gameData}
           scoreboard={game?.scoreboard}
           isLoading={isLoading}
-          className="mb-8"
         />
 
         {/* Start Game Button */}
