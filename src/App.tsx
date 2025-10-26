@@ -6,6 +6,7 @@ import AuthPage from './pages/AuthPage'
 import HostPage from './pages/HostPage'
 import LobbyPage from './pages/LobbyPage'
 import GamePage from './pages/GamePage'
+import ControllerPage from './pages/ControllerPage'
 
 function App() {
 	const [connectionStatus, setConnectionStatus] = useState<'connecting' | 'connected' | 'error'>(
@@ -84,6 +85,10 @@ function App() {
 				<Route
 					path='/game/:id'
 					element={isAuthenticated ? <GamePage /> : <Navigate to='/' replace />}
+				/>
+				<Route
+					path='/controller/:id'
+					element={isAuthenticated ? <ControllerPage /> : <Navigate to='/' replace />}
 				/>
 				<Route path='*' element={<Navigate to='/' replace />} />
 			</Routes>

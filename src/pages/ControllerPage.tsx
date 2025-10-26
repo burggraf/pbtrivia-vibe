@@ -1,4 +1,4 @@
-import { useParams } from 'react-router-dom'
+import { useParams, useNavigate } from 'react-router-dom'
 import { useState, useEffect } from 'react'
 import { Button } from '@/components/ui/button'
 import ThemeToggle from '@/components/ThemeToggle'
@@ -7,18 +7,23 @@ import { gamesService } from '@/lib/games'
 import pb from '@/lib/pocketbase'
 import { Game } from '@/types/games'
 
-export default function GamePage() {
+export default function ControllerPage() {
   const { id } = useParams<{ id: string }>()
+  const navigate = useNavigate()
   const [game, setGame] = useState<Game | null>(null)
   const [isLoading, setIsLoading] = useState(true)
 
   const handleLogout = async () => {
     try {
       pb.authStore.clear()
-      window.location.href = '/'
+      navigate('/')
     } catch (error) {
       console.error('Logout failed:', error)
     }
+  }
+
+  const handleBackToHost = () => {
+    navigate('/host')
   }
 
   // Fetch game data
@@ -55,14 +60,14 @@ export default function GamePage() {
     return () => {
       unsubscribeGame.then((unsub) => unsub())
     }
-  }, [id])
+  }, [id, navigate])
 
   return (
     <div className="min-h-screen bg-slate-50 dark:bg-slate-900 p-8">
       <div className="max-w-6xl mx-auto">
         <div className="flex justify-between items-center mb-8">
           <div>
-            <h1 className="text-3xl font-bold text-slate-800 dark:text-slate-100">Game Room</h1>
+            <h1 className="text-3xl font-bold text-slate-800 dark:text-slate-100">Game Controller</h1>
             <p className="text-slate-600 dark:text-slate-400 mt-2">
               Game ID: {id} {game && `- ${game.name}`}
             </p>
@@ -84,6 +89,13 @@ export default function GamePage() {
             <ThemeToggle />
             <Button
               variant="outline"
+              onClick={handleBackToHost}
+              className="border-slate-300 dark:border-slate-600 text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800"
+            >
+              Back to Host
+            </Button>
+            <Button
+              variant="outline"
               onClick={handleLogout}
               className="border-slate-300 dark:border-slate-600 text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800"
             >
@@ -92,13 +104,13 @@ export default function GamePage() {
           </div>
         </div>
 
-        {/* Welcome Section */}
+        {/* Controller Section */}
         <div className="text-center mb-8">
           <h2 className="text-2xl font-bold text-slate-800 dark:text-slate-100 mb-4">
-            Welcome to the Game!
+            Game Controller
           </h2>
           <p className="text-slate-600 dark:text-slate-400">
-            Waiting for the game to start. Teams and players will appear here in real-time.
+            Manage your game from here. Teams and players are displayed in real-time.
           </p>
         </div>
 
@@ -109,12 +121,20 @@ export default function GamePage() {
           className="mb-8"
         />
 
-        {/* Start Game Button */}
+        {/* Control Buttons */}
         {game?.scoreboard && Object.keys(game.scoreboard.teams).length > 0 && (
           <div className="text-center">
-            <Button className="bg-slate-700 hover:bg-slate-800 dark:bg-slate-600 dark:hover:bg-slate-700 text-white">
-              Start Game (Coming Soon)
-            </Button>
+            <div className="flex gap-4 justify-center">
+              <Button className="bg-green-600 hover:bg-green-700 dark:bg-green-700 dark:hover:bg-green-600 text-white">
+                Start Round (Coming Soon)
+              </Button>
+              <Button
+                variant="outline"
+                className="border-slate-300 dark:border-slate-600 text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800"
+              >
+                End Game (Coming Soon)
+              </Button>
+            </div>
           </div>
         )}
       </div>

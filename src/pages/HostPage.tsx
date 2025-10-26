@@ -10,7 +10,7 @@ import GameStatusModal from '@/components/games/GameStatusModal'
 import RoundEditModal from '@/components/games/RoundEditModal'
 import QuestionsList from '@/components/games/QuestionsList'
 import CategoryIcon, { getAvailableCategories } from '@/components/ui/CategoryIcon'
-import { Info, Plus } from 'lucide-react'
+import { Info, Plus, Play } from 'lucide-react'
 import pb from '@/lib/pocketbase'
 import { gamesService } from '@/lib/games'
 import { roundsService } from '@/lib/rounds'
@@ -259,6 +259,10 @@ export default function HostPage() {
     }
   }
 
+  const handlePlayGame = (gameId: string) => {
+    navigate(`/controller/${gameId}`)
+  }
+
   
   const getStatusBadgeClasses = (status: string) => {
     switch (status) {
@@ -337,8 +341,8 @@ export default function HostPage() {
                 <Accordion type="multiple" className="space-y-2">
                   {games.map((game) => (
                     <AccordionItem key={game.id} value={game.id} className="border-slate-200 dark:border-slate-700">
-                      <AccordionTrigger className="hover:no-underline">
-                        <div className="flex items-center justify-between w-full">
+                      <div className="flex items-center gap-2 p-4 bg-slate-50 dark:bg-slate-800 border-b border-slate-200 dark:border-slate-700">
+                        <AccordionTrigger className="hover:no-underline flex-1 justify-start p-0">
                           <div className="flex items-center gap-3">
                             <span className="font-medium text-slate-800 dark:text-slate-100">{game.name}</span>
                             <code className="px-2 py-1 bg-slate-100 dark:bg-slate-700 rounded text-sm font-mono text-slate-800 dark:text-slate-100">
@@ -365,6 +369,23 @@ export default function HostPage() {
                               {formatGameStatus(game.status)}
                             </span>
                           </div>
+                        </AccordionTrigger>
+                        <div className="flex items-center gap-2">
+                          {(game.status === 'ready' || game.status === 'in-progress') && (
+                            <Button
+                              size="sm"
+                              variant="outline"
+                              className="flex items-center gap-1 h-6 px-2 text-xs border-green-600 text-green-700 dark:border-green-400 dark:text-green-300 hover:bg-green-50 dark:hover:bg-green-900/20"
+                              onClick={(e) => {
+                                e.stopPropagation()
+                                handlePlayGame(game.id)
+                              }}
+                              title="Start game controller"
+                            >
+                              <Play className="h-3 w-3" />
+                              Play
+                            </Button>
+                          )}
                           <div className="flex items-center gap-2 text-sm text-slate-600 dark:text-slate-400">
                             {[
                               game.startdate ? formatDateTime(new Date(game.startdate)) : null,
@@ -379,7 +400,7 @@ export default function HostPage() {
                                 </span>
                               ))}
                             <div
-                              className="h-8 w-8 p-0 ml-2 flex items-center justify-center rounded-sm hover:bg-slate-100 dark:hover:bg-slate-800 cursor-pointer"
+                              className="h-8 w-8 p-0 flex items-center justify-center rounded-sm hover:bg-slate-100 dark:hover:bg-slate-800 cursor-pointer"
                               onClick={(e) => {
                                 e.stopPropagation()
                                 handleEditGame(game)
@@ -389,7 +410,7 @@ export default function HostPage() {
                             </div>
                           </div>
                         </div>
-                      </AccordionTrigger>
+                      </div>
                       <AccordionContent>
                         <div className="border-l-4 border-slate-200 dark:border-slate-600 bg-slate-50 dark:bg-slate-800/50 -ml-4 pl-4 rounded-r-lg">
                           <div className="mb-4 pt-2">
