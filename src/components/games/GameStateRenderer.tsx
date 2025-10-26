@@ -1,4 +1,5 @@
 import GameStart from './states/GameStart'
+import RoundStart from './states/RoundStart'
 import WaitingState from './states/WaitingState'
 import TeamDisplay from './TeamDisplay'
 import { GameScoreboard } from '@/types/games'
@@ -14,6 +15,11 @@ export default function GameStateRenderer({ gameData, scoreboard, isLoading }: G
     // Handle game-start state
     if (gameData?.state === 'game-start') {
       return <GameStart gameData={gameData} />
+    }
+
+    // Handle round-start state
+    if (gameData?.state === 'round-start') {
+      return <RoundStart gameData={gameData} />
     }
 
     // Handle waiting state (no game data or not started)

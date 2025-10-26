@@ -17,7 +17,10 @@ interface GameData {
   rounds?: number
   currentRound?: number
   currentQuestion?: number
-  round?: any
+  round?: number
+  questions?: number
+  categories?: string[]
+  roundData?: any
   question?: any
   showAnswer?: boolean
 }
@@ -130,6 +133,24 @@ export default function ControllerPage() {
       // Handle special logic for state transitions
       if (nextState === 'return-to-lobby') {
         navigate('/host')
+        return
+      }
+
+      // Handle round-start state with specific data structure
+      if (nextState === 'round-start') {
+        const currentRoundIndex = gameData.currentRound || 0
+        const currentRound = rounds[currentRoundIndex]
+
+        if (currentRound) {
+          await updateGameData({
+            state: 'round-start',
+            name: currentRound.title,
+            round: currentRound.sequence_number,
+            rounds: rounds.length,
+            questions: currentRound.question_count,
+            categories: currentRound.categories || []
+          })
+        }
         return
       }
 
