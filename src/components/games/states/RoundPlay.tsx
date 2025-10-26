@@ -37,6 +37,10 @@ interface RoundPlayProps {
 export default function RoundPlay({ gameData, onAnswerSubmit }: RoundPlayProps) {
   const [selectedAnswer, setSelectedAnswer] = useState<string | null>(null)
   const [hasSubmitted, setHasSubmitted] = useState(false)
+  const [showAnswerDebug, setShowAnswerDebug] = useState(false) // Debug flag to test answer reveal
+
+  // Show answer if either the game data says to show it OR if correct_answer exists in the data
+  const shouldShowAnswer = gameData.showAnswer || showAnswerDebug || !!gameData.question?.correct_answer
 
   // Determine current player's team (simplified for now)
   const playerTeam = gameData.playerTeam || 'team-1' // This would come from auth/context
@@ -45,7 +49,7 @@ export default function RoundPlay({ gameData, onAnswerSubmit }: RoundPlayProps) 
   const hasTeamSubmitted = !!gameData.submittedAnswers?.[playerTeam]
 
   const handleAnswerClick = async (answer: string) => {
-    if (hasSubmitted || gameData.showAnswer || gameData.isSubmittingAnswer || hasTeamSubmitted) return
+    if (hasSubmitted || shouldShowAnswer || gameData.isSubmittingAnswer || hasTeamSubmitted) return
 
     setSelectedAnswer(answer)
     setHasSubmitted(true)
@@ -56,14 +60,14 @@ export default function RoundPlay({ gameData, onAnswerSubmit }: RoundPlayProps) 
   }
 
   const getAnswerButtonVariant = (answerKey: string) => {
-    if (!gameData.showAnswer && !hasSubmitted) {
+    if (!shouldShowAnswer && !hasSubmitted) {
       return 'default'
     }
 
     // Determine correct answer from the question data
     const correctAnswer = gameData.question?.correct_answer || 'A' // Default to A for now
 
-    if (gameData.showAnswer) {
+    if (shouldShowAnswer) {
       if (answerKey === correctAnswer) {
         return 'default'
       }
@@ -81,14 +85,14 @@ export default function RoundPlay({ gameData, onAnswerSubmit }: RoundPlayProps) 
   }
 
   const getAnswerButtonClass = (answerKey: string) => {
-    if (!gameData.showAnswer && !hasSubmitted) {
+    if (!shouldShowAnswer && !hasSubmitted) {
       return 'hover:bg-slate-100 dark:hover:bg-slate-800'
     }
 
     // Determine correct answer from the question data
     const correctAnswer = gameData.question?.correct_answer || 'A' // Default to A for now
 
-    if (gameData.showAnswer) {
+    if (shouldShowAnswer) {
       if (answerKey === correctAnswer) {
         return 'bg-green-600 hover:bg-green-700 text-white border-green-600'
       }
@@ -128,6 +132,23 @@ export default function RoundPlay({ gameData, onAnswerSubmit }: RoundPlayProps) 
         </div>
       </div>
 
+      {/* Debug Controls */}
+      <div className="mb-4 text-center">
+        <Button
+          onClick={() => setShowAnswerDebug(!showAnswerDebug)}
+          variant="outline"
+          size="sm"
+          className="text-xs"
+        >
+          {showAnswerDebug ? 'Hide' : 'Show'} Answer Override (Debug)
+        </Button>
+        {showAnswerDebug && (
+          <p className="text-xs text-slate-500 mt-2">
+            Correct Answer: {gameData.question?.correct_answer || 'A'} - {(gameData.question as any)?.[gameData.question?.correct_answer?.toLowerCase() || 'a']}
+          </p>
+        )}
+      </div>
+
       {/* Question Card */}
       <Card className="max-w-3xl mx-auto mb-6">
         <CardHeader>
@@ -153,11 +174,11 @@ export default function RoundPlay({ gameData, onAnswerSubmit }: RoundPlayProps) 
                 variant={getAnswerButtonVariant(answer.key)}
                 className={`h-auto p-4 text-left justify-start whitespace-normal ${getAnswerButtonClass(answer.key)}`}
                 onClick={() => handleAnswerClick(answer.key)}
-                disabled={hasSubmitted || gameData.showAnswer || gameData.isSubmittingAnswer || hasTeamSubmitted}
+                disabled={hasSubmitted || shouldShowAnswer || gameData.isSubmittingAnswer || hasTeamSubmitted}
               >
                 <span className="font-medium mr-2">{answer.key}.</span>
                 {answer.text}
-                {gameData.showAnswer && answer.key === (gameData.question?.correct_answer || 'A') && (
+                {shouldShowAnswer && answer.key === (gameData.question?.correct_answer || 'A') && (
                   <span className="ml-2 text-green-300">✓ Correct</span>
                 )}
               </Button>
@@ -173,7 +194,7 @@ export default function RoundPlay({ gameData, onAnswerSubmit }: RoundPlayProps) 
             </div>
           )}
 
-          {(hasSubmitted || hasTeamSubmitted) && !gameData.showAnswer && !gameData.isSubmittingAnswer && (
+          {(hasSubmitted || hasTeamSubmitted) && !shouldShowAnswer && !gameData.isSubmittingAnswer && (
             <div className="mt-6 p-4 bg-blue-50 dark:bg-blue-900/20 rounded-lg">
               <p className="text-blue-700 dark:text-blue-300">
                 Answer submitted for {playerTeam}!
@@ -182,7 +203,7 @@ export default function RoundPlay({ gameData, onAnswerSubmit }: RoundPlayProps) 
           )}
 
           {/* Answer Reveal */}
-          {gameData.showAnswer && (
+          {shouldShowAnswer && (
             <div className="mt-6 p-4 bg-slate-50 dark:bg-slate-800 rounded-lg">
               <p className="text-slate-700 dark:text-slate-300">
                 {selectedAnswer?.charAt(0).toUpperCase() === (gameData.question?.correct_answer || 'A') ? (

@@ -74,9 +74,29 @@ export default function GamePage() {
   const fetchGameData = async () => {
     if (!id) return
 
+    // Debug authentication state
+    console.log('=== GAME PAGE AUTH DEBUG ===')
+    console.log('pb.authStore.isValid:', pb.authStore.isValid)
+    console.log('pb.authStore.token:', pb.authStore.token ? 'PRESENT' : 'MISSING')
+    console.log('pb.authStore.model:', pb.authStore.model)
+    console.log('Current user ID:', pb.authStore.model?.id)
+    console.log('Game ID being requested:', id)
+
+    // Check if user is authenticated before making the request
+    if (!pb.authStore.isValid || !pb.authStore.token) {
+      console.error('❌ User is not authenticated - cannot fetch game data')
+      console.error('Token missing:', !pb.authStore.token)
+      console.error('Invalid auth store:', !pb.authStore.isValid)
+      setIsLoading(false)
+      return
+    }
+
+    console.log('✅ User appears authenticated, attempting to fetch game...')
+
     try {
       // Get game data (includes scoreboard)
       const gameData = await gamesService.getGame(id)
+      console.log('✅ Successfully fetched game data:', gameData)
       setGame(gameData)
 
       // Parse game data if exists
@@ -103,7 +123,27 @@ export default function GamePage() {
         }
       }
     } catch (error) {
-      console.error('Failed to fetch game data:', error)
+      console.error('❌ Failed to fetch game data:', error)
+      console.error('Error details:', {
+        message: error?.message,
+        status: error?.status,
+        url: error?.url,
+        isAbort: error?.name === 'AbortError',
+        isNetwork: error?.name === 'NetworkError' || error?.message?.includes('fetch'),
+        data: error?.data
+      })
+
+      // Check if it's an authentication error
+      if (error?.status === 401 || error?.message?.includes('unauthorized')) {
+        console.error('🔐 Authentication error detected - redirecting to login')
+        // Clear invalid auth state and redirect
+        pb.authStore.clear()
+        window.location.href = '/'
+      } else if (error?.status === 403 || error?.message?.includes('forbidden')) {
+        console.error('🚫 Access forbidden - user does not have permission')
+      } else if (error?.status === 404) {
+        console.error('🔍 Game not found - ID:', id)
+      }
     } finally {
       setIsLoading(false)
     }
@@ -113,8 +153,20 @@ export default function GamePage() {
   useEffect(() => {
     if (!id) return
 
-    // Initial data fetch
-    fetchGameData()
+    console.log('🎮 GamePage useEffect triggered for game ID:', id)
+    console.log('🎮 Auth state at useEffect:', {
+      isValid: pb.authStore.isValid,
+      hasToken: !!pb.authStore.token,
+      userId: pb.authStore.model?.id
+    })
+
+    // Add a small delay to ensure auth state is fully loaded
+    const timeoutId = setTimeout(() => {
+      console.log('🎮 Delayed fetchGameData call')
+      fetchGameData()
+    }, 100)
+
+    return () => clearTimeout(timeoutId)
 
     // Subscribe to real-time updates for games (includes scoreboard changes)
     const unsubscribeGame = pb.collection('games').subscribe('*', (e) => {

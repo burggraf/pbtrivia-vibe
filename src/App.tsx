@@ -7,6 +7,7 @@ import HostPage from './pages/HostPage'
 import LobbyPage from './pages/LobbyPage'
 import GamePage from './pages/GamePage'
 import ControllerPage from './pages/ControllerPage'
+import AuthGuard from './components/AuthGuard'
 
 function App() {
 	const [connectionStatus, setConnectionStatus] = useState<'connecting' | 'connected' | 'error'>(
@@ -84,7 +85,11 @@ function App() {
 				/>
 				<Route
 					path='/game/:id'
-					element={isAuthenticated ? <GamePage /> : <Navigate to='/' replace />}
+					element={
+						<AuthGuard>
+							<GamePage />
+						</AuthGuard>
+					}
 				/>
 				<Route
 					path='/controller/:id'

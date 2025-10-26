@@ -17,10 +17,29 @@ export const gamesService = {
 
   async getGame(id: string): Promise<Game> {
     try {
+      console.log('🎯 gamesService.getGame called for ID:', id);
+      console.log('🎯 Auth state in gamesService:', {
+        isValid: pb.authStore.isValid,
+        hasToken: !!pb.authStore.token,
+        userId: pb.authStore.model?.id,
+        tokenPreview: pb.authStore.token ? `${pb.authStore.token.substring(0, 20)}...` : 'none'
+      });
+
       const record = await pb.collection('games').getOne<Game>(id);
+      console.log('✅ gamesService.getGame succeeded:', record);
       return record;
     } catch (error) {
-      console.error('Failed to fetch game:', error);
+      console.error('❌ gamesService.getGame failed:', error);
+      console.error('❌ Error details:', {
+        message: error?.message,
+        status: error?.status,
+        url: error?.url,
+        name: error?.name,
+        isAuth: error?.status === 401 || error?.message?.includes('unauthorized'),
+        isForbidden: error?.status === 403 || error?.message?.includes('forbidden'),
+        isNotFound: error?.status === 404,
+        data: error?.data
+      });
       throw error;
     }
   },
