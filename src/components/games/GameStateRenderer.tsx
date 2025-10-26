@@ -12,9 +12,10 @@ interface GameStateRendererProps {
   gameData: any
   scoreboard?: GameScoreboard
   isLoading?: boolean
+  onAnswerSubmit?: (answer: string) => void
 }
 
-export default function GameStateRenderer({ gameData, scoreboard, isLoading }: GameStateRendererProps) {
+export default function GameStateRenderer({ gameData, scoreboard, isLoading, onAnswerSubmit }: GameStateRendererProps) {
   const renderStateContent = () => {
     // Handle game-start state
     if (gameData?.state === 'game-start') {
@@ -28,7 +29,7 @@ export default function GameStateRenderer({ gameData, scoreboard, isLoading }: G
 
     // Handle round-play state
     if (gameData?.state === 'round-play') {
-      return <RoundPlay gameData={gameData} />
+      return <RoundPlay gameData={gameData} onAnswerSubmit={onAnswerSubmit} />
     }
 
     // Handle round-end state

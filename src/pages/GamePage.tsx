@@ -4,6 +4,8 @@ import { Button } from '@/components/ui/button'
 import ThemeToggle from '@/components/ThemeToggle'
 import GameStateRenderer from '@/components/games/GameStateRenderer'
 import { gamesService } from '@/lib/games'
+import { gameQuestionsService } from '@/lib/gameQuestions'
+import { gameAnswersService } from '@/lib/gameAnswers'
 import pb from '@/lib/pocketbase'
 import { Game } from '@/types/games'
 
@@ -12,6 +14,8 @@ export default function GamePage() {
   const [game, setGame] = useState<Game | null>(null)
   const [isLoading, setIsLoading] = useState(true)
   const [gameData, setGameData] = useState<any>(null)
+  const [isSubmittingAnswer, setIsSubmittingAnswer] = useState(false)
+  const [currentTeamId, setCurrentTeamId] = useState<string | null>(null)
 
   const handleLogout = async () => {
     try {
@@ -19,6 +23,51 @@ export default function GamePage() {
       window.location.href = '/'
     } catch (error) {
       console.error('Logout failed:', error)
+    }
+  }
+
+  const handleAnswerSubmit = async (answer: string) => {
+    if (!id || !gameData?.question || !currentTeamId || isSubmittingAnswer) return
+
+    setIsSubmittingAnswer(true)
+
+    try {
+      // For now, use a simpler approach - just use the question ID directly
+      // This assumes the question ID can be used as game_questions_id
+      const questionId = gameData.question?.id
+
+      console.log('Submitting answer with question ID:', questionId)
+
+      if (!questionId) {
+        console.error('No question ID found in game data')
+        return
+      }
+
+      // Submit answer using question ID directly as game_questions_id
+      // This is a simplified approach - in a full implementation,
+      // you'd need proper round_questions record creation/management
+      await gameAnswersService.submitTeamAnswer(
+        id,
+        questionId, // Using question ID directly for now
+        currentTeamId,
+        answer,
+        gameData.question.correct_answer
+      )
+
+      // Update the game data to reflect that this team has submitted
+      setGameData((prev: any) => ({
+        ...prev,
+        submittedAnswers: {
+          ...prev.submittedAnswers,
+          [currentTeamId]: answer
+        }
+      }))
+
+      console.log(`Answer ${answer} submitted for team ${currentTeamId}`)
+    } catch (error) {
+      console.error('Failed to submit answer:', error)
+    } finally {
+      setIsSubmittingAnswer(false)
     }
   }
 
@@ -39,6 +88,19 @@ export default function GamePage() {
         } catch (error) {
           console.error('Failed to parse game data:', error)
           setGameData(null)
+        }
+      }
+
+      // Determine current user's team from scoreboard
+      if (gameData.scoreboard?.teams) {
+        const currentUserId = pb.authStore.model?.id
+        const userTeam = Object.entries(gameData.scoreboard.teams).find(([, team]: [string, any]) =>
+          team.players.some((player: any) => player.id === currentUserId)
+        )
+
+        if (userTeam) {
+          setCurrentTeamId(userTeam[0])
+          console.log('Current user team ID:', userTeam[0])
         }
       }
     } catch (error) {
@@ -116,9 +178,14 @@ export default function GamePage() {
 
         {/* Game State Renderer */}
         <GameStateRenderer
-          gameData={gameData}
+          gameData={{
+            ...gameData,
+            playerTeam: currentTeamId,
+            isSubmittingAnswer
+          }}
           scoreboard={game?.scoreboard}
           isLoading={isLoading}
+          onAnswerSubmit={handleAnswerSubmit}
         />
 
         {/* Start Game Button - Only show when game is ready and not started */}

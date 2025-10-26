@@ -76,3 +76,23 @@ export interface CreateGamePlayerData {
   player: string;
   team?: string;
 }
+
+export interface GameAnswer {
+  id: string;
+  host: string;
+  game: string;
+  game_questions_id: string;
+  team: string;
+  answer?: string;
+  is_correct?: boolean;
+  created: string;
+  updated: string;
+}
+
+export interface CreateGameAnswerData {
+  game: string;
+  game_questions_id: string;
+  team: string;
+  answer: string;
+  is_correct?: boolean;
+}

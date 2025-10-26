@@ -29,6 +29,7 @@ interface RoundPlayProps {
     showAnswer?: boolean
     playerTeam?: string
     submittedAnswers?: { [key: string]: string }
+    isSubmittingAnswer?: boolean
   }
   onAnswerSubmit?: (answer: string) => void
 }
@@ -40,15 +41,17 @@ export default function RoundPlay({ gameData, onAnswerSubmit }: RoundPlayProps) 
   // Determine current player's team (simplified for now)
   const playerTeam = gameData.playerTeam || 'team-1' // This would come from auth/context
 
-  
-  const handleAnswerClick = (answer: string) => {
-    if (hasSubmitted || gameData.showAnswer) return
+  // Check if this team has already submitted an answer
+  const hasTeamSubmitted = !!gameData.submittedAnswers?.[playerTeam]
+
+  const handleAnswerClick = async (answer: string) => {
+    if (hasSubmitted || gameData.showAnswer || gameData.isSubmittingAnswer || hasTeamSubmitted) return
 
     setSelectedAnswer(answer)
     setHasSubmitted(true)
 
     if (onAnswerSubmit) {
-      onAnswerSubmit(answer)
+      await onAnswerSubmit(answer)
     }
   }
 
@@ -150,7 +153,7 @@ export default function RoundPlay({ gameData, onAnswerSubmit }: RoundPlayProps) 
                 variant={getAnswerButtonVariant(answer.key)}
                 className={`h-auto p-4 text-left justify-start whitespace-normal ${getAnswerButtonClass(answer.key)}`}
                 onClick={() => handleAnswerClick(answer.key)}
-                disabled={hasSubmitted || gameData.showAnswer}
+                disabled={hasSubmitted || gameData.showAnswer || gameData.isSubmittingAnswer || hasTeamSubmitted}
               >
                 <span className="font-medium mr-2">{answer.key}.</span>
                 {answer.text}
@@ -162,7 +165,15 @@ export default function RoundPlay({ gameData, onAnswerSubmit }: RoundPlayProps) 
           </div>
 
           {/* Answer Submission Status */}
-          {hasSubmitted && !gameData.showAnswer && (
+          {gameData.isSubmittingAnswer && (
+            <div className="mt-6 p-4 bg-yellow-50 dark:bg-yellow-900/20 rounded-lg">
+              <p className="text-yellow-700 dark:text-yellow-300">
+                Submitting answer for {playerTeam}...
+              </p>
+            </div>
+          )}
+
+          {(hasSubmitted || hasTeamSubmitted) && !gameData.showAnswer && !gameData.isSubmittingAnswer && (
             <div className="mt-6 p-4 bg-blue-50 dark:bg-blue-900/20 rounded-lg">
               <p className="text-blue-700 dark:text-blue-300">
                 Answer submitted for {playerTeam}!
