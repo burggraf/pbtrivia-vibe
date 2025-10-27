@@ -1,4 +1,4 @@
-import { useParams } from 'react-router-dom'
+import { useParams, useNavigate } from 'react-router-dom'
 import { useState, useEffect } from 'react'
 import { Button } from '@/components/ui/button'
 import ThemeToggle from '@/components/ThemeToggle'
@@ -11,6 +11,7 @@ import { Game } from '@/types/games'
 
 export default function GamePage() {
   const { id } = useParams<{ id: string }>()
+  const navigate = useNavigate()
   const [game, setGame] = useState<Game | null>(null)
   const [isLoading, setIsLoading] = useState(true)
   const [gameData, setGameData] = useState<any>(null)
@@ -289,10 +290,23 @@ export default function GamePage() {
             playerTeam: currentTeamId,
             isSubmittingAnswer
           }}
+          gameId={game?.id}
           scoreboard={game?.scoreboard}
           isLoading={isLoading}
           onAnswerSubmit={handleAnswerSubmit}
         />
+
+        {/* Game End Navigation - Show when game is in game-end state */}
+        {gameData?.state === 'game-end' && (
+          <div className="text-center mt-8">
+            <Button
+              onClick={() => navigate('/lobby')}
+              className="bg-blue-600 hover:bg-blue-700 dark:bg-blue-500 dark:hover:bg-blue-600 text-white"
+            >
+              Return to Lobby →
+            </Button>
+          </div>
+        )}
 
         {/* Start Game Button - Only show when game is ready and not started */}
         {game?.status === 'ready' && game?.scoreboard && Object.keys(game.scoreboard.teams).length > 0 && (

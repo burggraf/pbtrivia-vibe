@@ -1,5 +1,6 @@
 import pb from './pocketbase'
 import { Game, GameScoreboard } from '@/types/games'
+import { gameAnswersService } from './gameAnswers'
 
 export const scoreboardService = {
   /**
@@ -38,5 +39,30 @@ export const scoreboardService = {
       name: team.name,
       players: team.players
     }))
+  },
+
+  /**
+   * Calculate actual scores from game answers
+   */
+  async calculateTeamScores(gameId: string, teams: Record<string, any>): Promise<Record<string, number>> {
+    const scores: Record<string, number> = {}
+
+    for (const [teamId, teamData] of Object.entries(teams)) {
+      try {
+        // Get all answers for this team in this game
+        const teamAnswers = await gameAnswersService.getTeamAnswersForGame(gameId, teamId)
+
+        // Calculate score: 1 point per correct answer
+        const correctAnswers = teamAnswers.filter(answer => answer.is_correct === true)
+        scores[teamId] = correctAnswers.length
+
+        console.log(`Calculated score for team ${teamData.name}: ${scores[teamId]} points (${correctAnswers.length} correct answers)`)
+      } catch (error) {
+        console.error(`Failed to calculate score for team ${teamId}:`, error)
+        scores[teamId] = 0
+      }
+    }
+
+    return scores
   }
 }

@@ -2,6 +2,8 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Trophy, Medal, Award } from 'lucide-react'
 import { GameScoreboard } from '@/types/games'
+import { scoreboardService } from '@/lib/scoreboard'
+import { useState, useEffect } from 'react'
 
 interface RoundEndProps {
   gameData: {
@@ -11,21 +13,53 @@ interface RoundEndProps {
       sequence_number: number
     }
     roundScores?: { [teamId: string]: number }
+    gameId?: string // Add gameId for score calculation
   }
   scoreboard?: GameScoreboard
 }
 
 export default function RoundEnd({ gameData, scoreboard }: RoundEndProps) {
+  const [calculatedScores, setCalculatedScores] = useState<Record<string, number>>({})
+  const [isLoadingScores, setIsLoadingScores] = useState(true)
+
+  // Calculate scores from answers when component mounts
+  useEffect(() => {
+    const calculateScores = async () => {
+      if (!gameData.gameId || !scoreboard?.teams) {
+        setIsLoadingScores(false)
+        return
+      }
+
+      try {
+        setIsLoadingScores(true)
+        const scores = await scoreboardService.calculateTeamScores(gameData.gameId, scoreboard.teams)
+        setCalculatedScores(scores)
+      } catch (error) {
+        console.error('Failed to calculate scores:', error)
+      } finally {
+        setIsLoadingScores(false)
+      }
+    }
+
+    calculateScores()
+  }, [gameData.gameId, scoreboard?.teams])
+
   const getTopTeams = () => {
     if (!scoreboard?.teams) return []
 
     return Object.entries(scoreboard.teams)
-      .map(([teamId, teamData]) => ({
-        id: teamId,
-        name: teamData.name,
-        score: teamData.score,
-        players: teamData.players.length
-      }))
+      .map(([teamId, teamData]) => {
+        // Use calculated score if available, otherwise fall back to scoreboard score
+        const score = calculatedScores[teamId] ?? teamData.score ?? 0
+
+        return {
+          id: teamId,
+          name: teamData.name,
+          score: score,
+          players: teamData.players.length
+        }
+      })
+      .filter(team => team.players > 0) // Filter out teams with 0 players
       .sort((a, b) => b.score - a.score)
   }
 
@@ -61,6 +95,11 @@ export default function RoundEnd({ gameData, scoreboard }: RoundEndProps) {
       {/* Podium Display */}
       {topTeams.length > 0 && (
         <div className="max-w-4xl mx-auto mb-8">
+          {isLoadingScores && (
+            <div className="text-center mb-4">
+              <p className="text-slate-600 dark:text-slate-400">Calculating scores...</p>
+            </div>
+          )}
           <Card>
             <CardHeader>
               <CardTitle className="text-xl">Current Scoreboard</CardTitle>

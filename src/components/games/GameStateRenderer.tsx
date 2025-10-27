@@ -10,12 +10,13 @@ import { GameScoreboard } from '@/types/games'
 
 interface GameStateRendererProps {
   gameData: any
+  gameId?: string
   scoreboard?: GameScoreboard
   isLoading?: boolean
   onAnswerSubmit?: (answer: string) => void
 }
 
-export default function GameStateRenderer({ gameData, scoreboard, isLoading, onAnswerSubmit }: GameStateRendererProps) {
+export default function GameStateRenderer({ gameData, gameId, scoreboard, isLoading, onAnswerSubmit }: GameStateRendererProps) {
   const renderStateContent = () => {
     // Handle game-start state
     if (gameData?.state === 'game-start') {
@@ -34,12 +35,12 @@ export default function GameStateRenderer({ gameData, scoreboard, isLoading, onA
 
     // Handle round-end state
     if (gameData?.state === 'round-end') {
-      return <RoundEnd gameData={gameData} scoreboard={scoreboard} />
+      return <RoundEnd gameData={{...gameData, gameId}} scoreboard={scoreboard} />
     }
 
     // Handle game-end state
     if (gameData?.state === 'game-end') {
-      return <GameEnd gameData={gameData} scoreboard={scoreboard} />
+      return <GameEnd gameData={{...gameData, gameId}} scoreboard={scoreboard} />
     }
 
     // Handle thanks state

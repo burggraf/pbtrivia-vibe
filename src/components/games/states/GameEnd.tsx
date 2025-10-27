@@ -2,27 +2,61 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Trophy, Medal, Award, Crown, Star } from 'lucide-react'
 import { GameScoreboard } from '@/types/games'
+import { scoreboardService } from '@/lib/scoreboard'
+import { useState, useEffect } from 'react'
 
 interface GameEndProps {
   gameData: {
     state: 'game-end'
     gameName?: string
     totalRounds?: number
+    gameId?: string // Add gameId for score calculation
   }
   scoreboard?: GameScoreboard
 }
 
 export default function GameEnd({ gameData, scoreboard }: GameEndProps) {
+  const [calculatedScores, setCalculatedScores] = useState<Record<string, number>>({})
+  const [isLoadingScores, setIsLoadingScores] = useState(true)
+
+  // Calculate scores from answers when component mounts
+  useEffect(() => {
+    const calculateScores = async () => {
+      if (!gameData.gameId || !scoreboard?.teams) {
+        setIsLoadingScores(false)
+        return
+      }
+
+      try {
+        setIsLoadingScores(true)
+        const scores = await scoreboardService.calculateTeamScores(gameData.gameId, scoreboard.teams)
+        setCalculatedScores(scores)
+      } catch (error) {
+        console.error('Failed to calculate scores:', error)
+      } finally {
+        setIsLoadingScores(false)
+      }
+    }
+
+    calculateScores()
+  }, [gameData.gameId, scoreboard?.teams])
+
   const getTopTeams = () => {
     if (!scoreboard?.teams) return []
 
     return Object.entries(scoreboard.teams)
-      .map(([teamId, teamData]) => ({
-        id: teamId,
-        name: teamData.name,
-        score: teamData.score,
-        players: teamData.players.length
-      }))
+      .map(([teamId, teamData]) => {
+        // Use calculated score if available, otherwise fall back to scoreboard score
+        const score = calculatedScores[teamId] ?? teamData.score ?? 0
+
+        return {
+          id: teamId,
+          name: teamData.name,
+          score: score,
+          players: teamData.players.length
+        }
+      })
+      .filter(team => team.players > 0) // Filter out teams with 0 players
       .sort((a, b) => b.score - a.score)
   }
 
@@ -44,6 +78,13 @@ export default function GameEnd({ gameData, scoreboard }: GameEndProps) {
 
   return (
     <div className="text-center mb-8">
+      {/* Loading State */}
+      {isLoadingScores && (
+        <div className="text-center mb-4">
+          <p className="text-slate-600 dark:text-slate-400">Calculating final scores...</p>
+        </div>
+      )}
+
       {/* Winner Announcement */}
       <div className="mb-8">
         <div className="flex justify-center items-center gap-4 mb-4">
@@ -94,7 +135,7 @@ export default function GameEnd({ gameData, scoreboard }: GameEndProps) {
               </div>
 
               <div className="flex justify-center gap-2 mb-4">
-                {[...Array(Math.min(5, Math.floor(firstPlace.score / 100)))].map((_, i) => (
+                {[...Array(Math.max(0, Math.min(5, Math.floor((firstPlace.score || 0) / 100))))].map((_, i) => (
                   <Star key={i} className="h-5 w-5 text-yellow-500 fill-yellow-500" />
                 ))}
               </div>
