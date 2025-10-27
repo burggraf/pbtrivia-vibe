@@ -47,11 +47,15 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
   // Apply theme to document
   useEffect(() => {
     const root = document.documentElement
+    console.log('ThemeContext: Applying theme:', effectiveTheme)
+    console.log('ThemeContext: Current classes before:', root.className)
     root.classList.remove('light', 'dark')
     root.classList.add(effectiveTheme)
+    console.log('ThemeContext: Current classes after:', root.className)
   }, [effectiveTheme])
 
   const setTheme = (newTheme: Theme) => {
+    console.log('ThemeContext: setTheme called with:', newTheme)
     setThemeState(newTheme)
     localStorage.setItem('theme', newTheme)
   }
