@@ -114,11 +114,62 @@ export default function HostPage() {
     }
   }
 
-  const handleSaveGame = async (data: UpdateGameData | CreateGameData) => {
+  const handleSaveGame = async (data: UpdateGameData | CreateGameData & { rounds?: number; questionsPerRound?: number; categories?: string[] }) => {
     try {
       setSaving(true)
       if (isCreateMode) {
-        await gamesService.createGame(data as CreateGameData)
+        // Create the game first
+        const createdGame = await gamesService.createGame(data as CreateGameData)
+
+        // If rounds > 0 and categories are specified, create rounds with questions
+        if (data.rounds && data.rounds > 0 && data.categories && data.categories.length > 0) {
+          try {
+            const questionsPerRound = data.questionsPerRound || 10
+
+            for (let i = 1; i <= data.rounds; i++) {
+              // Create each round
+              const roundData = {
+                title: `Round ${i}`,
+                question_count: questionsPerRound,
+                categories: data.categories,
+                sequence_number: i,
+                game: createdGame.id
+              }
+
+              const createdRound = await roundsService.createRound(roundData as CreateRoundData)
+
+              // Add random questions to the round
+              try {
+                const selectedQuestions = await questionsService.getRandomQuestionsFromCategories(
+                  data.categories,
+                  questionsPerRound,
+                  pb.authStore.model?.id
+                )
+
+                if (selectedQuestions.length > 0) {
+                  const questionsForRound = selectedQuestions.map((question, index) => ({
+                    questionId: question.id,
+                    sequence: index + 1,
+                    categoryName: question.category
+                  }))
+
+                  await gameQuestionsService.createGameQuestionsBatch(createdRound.id, questionsForRound)
+                  console.log(`Added ${selectedQuestions.length} questions to "Round ${i}"`)
+                } else {
+                  console.warn(`No available questions found for categories: ${data.categories.join(', ')}`)
+                }
+              } catch (questionError) {
+                console.error(`Failed to add questions to Round ${i}:`, questionError)
+              }
+            }
+
+            console.log(`Successfully created ${data.rounds} rounds with ${questionsPerRound} questions each for game "${createdGame.name}"`)
+          } catch (roundError) {
+            console.error('Failed to create rounds:', roundError)
+          }
+        } else if (data.rounds === 0) {
+          console.log(`Created game "${createdGame.name}" with 0 rounds - rounds will be created manually later`)
+        }
       } else if (editingGame) {
         await gamesService.updateGame(editingGame.id, data as UpdateGameData)
       }
