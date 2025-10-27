@@ -2,15 +2,13 @@ import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { Button } from '@/components/ui/button'
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion'
-import { Badge } from '@/components/ui/badge'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import ThemeToggle from '@/components/ThemeToggle'
 import GameEditModal from '@/components/games/GameEditModal'
 import GameStatusModal from '@/components/games/GameStatusModal'
 import RoundEditModal from '@/components/games/RoundEditModal'
 import QuestionsList from '@/components/games/QuestionsList'
 import CategoryIcon, { getAvailableCategories } from '@/components/ui/CategoryIcon'
-import { Info, Plus, Play } from 'lucide-react'
+import { Info, Plus, Play, MoreVertical, Eye } from 'lucide-react'
 import pb from '@/lib/pocketbase'
 import { gamesService } from '@/lib/games'
 import { roundsService } from '@/lib/rounds'
@@ -333,11 +331,11 @@ export default function HostPage() {
   
   const getStatusBadgeClasses = (status: string) => {
     switch (status) {
-      case 'setup': return 'border-transparent bg-secondary text-secondary-foreground hover:bg-secondary/80'
-      case 'ready': return 'border-transparent bg-primary text-primary-foreground hover:bg-primary/80'
-      case 'in-progress': return 'text-foreground'
-      case 'completed': return 'border-transparent bg-destructive text-destructive-foreground hover:bg-destructive/80'
-      default: return 'border-transparent bg-secondary text-secondary-foreground hover:bg-secondary/80'
+      case 'setup': return 'bg-[#f5f5f5] dark:bg-slate-700 text-[#525252] dark:text-slate-300'
+      case 'ready': return 'bg-[#ecfdf5] dark:bg-emerald-950/30 text-[#065f46] dark:text-emerald-400'
+      case 'in-progress': return 'bg-[#eff6ff] dark:bg-blue-950/30 text-[#1e40af] dark:text-blue-400'
+      case 'completed': return 'bg-[#f5f5f5] dark:bg-slate-700 text-[#737373] dark:text-slate-400'
+      default: return 'bg-[#f5f5f5] dark:bg-slate-700 text-[#525252] dark:text-slate-300'
     }
   }
 
@@ -357,205 +355,252 @@ export default function HostPage() {
 
   
   return (
-    <div className="min-h-screen bg-slate-50 dark:bg-slate-900 p-8">
-      <div className="max-w-6xl mx-auto">
-        <div className="flex justify-between items-center mb-8">
-          <div>
-            <h1 className="text-3xl font-bold text-slate-800 dark:text-slate-100">Host Dashboard</h1>
-            <p className="text-slate-600 dark:text-slate-400 mt-2">Manage your trivia games here</p>
+    <div className="min-h-screen bg-[#fafafa] dark:bg-slate-900 p-12">
+      <div className="max-w-[1200px] mx-auto">
+        <div className="flex justify-between items-center mb-12">
+          <div className="flex flex-col gap-1">
+            <h1 className="text-[28px] font-semibold tracking-tight text-[#0a0a0a] dark:text-slate-100">Host Dashboard</h1>
+            <p className="text-[14px] text-[#737373] dark:text-slate-400">Manage your trivia games</p>
           </div>
-          <div className="flex gap-3">
+          <div className="flex gap-2 items-center">
             <ThemeToggle />
             <Button
               variant="outline"
               onClick={handleLogout}
-              className="border-slate-300 dark:border-slate-600 text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800"
+              className="h-[32px] px-3 text-[13px] font-medium border-[#e5e5e5] dark:border-slate-600 text-[#525252] dark:text-slate-300 hover:bg-[#fafafa] dark:hover:bg-slate-800"
             >
               Logout
             </Button>
           </div>
         </div>
 
-        <Card className="bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700">
-            <CardHeader>
-              <div className="flex items-center justify-between">
-                <CardTitle className="text-slate-800 dark:text-slate-100">My Games</CardTitle>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={handleCreateGame}
-                  className="flex items-center gap-2 text-slate-600 dark:text-slate-400 border-slate-300 dark:border-slate-600 hover:bg-slate-50 dark:hover:bg-slate-800"
-                >
-                  <Plus className="h-4 w-4" />
-                  New Game
-                </Button>
-              </div>
-              <CardDescription className="text-slate-600 dark:text-slate-400">Manage your trivia games and rounds</CardDescription>
-            </CardHeader>
-            <CardContent>
+        <div className="bg-white dark:bg-slate-800 border border-[#e5e5e5] dark:border-slate-700 rounded-lg overflow-hidden">
+            <div className="flex items-center justify-between px-5 py-4 border-b border-[#e5e5e5] dark:border-slate-700">
+              <h2 className="text-[15px] font-semibold tracking-tight text-[#0a0a0a] dark:text-slate-100">Games</h2>
+              <Button
+                onClick={handleCreateGame}
+                className="h-[32px] px-3 text-[13px] font-medium bg-[#0a0a0a] dark:bg-slate-100 text-white dark:text-slate-900 hover:bg-[#262626] dark:hover:bg-slate-200 flex items-center gap-1.5"
+              >
+                <Plus className="h-4 w-4" />
+                New Game
+              </Button>
+            </div>
+            <div>
               {loading ? (
-                <div className="flex items-center justify-center py-8">
-                  <div className="text-sm text-slate-600 dark:text-slate-400">Loading games...</div>
+                <div className="flex items-center justify-center py-20">
+                  <div className="text-[14px] text-[#737373] dark:text-slate-400">Loading games...</div>
                 </div>
               ) : games.length === 0 ? (
-                <div className="flex items-center justify-center py-8">
+                <div className="flex items-center justify-center py-20">
                   <div className="text-center">
-                    <p className="text-sm text-slate-600 dark:text-slate-400 mb-2">No games found</p>
-                    <p className="text-xs text-slate-600 dark:text-slate-400">Create your first game to get started</p>
+                    <p className="text-[15px] font-medium text-[#0a0a0a] dark:text-slate-100 mb-1">No games found</p>
+                    <p className="text-[13px] text-[#737373] dark:text-slate-400">Create your first game to get started</p>
                   </div>
                 </div>
               ) : (
-                <Accordion type="multiple" className="space-y-2">
-                  {games.map((game) => (
-                    <AccordionItem key={game.id} value={game.id} className="border-slate-200 dark:border-slate-700">
-                      <div className="flex items-center gap-2 p-4 bg-slate-50 dark:bg-slate-800 border-b border-slate-200 dark:border-slate-700">
-                        <AccordionTrigger className="hover:no-underline flex-1 justify-start p-0">
-                          <div className="flex items-center gap-3">
-                            <span className="font-medium text-slate-800 dark:text-slate-100">{game.name}</span>
-                            <code className="px-2 py-1 bg-slate-100 dark:bg-slate-700 rounded text-sm font-mono text-slate-800 dark:text-slate-100">
-                              {game.code}
-                            </code>
-                            <span
-                              className={`inline-flex items-center rounded-full border px-2.5 py-0.5 text-xs font-semibold transition-colors focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 ${
-                                (game.status === 'setup' || game.status === 'ready') && rounds[game.id]?.length > 0
-                                  ? 'cursor-pointer hover:opacity-80'
-                                  : 'cursor-not-allowed opacity-50'
-                              } ${getStatusBadgeClasses(game.status)}`}
-                              onClick={(e) => {
-                                e.stopPropagation()
-                                handleStatusClick(game)
-                              }}
-                              title={
-                                (game.status === 'setup' || game.status === 'ready') && rounds[game.id]?.length === 0
-                                  ? "Add rounds before changing status"
-                                  : game.status !== 'setup' && game.status !== 'ready'
-                                  ? "Status cannot be changed"
-                                  : "Click to change game status"
-                              }
-                            >
-                              {formatGameStatus(game.status)}
-                            </span>
-                          </div>
-                        </AccordionTrigger>
-                        <div className="flex items-center gap-2">
-                          {(game.status === 'ready' || game.status === 'in-progress') && (
-                            <Button
-                              size="sm"
-                              variant="outline"
-                              className="flex items-center gap-1 h-6 px-2 text-xs border-green-600 text-green-700 dark:border-green-400 dark:text-green-300 hover:bg-green-50 dark:hover:bg-green-900/20"
-                              onClick={(e) => {
-                                e.stopPropagation()
-                                handlePlayGame(game.id)
-                              }}
-                              title="Start game controller"
-                            >
-                              <Play className="h-3 w-3" />
-                              Play
-                            </Button>
-                          )}
-                          <div className="flex items-center gap-2 text-sm text-slate-600 dark:text-slate-400">
-                            {[
-                              game.startdate ? formatDateTime(new Date(game.startdate)) : null,
-                              formatDuration(game.duration),
-                              game.location
-                            ]
-                              .filter(Boolean)
-                              .map((item, index, filtered) => (
-                                <span key={index}>
-                                  {item}
-                                  {index < filtered.length - 1 && <span className="mx-2">•</span>}
-                                </span>
-                              ))}
-                            <div
-                              className="h-8 w-8 p-0 flex items-center justify-center rounded-sm hover:bg-slate-100 dark:hover:bg-slate-800 cursor-pointer"
-                              onClick={(e) => {
-                                e.stopPropagation()
-                                handleEditGame(game)
-                              }}
-                            >
-                              <Info className="h-4 w-4 text-slate-600 dark:text-slate-400" />
+                <div>
+                  {/* Table Headers */}
+                  <div className="grid grid-cols-[2fr,1.2fr,3fr,1fr,1.5fr] gap-4 px-5 py-3 bg-[#fafafa] dark:bg-slate-800/50 border-b border-[#e5e5e5] dark:border-slate-700">
+                    <div className="text-[12px] font-medium text-[#737373] dark:text-slate-400 uppercase tracking-wider">Name</div>
+                    <div className="text-[12px] font-medium text-[#737373] dark:text-slate-400 uppercase tracking-wider">Status</div>
+                    <div className="text-[12px] font-medium text-[#737373] dark:text-slate-400 uppercase tracking-wider">Details</div>
+                    <div className="text-[12px] font-medium text-[#737373] dark:text-slate-400 uppercase tracking-wider">Rounds</div>
+                    <div className="text-[12px] font-medium text-[#737373] dark:text-slate-400 uppercase tracking-wider text-right">Actions</div>
+                  </div>
+
+                  {/* Table Rows with Accordion */}
+                  <Accordion type="multiple" className="divide-y divide-[#f5f5f5] dark:divide-slate-700">
+                    {games.map((game) => (
+                      <AccordionItem key={game.id} value={game.id} className="border-none">
+                        <div className="hover:bg-[#fafafa] dark:hover:bg-slate-800/50 transition-colors">
+                          <div className="grid grid-cols-[2fr,1.2fr,3fr,1fr,1.5fr] gap-4 items-center px-5 py-4">
+                            {/* NAME Column */}
+                            <AccordionTrigger className="hover:no-underline justify-start p-0">
+                              <div className="flex items-center gap-3 min-w-0">
+                                <span className="font-medium text-[14px] text-[#0a0a0a] dark:text-slate-100">{game.name}</span>
+                                <code className="px-2 py-0.5 bg-[#f5f5f5] dark:bg-slate-700 rounded text-[12px] font-mono text-[#525252] dark:text-slate-300 tracking-wider">
+                                  {game.code}
+                                </code>
+                              </div>
+                            </AccordionTrigger>
+
+                            {/* STATUS Column */}
+                            <div>
+                              <span
+                                className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-[12px] font-medium transition-colors ${
+                                  (game.status === 'setup' || game.status === 'ready') && rounds[game.id]?.length > 0
+                                    ? 'cursor-pointer hover:opacity-80'
+                                    : 'cursor-not-allowed opacity-50'
+                                } ${getStatusBadgeClasses(game.status)}`}
+                                onClick={(e) => {
+                                  e.stopPropagation()
+                                  handleStatusClick(game)
+                                }}
+                                title={
+                                  (game.status === 'setup' || game.status === 'ready') && rounds[game.id]?.length === 0
+                                    ? "Add rounds before changing status"
+                                    : game.status !== 'setup' && game.status !== 'ready'
+                                    ? "Status cannot be changed"
+                                    : "Click to change game status"
+                                }
+                              >
+                                <span className="w-1.5 h-1.5 rounded-full bg-current"></span>
+                                {formatGameStatus(game.status)}
+                              </span>
+                            </div>
+
+                            {/* DETAILS Column */}
+                            <div className="flex items-center gap-2 text-[13px] text-[#737373] dark:text-slate-400">
+                              {[
+                                game.startdate ? formatDateTime(new Date(game.startdate)) : null,
+                                formatDuration(game.duration),
+                                game.location
+                              ]
+                                .filter(Boolean)
+                                .map((item, index, filtered) => (
+                                  <span key={index} className="flex items-center gap-2">
+                                    {item}
+                                    {index < filtered.length - 1 && <span className="text-[#d4d4d4] dark:text-slate-600">·</span>}
+                                  </span>
+                                ))}
+                            </div>
+
+                            {/* ROUNDS Column */}
+                            <div className="text-[13px] text-[#525252] dark:text-slate-300">
+                              <span className="font-medium text-[#0a0a0a] dark:text-slate-100">{rounds[game.id]?.length || 0}</span>
+                              <span className="ml-1">rounds</span>
+                            </div>
+
+                            {/* ACTIONS Column */}
+                            <div className="flex items-center justify-end gap-1.5">
+                              {game.status === 'completed' ? (
+                                <button
+                                  className="w-8 h-8 flex items-center justify-center rounded-md border border-[#e5e5e5] dark:border-slate-600 text-[#737373] dark:text-slate-400 hover:bg-[#fafafa] dark:hover:bg-slate-800 hover:border-[#d4d4d4] dark:hover:border-slate-500 hover:text-[#0a0a0a] dark:hover:text-slate-100 transition-colors"
+                                  onClick={(e) => {
+                                    e.stopPropagation()
+                                    // View results functionality
+                                  }}
+                                  title="View results"
+                                >
+                                  <Eye className="h-4 w-4" />
+                                </button>
+                              ) : (game.status === 'ready' || game.status === 'in-progress') ? (
+                                <button
+                                  className="w-8 h-8 flex items-center justify-center rounded-md bg-[#0a0a0a] dark:bg-slate-100 text-white dark:text-slate-900 hover:bg-[#262626] dark:hover:bg-slate-200 transition-colors"
+                                  onClick={(e) => {
+                                    e.stopPropagation()
+                                    handlePlayGame(game.id)
+                                  }}
+                                  title="Start game controller"
+                                >
+                                  <Play className="h-4 w-4" />
+                                </button>
+                              ) : null}
+                              <button
+                                className="w-8 h-8 flex items-center justify-center rounded-md border border-[#e5e5e5] dark:border-slate-600 text-[#737373] dark:text-slate-400 hover:bg-[#fafafa] dark:hover:bg-slate-800 hover:border-[#d4d4d4] dark:hover:border-slate-500 hover:text-[#0a0a0a] dark:hover:text-slate-100 transition-colors"
+                                onClick={(e) => {
+                                  e.stopPropagation()
+                                  handleEditGame(game)
+                                }}
+                                title="Edit game"
+                              >
+                                <Info className="h-4 w-4" />
+                              </button>
+                              <button
+                                className="w-8 h-8 flex items-center justify-center rounded-md border border-[#e5e5e5] dark:border-slate-600 text-[#737373] dark:text-slate-400 hover:bg-[#fafafa] dark:hover:bg-slate-800 hover:border-[#d4d4d4] dark:hover:border-slate-500 hover:text-[#0a0a0a] dark:hover:text-slate-100 transition-colors"
+                                onClick={(e) => {
+                                  e.stopPropagation()
+                                  // More options functionality
+                                }}
+                                title="More options"
+                              >
+                                <MoreVertical className="h-4 w-4" />
+                              </button>
                             </div>
                           </div>
                         </div>
-                      </div>
-                      <AccordionContent>
-                        <div className="border-l-4 border-slate-200 dark:border-slate-600 bg-slate-50 dark:bg-slate-800/50 -ml-4 pl-4 rounded-r-lg">
-                          <div className="mb-4 pt-2">
-                            <div className="flex items-center justify-between">
-                              <h3 className="text-lg font-semibold text-slate-700 dark:text-slate-300">Rounds</h3>
-                              <Button
-                                variant="outline"
-                                size="sm"
-                                onClick={() => handleAddRound(game.id)}
-                                className="flex items-center gap-2 text-slate-600 dark:text-slate-400 border-slate-300 dark:border-slate-600 hover:bg-slate-50 dark:hover:bg-slate-800"
-                              >
-                                <Plus className="h-4 w-4" />
-                                Add Round
-                              </Button>
-                            </div>
+                      <AccordionContent className="px-5 pb-6 pt-2">
+                        <div className="bg-[#fafafa] dark:bg-slate-800/30 border border-[#e5e5e5] dark:border-slate-700 rounded-lg overflow-hidden">
+                          <div className="flex items-center justify-between px-4 py-3 border-b border-[#e5e5e5] dark:border-slate-700">
+                            <h3 className="text-[14px] font-semibold text-[#0a0a0a] dark:text-slate-100">Rounds</h3>
+                            <Button
+                              onClick={() => handleAddRound(game.id)}
+                              className="h-[28px] px-2.5 text-[12px] font-medium bg-white dark:bg-slate-700 border border-[#e5e5e5] dark:border-slate-600 text-[#525252] dark:text-slate-300 hover:bg-[#fafafa] dark:hover:bg-slate-600 flex items-center gap-1.5"
+                            >
+                              <Plus className="h-3.5 w-3.5" />
+                              Add Round
+                            </Button>
                           </div>
                           {rounds[game.id] && rounds[game.id].length > 0 ? (
-                            <Accordion type="multiple" className="space-y-2">
+                            <Accordion type="multiple" className="divide-y divide-[#e5e5e5] dark:divide-slate-700">
                               {rounds[game.id].map((round) => (
-                                <AccordionItem key={round.id} value={round.id} className="border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 rounded-lg">
-                                  <AccordionTrigger className="hover:no-underline px-2">
-                                      <div className="flex items-center justify-between w-full">
-                                        <div className="flex items-center gap-3">
-                                          <span className="font-medium text-slate-700 dark:text-slate-200">{round.title}</span>
-                                          <Badge variant="outline">
+                                <AccordionItem key={round.id} value={round.id} className="border-none">
+                                  <div className="hover:bg-white/50 dark:hover:bg-slate-800/50 transition-colors">
+                                    <div className="flex items-center px-4 py-3">
+                                      <AccordionTrigger className="hover:no-underline flex-1 justify-start p-0">
+                                        <div className="flex items-center gap-3 min-w-0">
+                                          <span className="font-medium text-[13px] text-[#0a0a0a] dark:text-slate-100">{round.title}</span>
+                                          <span className="text-[12px] text-[#737373] dark:text-slate-400 bg-white dark:bg-slate-700 px-2 py-0.5 rounded border border-[#e5e5e5] dark:border-slate-600">
                                             {round.question_count} questions
-                                          </Badge>
-                                          <div className="flex gap-1">
-                                              {getAvailableCategories().map((category) => {
-                                                const isUsed = round.categories && round.categories.includes(category)
-                                                return (
-                                                  <div key={category} title={category}>
-                                                    <CategoryIcon
-                                                      category={category}
-                                                      size={16}
-                                                      className={`${isUsed
-                                                        ? 'text-slate-700 dark:text-slate-300'
-                                                        : 'text-slate-300 dark:text-slate-600'
-                                                      }`}
-                                                    />
-                                                  </div>
-                                                )
-                                              })}
-                                            </div>
-                                        </div>
-                                        <div className="flex items-center gap-2">
-                                          <span className="text-sm text-slate-500 dark:text-slate-400">
-                                            Round {round.sequence_number}
                                           </span>
-                                          <div
-                                            className="h-8 w-8 p-0 flex items-center justify-center rounded-sm hover:bg-slate-100 dark:hover:bg-slate-800 cursor-pointer"
-                                            onClick={(e) => {
-                                              e.stopPropagation()
-                                              handleEditRound(round)
-                                            }}
-                                          >
-                                            <Info className="h-4 w-4 text-slate-600 dark:text-slate-400" />
+                                          <div className="flex gap-1">
+                                            {getAvailableCategories().map((category) => {
+                                              const isUsed = round.categories && round.categories.includes(category)
+                                              return (
+                                                <div key={category} title={category}>
+                                                  <CategoryIcon
+                                                    category={category}
+                                                    size={14}
+                                                    className={`${isUsed
+                                                      ? 'text-[#525252] dark:text-slate-300'
+                                                      : 'text-[#d4d4d4] dark:text-slate-600'
+                                                    }`}
+                                                  />
+                                                </div>
+                                              )
+                                            })}
                                           </div>
                                         </div>
+                                      </AccordionTrigger>
+                                      <div className="flex items-center gap-2 ml-4">
+                                        <span className="text-[12px] text-[#737373] dark:text-slate-400">
+                                          Round {round.sequence_number}
+                                        </span>
+                                        <button
+                                          className="w-7 h-7 flex items-center justify-center rounded-md border border-[#e5e5e5] dark:border-slate-600 text-[#737373] dark:text-slate-400 hover:bg-white dark:hover:bg-slate-700 hover:border-[#d4d4d4] dark:hover:border-slate-500 hover:text-[#0a0a0a] dark:hover:text-slate-100 transition-colors"
+                                          onClick={(e) => {
+                                            e.stopPropagation()
+                                            handleEditRound(round)
+                                          }}
+                                          title="Edit round"
+                                        >
+                                          <Info className="h-3.5 w-3.5" />
+                                        </button>
                                       </div>
-                                    </AccordionTrigger>
-                                  <AccordionContent>
-                                    <div className="border-l-4 border-blue-200 dark:border-blue-800 bg-blue-50 dark:bg-blue-950/30 -ml-2 pl-2 mr-2 rounded-r-lg">
+                                    </div>
+                                  </div>
+                                  <AccordionContent className="px-4 pb-4">
+                                    <div className="bg-white dark:bg-slate-800 border border-[#e5e5e5] dark:border-slate-700 rounded-lg overflow-hidden mt-2">
                                       <QuestionsList roundId={round.id} roundTitle={round.title} />
                                     </div>
                                   </AccordionContent>
                                 </AccordionItem>
                               ))}
                             </Accordion>
-                          ) : null}
+                          ) : (
+                            <div className="px-4 py-8 text-center">
+                              <p className="text-[13px] text-[#737373] dark:text-slate-400">No rounds yet</p>
+                            </div>
+                          )}
                         </div>
                       </AccordionContent>
                     </AccordionItem>
                   ))}
                 </Accordion>
+                </div>
               )}
-            </CardContent>
-          </Card>
+            </div>
+          </div>
 
         
   

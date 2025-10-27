@@ -1,7 +1,4 @@
 import { useState, useEffect } from 'react'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
-import { Badge } from '@/components/ui/badge'
-import { Button } from '@/components/ui/button'
 import { gameQuestionsService } from '@/lib/gameQuestions'
 import { questionsService } from '@/lib/questions'
 import { roundsService } from '@/lib/rounds'
@@ -12,15 +9,6 @@ import { RotateCcw } from 'lucide-react'
 interface QuestionsListProps {
   roundId?: string
   roundTitle: string
-}
-
-function getDifficultyBadgeVariant(difficulty: string) {
-  switch (difficulty) {
-    case 'easy': return 'default'
-    case 'medium': return 'secondary'
-    case 'hard': return 'destructive'
-    default: return 'outline'
-  }
 }
 
 export default function QuestionsList({ roundId, roundTitle }: QuestionsListProps) {
@@ -177,70 +165,68 @@ export default function QuestionsList({ roundId, roundTitle }: QuestionsListProp
 
   if (!roundId) {
     return (
-      <Card className="bg-slate-50 dark:bg-slate-800 border-slate-200 dark:border-slate-700">
-        <CardHeader>
-          <CardTitle className="text-lg text-slate-800 dark:text-slate-100">
-            Questions for {roundTitle}
-          </CardTitle>
-          <CardDescription className="text-slate-600 dark:text-slate-400">
-            Round not specified for question display
-          </CardDescription>
-        </CardHeader>
-      </Card>
+      <div>
+        <div className="px-4 py-3 border-b border-[#e5e5e5] dark:border-slate-700">
+          <h4 className="text-[13px] font-semibold text-[#0a0a0a] dark:text-slate-100">Questions for {roundTitle}</h4>
+          <p className="text-[12px] text-[#737373] dark:text-slate-400 mt-0.5">Round not specified for question display</p>
+        </div>
+      </div>
     )
   }
 
   return (
-    <Card className="bg-slate-50 dark:bg-slate-800 border-slate-200 dark:border-slate-700">
-      <CardHeader>
-        <CardTitle className="text-lg text-slate-800 dark:text-slate-100">
-          Questions for {roundTitle}
-        </CardTitle>
-        <CardDescription className="text-slate-600 dark:text-slate-400">
+    <div>
+      <div className="px-4 py-3 border-b border-[#e5e5e5] dark:border-slate-700">
+        <h4 className="text-[13px] font-semibold text-[#0a0a0a] dark:text-slate-100">Questions</h4>
+        <p className="text-[12px] text-[#737373] dark:text-slate-400 mt-0.5">
           {loading
             ? 'Loading questions...'
             : questionsWithDetails.length > 0
               ? `${questionsWithDetails.length} question${questionsWithDetails.length === 1 ? '' : 's'} in this round (answers shuffled)`
               : 'No questions assigned to this round yet'
           }
-        </CardDescription>
-      </CardHeader>
-      <CardContent>
+        </p>
+      </div>
+      <div className="p-4">
         {loading ? (
           <div className="flex items-center justify-center py-8">
-            <div className="text-sm text-slate-600 dark:text-slate-400">Loading questions...</div>
+            <div className="text-[13px] text-[#737373] dark:text-slate-400">Loading questions...</div>
           </div>
         ) : questionsWithDetails.length === 0 ? (
           <div className="flex items-center justify-center py-8">
             <div className="text-center">
-              <p className="text-sm text-slate-600 dark:text-slate-400 mb-2">No questions found</p>
-              <p className="text-xs text-slate-500 dark:text-slate-400">
+              <p className="text-[13px] text-[#737373] dark:text-slate-400 mb-1">No questions found</p>
+              <p className="text-[12px] text-[#a3a3a3] dark:text-slate-500">
                 Questions will be added when the round is created with categories selected
               </p>
             </div>
           </div>
         ) : (
-          <div className="space-y-3">
+          <div className="space-y-2">
             {questionsWithDetails.map((roundQuestion) => (
               <div
                 key={roundQuestion.id}
-                className="flex items-center justify-between p-3 bg-white dark:bg-slate-700 rounded-lg border border-slate-200 dark:border-slate-600"
+                className="flex items-start justify-between p-3 bg-[#fafafa] dark:bg-slate-700/50 rounded-md border border-[#e5e5e5] dark:border-slate-600 hover:bg-white dark:hover:bg-slate-700 transition-colors"
               >
                 <div className="flex-1">
-                  <div className="flex items-center gap-2 mb-1">
-                    <span className="text-xs font-medium text-slate-500 dark:text-slate-400">
+                  <div className="flex items-center gap-2 mb-1.5">
+                    <span className="text-[11px] font-semibold text-[#a3a3a3] dark:text-slate-500 uppercase tracking-wide">
                       Q{roundQuestion.sequence}
                     </span>
-                    <Badge variant="outline" className="text-xs">
+                    <span className="text-[11px] px-2 py-0.5 rounded bg-[#f5f5f5] dark:bg-slate-700 text-[#525252] dark:text-slate-400 border border-[#e5e5e5] dark:border-slate-600">
                       {roundQuestion.category_name}
-                    </Badge>
+                    </span>
                     {roundQuestion.questionDetails?.difficulty && (
-                      <Badge variant={getDifficultyBadgeVariant(roundQuestion.questionDetails.difficulty)} className="text-xs">
+                      <span className={`text-[11px] px-2 py-0.5 rounded border ${
+                        roundQuestion.questionDetails.difficulty === 'easy' ? 'bg-[#ecfdf5] dark:bg-emerald-950/30 text-[#065f46] dark:text-emerald-400 border-[#d1fae5] dark:border-emerald-900' :
+                        roundQuestion.questionDetails.difficulty === 'medium' ? 'bg-[#fef3c7] dark:bg-yellow-950/30 text-[#92400e] dark:text-yellow-400 border-[#fde68a] dark:border-yellow-900' :
+                        'bg-[#fee2e2] dark:bg-red-950/30 text-[#991b1b] dark:text-red-400 border-[#fecaca] dark:border-red-900'
+                      }`}>
                         {roundQuestion.questionDetails.difficulty}
-                      </Badge>
+                      </span>
                     )}
                   </div>
-                  <p className="text-sm font-medium text-slate-800 dark:text-slate-100">
+                  <p className="text-[13px] font-medium text-[#0a0a0a] dark:text-slate-100 mb-2">
                     {roundQuestion.questionDetails?.question || 'Question not found'}
                   </p>
                   {roundQuestion.questionDetails?.answer_a && (() => {
@@ -253,20 +239,19 @@ export default function QuestionsList({ roundId, roundTitle }: QuestionsListProp
                     );
 
                     return (
-                      <div className="mt-2 text-xs text-slate-600 dark:text-slate-400">
+                      <div className="space-y-1">
                         {shuffledResult.shuffledAnswers.map((answer, index) => (
                           <div
                             key={index}
-                            className={`
-                              ${answer.originalIndex === 0
-                                ? 'font-semibold text-green-700 dark:text-green-400'
-                                : ''
-                              }
-                            `}
+                            className={`text-[12px] ${
+                              answer.originalIndex === 0
+                                ? 'font-medium text-[#065f46] dark:text-emerald-400'
+                                : 'text-[#737373] dark:text-slate-400'
+                            }`}
                           >
                             {answer.label}) {answer.text}
                             {answer.originalIndex === 0 && (
-                              <span className="ml-2 text-green-600 dark:text-green-400">
+                              <span className="ml-2 text-[#10b981] dark:text-emerald-400 text-[11px]">
                                 ✓ Correct
                               </span>
                             )}
@@ -276,12 +261,10 @@ export default function QuestionsList({ roundId, roundTitle }: QuestionsListProp
                     );
                   })()}
                 </div>
-                <Button
-                  variant="ghost"
-                  size="sm"
+                <button
                   onClick={() => handleRecycleQuestion(roundQuestion.id)}
                   disabled={recyclingQuestionId === roundQuestion.id || !round?.categories || round.categories.length === 0}
-                  className="text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200"
+                  className="w-8 h-8 flex items-center justify-center rounded-md border border-[#e5e5e5] dark:border-slate-600 text-[#737373] dark:text-slate-400 hover:bg-[#fafafa] dark:hover:bg-slate-600 hover:border-[#d4d4d4] dark:hover:border-slate-500 hover:text-[#0a0a0a] dark:hover:text-slate-100 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                   title="Replace with a new question"
                 >
                   {recyclingQuestionId === roundQuestion.id ? (
@@ -291,12 +274,12 @@ export default function QuestionsList({ roundId, roundTitle }: QuestionsListProp
                   ) : (
                     <RotateCcw className="h-4 w-4" />
                   )}
-                </Button>
+                </button>
               </div>
             ))}
           </div>
         )}
-      </CardContent>
-    </Card>
+      </div>
+    </div>
   )
 }
