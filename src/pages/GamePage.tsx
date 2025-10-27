@@ -166,28 +166,63 @@ export default function GamePage() {
       fetchGameData()
     }, 100)
 
-    return () => clearTimeout(timeoutId)
-
     // Subscribe to real-time updates for games (includes scoreboard changes)
     const unsubscribeGame = pb.collection('games').subscribe('*', (e) => {
+      console.log('🔄 GamePage subscription event received:', {
+        action: e.action,
+        recordId: e.record.id,
+        targetId: id,
+        isMatching: e.record.id === id,
+        timestamp: new Date().toISOString()
+      })
+
       if (e.action === 'update' && e.record.id === id) {
+        console.log('📝 GamePage processing game update:', {
+          gameId: e.record.id,
+          gameName: (e.record as any).name,
+          gameStatus: (e.record as any).status,
+          hasGameData: !!(e.record as any).data,
+          rawData: (e.record as any).data
+        })
+
         const updatedGame = e.record as unknown as Game
         setGame(updatedGame)
 
         // Parse updated game data
         if (updatedGame.data) {
+          console.log('📊 GamePage parsing updated game data:', {
+            dataType: typeof updatedGame.data,
+            dataLength: typeof updatedGame.data === 'string' ? updatedGame.data.length : 'N/A',
+            dataPreview: typeof updatedGame.data === 'string' ? updatedGame.data.substring(0, 200) + '...' : 'Object data'
+          })
+
           try {
             const parsedData = typeof updatedGame.data === 'string' ? JSON.parse(updatedGame.data) : updatedGame.data
+            console.log('✅ GamePage successfully parsed game data:', {
+              state: parsedData.state,
+              hasQuestion: !!parsedData.question,
+              questionId: parsedData.question?.id,
+              showAnswer: parsedData.showAnswer,
+              correctAnswer: parsedData.question?.correct_answer,
+              fullData: parsedData
+            })
             setGameData(parsedData)
           } catch (error) {
-            console.error('Failed to parse game data:', error)
+            console.error('❌ GamePage failed to parse game data:', {
+              error,
+              rawData: updatedGame.data,
+              dataType: typeof updatedGame.data
+            })
           }
+        } else {
+          console.log('⚠️ GamePage received update with no game data')
         }
       }
     })
 
     // Also refresh data when page becomes visible (focus change, tab switch, etc.)
     const handleVisibilityChange = () => {
+      console.log('👁️ GamePage visibility change detected, refreshing data...')
       fetchGameData()
     }
 
@@ -197,6 +232,7 @@ export default function GamePage() {
 
     // Cleanup subscriptions and listeners on unmount
     return () => {
+      clearTimeout(timeoutId)
       unsubscribeGame.then((unsub) => unsub())
       document.removeEventListener('visibilitychange', handleVisibilityChange)
       window.removeEventListener('focus', handleVisibilityChange)
@@ -239,6 +275,16 @@ export default function GamePage() {
         </div>
 
         {/* Game State Renderer */}
+        {console.log('🎮 GamePage rendering GameStateRenderer with:', {
+          gameDataState: gameData?.state,
+          hasGameData: !!gameData,
+          questionId: gameData?.question?.id,
+          showAnswer: gameData?.showAnswer,
+          correctAnswer: gameData?.question?.correct_answer,
+          playerTeam: currentTeamId,
+          isSubmittingAnswer,
+          isLoading
+        })}
         <GameStateRenderer
           gameData={{
             ...gameData,

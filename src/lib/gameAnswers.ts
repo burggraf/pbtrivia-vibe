@@ -15,9 +15,36 @@ class GameAnswersService {
         host: hostId // Explicitly set the host
       }
 
-      console.log('Creating answer with data:', answerData)
-      const answer = await pb.collection('game_answers').create(answerData)
-      return answer as unknown as GameAnswer
+      console.log('📝 Creating answer with data:', {
+        ...answerData,
+        host: answerData.host ? 'PRESENT' : 'MISSING',
+        game: answerData.game,
+        game_questions_id: answerData.game_questions_id,
+        team: answerData.team,
+        answer: answerData.answer,
+        is_correct: answerData.is_correct
+      })
+
+      try {
+        const answer = await pb.collection('game_answers').create(answerData)
+        console.log('✅ Successfully created game answer:', answer)
+        return answer as unknown as GameAnswer
+      } catch (createError) {
+        console.error('❌ Failed to create game answer with detailed error:', {
+          error: createError,
+          message: createError?.message,
+          status: createError?.status,
+          data: createError?.data,
+          validationErrors: createError?.data?.data,
+          requestData: answerData,
+          authState: {
+            isValid: pb.authStore.isValid,
+            hasToken: !!pb.authStore.token,
+            userId: pb.authStore.model?.id
+          }
+        })
+        throw createError
+      }
     } catch (error) {
       console.error('Failed to create game answer:', error)
       throw error
@@ -84,6 +111,19 @@ class GameAnswersService {
     answer: string,
     correctAnswer?: string
   ): Promise<GameAnswer> {
+    console.log('🚀 submitTeamAnswer called with:', {
+      gameId,
+      gameQuestionsId,
+      teamId,
+      answer,
+      correctAnswer,
+      authState: {
+        isValid: pb.authStore.isValid,
+        hasToken: !!pb.authStore.token,
+        userId: pb.authStore.model?.id
+      }
+    })
+
     try {
       // Check if answer already exists for this team and question
       const existingAnswers = await this.getTeamAnswersForQuestion(gameId, gameQuestionsId)
@@ -96,7 +136,14 @@ class GameAnswersService {
         throw new Error('User not authenticated')
       }
 
-      console.log('Submitting answer with host:', hostId)
+      console.log('✅ Submitting answer with host:', hostId, {
+        gameId,
+        gameQuestionsId,
+        teamId,
+        answer,
+        isCorrect,
+        existingAnswer: existingAnswer ? 'FOUND' : 'NONE'
+      })
 
       if (existingAnswer) {
         // Update existing answer

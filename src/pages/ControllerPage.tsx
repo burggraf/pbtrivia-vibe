@@ -169,7 +169,8 @@ export default function ControllerPage() {
       if (!currentRound) return
 
       // If showing answer, move to next question or end round
-      if (gameData.showAnswer) {
+      const isAnswerRevealed = gameData.showAnswer || !!gameData.question?.correct_answer
+      if (isAnswerRevealed) {
         const nextQuestionNumber = (gameData.question?.question_number || 1) + 1
 
         // Check if there are more questions in this round
@@ -249,6 +250,12 @@ export default function ControllerPage() {
         const currentRoundIndex = gameData.currentRound || 0
         const currentRound = rounds[currentRoundIndex]
 
+        // Update game status to in-progress when first round starts
+        if (game && currentRoundIndex === 0) {
+          await gamesService.updateGame(game.id, { status: 'in-progress' })
+          console.log('🎮 Game status updated to in-progress')
+        }
+
         if (currentRound) {
           await updateGameData({
             state: 'round-start',
@@ -315,6 +322,12 @@ export default function ControllerPage() {
 
       // Handle game-end state
       if (nextState === 'game-end') {
+        // Update game status to completed when game ends
+        if (game) {
+          await gamesService.updateGame(game.id, { status: 'completed' })
+          console.log('🏁 Game status updated to completed')
+        }
+
         await updateGameData({
           state: 'game-end',
           gameName: game?.name,
@@ -537,15 +550,18 @@ export default function ControllerPage() {
                     onClick={handleNextState}
                     disabled={gameData.state === 'return-to-lobby'}
                   >
-                    {gameData.state === 'round-play' && !gameData.showAnswer
-                      ? 'Reveal Answer'
-                      : gameData.state === 'round-play' && gameData.showAnswer
-                      ? `Next Question →`
-                      : gameData.state === 'game-end'
-                      ? 'Thanks →'
-                      : gameData.state === 'thanks'
-                      ? 'Return to Lobby →'
-                      : 'Next →'}
+                    {(() => {
+                      const isAnswerRevealed = gameData.showAnswer || !!gameData.question?.correct_answer
+                      return gameData.state === 'round-play' && !isAnswerRevealed
+                        ? 'Reveal Answer'
+                        : gameData.state === 'round-play' && isAnswerRevealed
+                        ? `Next Question →`
+                        : gameData.state === 'game-end'
+                        ? 'Thanks →'
+                        : gameData.state === 'thanks'
+                        ? 'Return to Lobby →'
+                        : 'Next →'
+                    })()}
                   </Button>
                 </>
               )}
