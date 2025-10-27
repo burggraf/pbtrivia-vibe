@@ -355,11 +355,11 @@ export default function HostPage() {
 
   
   return (
-    <div className="min-h-screen bg-[#fafafa] dark:bg-slate-900 p-12">
+    <div className="min-h-screen bg-[#fafafa] dark:bg-slate-950 p-12">
       <div className="max-w-[1200px] mx-auto">
         <div className="flex justify-between items-center mb-12">
           <div className="flex flex-col gap-1">
-            <h1 className="text-[28px] font-semibold tracking-tight text-[#0a0a0a] dark:text-slate-100">Host Dashboard</h1>
+            <h1 className="text-[28px] font-semibold tracking-tight text-[#0a0a0a] dark:text-white">Host Dashboard</h1>
             <p className="text-[14px] text-[#737373] dark:text-slate-400">Manage your trivia games</p>
           </div>
           <div className="flex gap-2 items-center">
@@ -374,12 +374,12 @@ export default function HostPage() {
           </div>
         </div>
 
-        <div className="bg-white dark:bg-slate-800 border border-[#e5e5e5] dark:border-slate-700 rounded-lg overflow-hidden">
-            <div className="flex items-center justify-between px-5 py-4 border-b border-[#e5e5e5] dark:border-slate-700">
-              <h2 className="text-[15px] font-semibold tracking-tight text-[#0a0a0a] dark:text-slate-100">Games</h2>
+        <div className="bg-white dark:bg-slate-900 border border-[#e5e5e5] dark:border-slate-800 rounded-lg overflow-hidden">
+            <div className="flex items-center justify-between px-5 py-4 border-b border-[#e5e5e5] dark:border-slate-800">
+              <h2 className="text-[15px] font-semibold tracking-tight text-[#0a0a0a] dark:text-white">Games</h2>
               <Button
                 onClick={handleCreateGame}
-                className="h-[32px] px-3 text-[13px] font-medium bg-[#0a0a0a] dark:bg-slate-100 text-white dark:text-slate-900 hover:bg-[#262626] dark:hover:bg-slate-200 flex items-center gap-1.5"
+                className="h-[32px] px-3 text-[13px] font-medium bg-[#0a0a0a] dark:bg-white text-white dark:text-slate-900 hover:bg-[#262626] dark:hover:bg-slate-200 flex items-center gap-1.5"
               >
                 <Plus className="h-4 w-4" />
                 New Game
@@ -388,37 +388,37 @@ export default function HostPage() {
             <div>
               {loading ? (
                 <div className="flex items-center justify-center py-20">
-                  <div className="text-[14px] text-[#737373] dark:text-slate-400">Loading games...</div>
+                  <div className="text-[14px] text-[#737373] dark:text-slate-500">Loading games...</div>
                 </div>
               ) : games.length === 0 ? (
                 <div className="flex items-center justify-center py-20">
                   <div className="text-center">
-                    <p className="text-[15px] font-medium text-[#0a0a0a] dark:text-slate-100 mb-1">No games found</p>
-                    <p className="text-[13px] text-[#737373] dark:text-slate-400">Create your first game to get started</p>
+                    <p className="text-[15px] font-medium text-[#0a0a0a] dark:text-white mb-1">No games found</p>
+                    <p className="text-[13px] text-[#737373] dark:text-slate-500">Create your first game to get started</p>
                   </div>
                 </div>
               ) : (
                 <div>
                   {/* Table Headers */}
-                  <div className="grid grid-cols-[2fr,1.2fr,3fr,1fr,1.5fr] gap-4 px-5 py-3 bg-[#fafafa] dark:bg-slate-800/50 border-b border-[#e5e5e5] dark:border-slate-700">
-                    <div className="text-[12px] font-medium text-[#737373] dark:text-slate-400 uppercase tracking-wider">Name</div>
-                    <div className="text-[12px] font-medium text-[#737373] dark:text-slate-400 uppercase tracking-wider">Status</div>
-                    <div className="text-[12px] font-medium text-[#737373] dark:text-slate-400 uppercase tracking-wider">Details</div>
-                    <div className="text-[12px] font-medium text-[#737373] dark:text-slate-400 uppercase tracking-wider">Rounds</div>
-                    <div className="text-[12px] font-medium text-[#737373] dark:text-slate-400 uppercase tracking-wider text-right">Actions</div>
+                  <div className="grid grid-cols-[2fr,1.2fr,3fr,1fr,1.5fr] gap-4 px-5 py-3 bg-[#fafafa] dark:bg-slate-800 border-b border-[#e5e5e5] dark:border-slate-800">
+                    <div className="text-[12px] font-medium text-[#737373] dark:text-slate-500 uppercase tracking-wider">Name</div>
+                    <div className="text-[12px] font-medium text-[#737373] dark:text-slate-500 uppercase tracking-wider">Status</div>
+                    <div className="text-[12px] font-medium text-[#737373] dark:text-slate-500 uppercase tracking-wider">Details</div>
+                    <div className="text-[12px] font-medium text-[#737373] dark:text-slate-500 uppercase tracking-wider">Rounds</div>
+                    <div className="text-[12px] font-medium text-[#737373] dark:text-slate-500 uppercase tracking-wider text-right">Actions</div>
                   </div>
 
                   {/* Table Rows with Accordion */}
-                  <Accordion type="multiple" className="divide-y divide-[#f5f5f5] dark:divide-slate-700">
+                  <Accordion type="multiple" className="divide-y divide-[#f5f5f5] dark:divide-slate-800">
                     {games.map((game) => (
                       <AccordionItem key={game.id} value={game.id} className="border-none">
-                        <div className="hover:bg-[#fafafa] dark:hover:bg-slate-800/50 transition-colors">
+                        <div className="hover:bg-[#fafafa] dark:hover:bg-slate-800 transition-colors">
                           <div className="grid grid-cols-[2fr,1.2fr,3fr,1fr,1.5fr] gap-4 items-center px-5 py-4">
                             {/* NAME Column */}
                             <AccordionTrigger className="hover:no-underline justify-start p-0">
                               <div className="flex items-center gap-3 min-w-0">
-                                <span className="font-medium text-[14px] text-[#0a0a0a] dark:text-slate-100">{game.name}</span>
-                                <code className="px-2 py-0.5 bg-[#f5f5f5] dark:bg-slate-700 rounded text-[12px] font-mono text-[#525252] dark:text-slate-300 tracking-wider">
+                                <span className="font-medium text-[14px] text-[#0a0a0a] dark:text-white">{game.name}</span>
+                                <code className="px-2 py-0.5 bg-[#f5f5f5] dark:bg-slate-800 rounded text-[12px] font-mono text-[#525252] dark:text-slate-400 tracking-wider border border-transparent dark:border-slate-700">
                                   {game.code}
                                 </code>
                               </div>
@@ -450,7 +450,7 @@ export default function HostPage() {
                             </div>
 
                             {/* DETAILS Column */}
-                            <div className="flex items-center gap-2 text-[13px] text-[#737373] dark:text-slate-400">
+                            <div className="flex items-center gap-2 text-[13px] text-[#737373] dark:text-slate-500">
                               {[
                                 game.startdate ? formatDateTime(new Date(game.startdate)) : null,
                                 formatDuration(game.duration),
@@ -460,14 +460,14 @@ export default function HostPage() {
                                 .map((item, index, filtered) => (
                                   <span key={index} className="flex items-center gap-2">
                                     {item}
-                                    {index < filtered.length - 1 && <span className="text-[#d4d4d4] dark:text-slate-600">·</span>}
+                                    {index < filtered.length - 1 && <span className="text-[#d4d4d4] dark:text-slate-700">·</span>}
                                   </span>
                                 ))}
                             </div>
 
                             {/* ROUNDS Column */}
-                            <div className="text-[13px] text-[#525252] dark:text-slate-300">
-                              <span className="font-medium text-[#0a0a0a] dark:text-slate-100">{rounds[game.id]?.length || 0}</span>
+                            <div className="text-[13px] text-[#525252] dark:text-slate-400">
+                              <span className="font-medium text-[#0a0a0a] dark:text-white">{rounds[game.id]?.length || 0}</span>
                               <span className="ml-1">rounds</span>
                             </div>
 
@@ -475,7 +475,7 @@ export default function HostPage() {
                             <div className="flex items-center justify-end gap-1.5">
                               {game.status === 'completed' ? (
                                 <button
-                                  className="w-8 h-8 flex items-center justify-center rounded-md border border-[#e5e5e5] dark:border-slate-600 text-[#737373] dark:text-slate-400 hover:bg-[#fafafa] dark:hover:bg-slate-800 hover:border-[#d4d4d4] dark:hover:border-slate-500 hover:text-[#0a0a0a] dark:hover:text-slate-100 transition-colors"
+                                  className="w-8 h-8 flex items-center justify-center rounded-md border border-[#e5e5e5] dark:border-slate-700 text-[#737373] dark:text-slate-400 hover:bg-[#fafafa] dark:hover:bg-slate-800 hover:border-[#d4d4d4] dark:hover:border-slate-600 hover:text-[#0a0a0a] dark:hover:text-white transition-colors"
                                   onClick={(e) => {
                                     e.stopPropagation()
                                     // View results functionality
@@ -486,7 +486,7 @@ export default function HostPage() {
                                 </button>
                               ) : (game.status === 'ready' || game.status === 'in-progress') ? (
                                 <button
-                                  className="w-8 h-8 flex items-center justify-center rounded-md bg-[#0a0a0a] dark:bg-slate-100 text-white dark:text-slate-900 hover:bg-[#262626] dark:hover:bg-slate-200 transition-colors"
+                                  className="w-8 h-8 flex items-center justify-center rounded-md bg-[#0a0a0a] dark:bg-white text-white dark:text-slate-900 hover:bg-[#262626] dark:hover:bg-slate-200 transition-colors"
                                   onClick={(e) => {
                                     e.stopPropagation()
                                     handlePlayGame(game.id)
@@ -497,7 +497,7 @@ export default function HostPage() {
                                 </button>
                               ) : null}
                               <button
-                                className="w-8 h-8 flex items-center justify-center rounded-md border border-[#e5e5e5] dark:border-slate-600 text-[#737373] dark:text-slate-400 hover:bg-[#fafafa] dark:hover:bg-slate-800 hover:border-[#d4d4d4] dark:hover:border-slate-500 hover:text-[#0a0a0a] dark:hover:text-slate-100 transition-colors"
+                                className="w-8 h-8 flex items-center justify-center rounded-md border border-[#e5e5e5] dark:border-slate-700 text-[#737373] dark:text-slate-400 hover:bg-[#fafafa] dark:hover:bg-slate-800 hover:border-[#d4d4d4] dark:hover:border-slate-600 hover:text-[#0a0a0a] dark:hover:text-white transition-colors"
                                 onClick={(e) => {
                                   e.stopPropagation()
                                   handleEditGame(game)
@@ -507,7 +507,7 @@ export default function HostPage() {
                                 <Info className="h-4 w-4" />
                               </button>
                               <button
-                                className="w-8 h-8 flex items-center justify-center rounded-md border border-[#e5e5e5] dark:border-slate-600 text-[#737373] dark:text-slate-400 hover:bg-[#fafafa] dark:hover:bg-slate-800 hover:border-[#d4d4d4] dark:hover:border-slate-500 hover:text-[#0a0a0a] dark:hover:text-slate-100 transition-colors"
+                                className="w-8 h-8 flex items-center justify-center rounded-md border border-[#e5e5e5] dark:border-slate-700 text-[#737373] dark:text-slate-400 hover:bg-[#fafafa] dark:hover:bg-slate-800 hover:border-[#d4d4d4] dark:hover:border-slate-600 hover:text-[#0a0a0a] dark:hover:text-white transition-colors"
                                 onClick={(e) => {
                                   e.stopPropagation()
                                   // More options functionality
@@ -520,12 +520,12 @@ export default function HostPage() {
                           </div>
                         </div>
                       <AccordionContent className="px-5 pb-6 pt-2">
-                        <div className="bg-[#fafafa] dark:bg-slate-800/30 border border-[#e5e5e5] dark:border-slate-700 rounded-lg overflow-hidden">
+                        <div className="bg-[#fafafa] dark:bg-slate-800 border border-[#e5e5e5] dark:border-slate-700 rounded-lg overflow-hidden">
                           <div className="flex items-center justify-between px-4 py-3 border-b border-[#e5e5e5] dark:border-slate-700">
-                            <h3 className="text-[14px] font-semibold text-[#0a0a0a] dark:text-slate-100">Rounds</h3>
+                            <h3 className="text-[14px] font-semibold text-[#0a0a0a] dark:text-white">Rounds</h3>
                             <Button
                               onClick={() => handleAddRound(game.id)}
-                              className="h-[28px] px-2.5 text-[12px] font-medium bg-white dark:bg-slate-700 border border-[#e5e5e5] dark:border-slate-600 text-[#525252] dark:text-slate-300 hover:bg-[#fafafa] dark:hover:bg-slate-600 flex items-center gap-1.5"
+                              className="h-[28px] px-2.5 text-[12px] font-medium bg-white dark:bg-slate-700 border border-[#e5e5e5] dark:border-slate-600 text-[#525252] dark:text-slate-400 hover:bg-[#fafafa] dark:hover:bg-slate-600 flex items-center gap-1.5"
                             >
                               <Plus className="h-3.5 w-3.5" />
                               Add Round
@@ -535,12 +535,12 @@ export default function HostPage() {
                             <Accordion type="multiple" className="divide-y divide-[#e5e5e5] dark:divide-slate-700">
                               {rounds[game.id].map((round) => (
                                 <AccordionItem key={round.id} value={round.id} className="border-none">
-                                  <div className="hover:bg-white/50 dark:hover:bg-slate-800/50 transition-colors">
+                                  <div className="hover:bg-white/50 dark:hover:bg-slate-700/50 transition-colors">
                                     <div className="flex items-center px-4 py-3">
                                       <AccordionTrigger className="hover:no-underline flex-1 justify-start p-0">
                                         <div className="flex items-center gap-3 min-w-0">
-                                          <span className="font-medium text-[13px] text-[#0a0a0a] dark:text-slate-100">{round.title}</span>
-                                          <span className="text-[12px] text-[#737373] dark:text-slate-400 bg-white dark:bg-slate-700 px-2 py-0.5 rounded border border-[#e5e5e5] dark:border-slate-600">
+                                          <span className="font-medium text-[13px] text-[#0a0a0a] dark:text-white">{round.title}</span>
+                                          <span className="text-[12px] text-[#737373] dark:text-slate-400 bg-white dark:bg-slate-900 px-2 py-0.5 rounded border border-[#e5e5e5] dark:border-slate-700">
                                             {round.question_count} questions
                                           </span>
                                           <div className="flex gap-1">
@@ -563,11 +563,11 @@ export default function HostPage() {
                                         </div>
                                       </AccordionTrigger>
                                       <div className="flex items-center gap-2 ml-4">
-                                        <span className="text-[12px] text-[#737373] dark:text-slate-400">
+                                        <span className="text-[12px] text-[#737373] dark:text-slate-500">
                                           Round {round.sequence_number}
                                         </span>
                                         <button
-                                          className="w-7 h-7 flex items-center justify-center rounded-md border border-[#e5e5e5] dark:border-slate-600 text-[#737373] dark:text-slate-400 hover:bg-white dark:hover:bg-slate-700 hover:border-[#d4d4d4] dark:hover:border-slate-500 hover:text-[#0a0a0a] dark:hover:text-slate-100 transition-colors"
+                                          className="w-7 h-7 flex items-center justify-center rounded-md border border-[#e5e5e5] dark:border-slate-700 text-[#737373] dark:text-slate-400 hover:bg-white dark:hover:bg-slate-700 hover:border-[#d4d4d4] dark:hover:border-slate-600 hover:text-[#0a0a0a] dark:hover:text-white transition-colors"
                                           onClick={(e) => {
                                             e.stopPropagation()
                                             handleEditRound(round)
@@ -580,7 +580,7 @@ export default function HostPage() {
                                     </div>
                                   </div>
                                   <AccordionContent className="px-4 pb-4">
-                                    <div className="bg-white dark:bg-slate-800 border border-[#e5e5e5] dark:border-slate-700 rounded-lg overflow-hidden mt-2">
+                                    <div className="bg-white dark:bg-slate-900 border border-[#e5e5e5] dark:border-slate-700 rounded-lg overflow-hidden mt-2">
                                       <QuestionsList roundId={round.id} roundTitle={round.title} />
                                     </div>
                                   </AccordionContent>
@@ -589,7 +589,7 @@ export default function HostPage() {
                             </Accordion>
                           ) : (
                             <div className="px-4 py-8 text-center">
-                              <p className="text-[13px] text-[#737373] dark:text-slate-400">No rounds yet</p>
+                              <p className="text-[13px] text-[#737373] dark:text-slate-500">No rounds yet</p>
                             </div>
                           )}
                         </div>

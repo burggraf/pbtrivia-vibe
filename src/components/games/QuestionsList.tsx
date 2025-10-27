@@ -167,8 +167,8 @@ export default function QuestionsList({ roundId, roundTitle }: QuestionsListProp
     return (
       <div>
         <div className="px-4 py-3 border-b border-[#e5e5e5] dark:border-slate-700">
-          <h4 className="text-[13px] font-semibold text-[#0a0a0a] dark:text-slate-100">Questions for {roundTitle}</h4>
-          <p className="text-[12px] text-[#737373] dark:text-slate-400 mt-0.5">Round not specified for question display</p>
+          <h4 className="text-[13px] font-semibold text-[#0a0a0a] dark:text-white">Questions for {roundTitle}</h4>
+          <p className="text-[12px] text-[#737373] dark:text-slate-500 mt-0.5">Round not specified for question display</p>
         </div>
       </div>
     )
@@ -177,8 +177,8 @@ export default function QuestionsList({ roundId, roundTitle }: QuestionsListProp
   return (
     <div>
       <div className="px-4 py-3 border-b border-[#e5e5e5] dark:border-slate-700">
-        <h4 className="text-[13px] font-semibold text-[#0a0a0a] dark:text-slate-100">Questions</h4>
-        <p className="text-[12px] text-[#737373] dark:text-slate-400 mt-0.5">
+        <h4 className="text-[13px] font-semibold text-[#0a0a0a] dark:text-white">Questions</h4>
+        <p className="text-[12px] text-[#737373] dark:text-slate-500 mt-0.5">
           {loading
             ? 'Loading questions...'
             : questionsWithDetails.length > 0
@@ -190,13 +190,13 @@ export default function QuestionsList({ roundId, roundTitle }: QuestionsListProp
       <div className="p-4">
         {loading ? (
           <div className="flex items-center justify-center py-8">
-            <div className="text-[13px] text-[#737373] dark:text-slate-400">Loading questions...</div>
+            <div className="text-[13px] text-[#737373] dark:text-slate-500">Loading questions...</div>
           </div>
         ) : questionsWithDetails.length === 0 ? (
           <div className="flex items-center justify-center py-8">
             <div className="text-center">
-              <p className="text-[13px] text-[#737373] dark:text-slate-400 mb-1">No questions found</p>
-              <p className="text-[12px] text-[#a3a3a3] dark:text-slate-500">
+              <p className="text-[13px] text-[#737373] dark:text-slate-500 mb-1">No questions found</p>
+              <p className="text-[12px] text-[#a3a3a3] dark:text-slate-600">
                 Questions will be added when the round is created with categories selected
               </p>
             </div>
@@ -206,27 +206,27 @@ export default function QuestionsList({ roundId, roundTitle }: QuestionsListProp
             {questionsWithDetails.map((roundQuestion) => (
               <div
                 key={roundQuestion.id}
-                className="flex items-start justify-between p-3 bg-[#fafafa] dark:bg-slate-700/50 rounded-md border border-[#e5e5e5] dark:border-slate-600 hover:bg-white dark:hover:bg-slate-700 transition-colors"
+                className="flex items-start justify-between p-3 bg-[#fafafa] dark:bg-slate-800 rounded-md border border-[#e5e5e5] dark:border-slate-700 hover:bg-white dark:hover:bg-slate-750 transition-colors"
               >
                 <div className="flex-1">
                   <div className="flex items-center gap-2 mb-1.5">
-                    <span className="text-[11px] font-semibold text-[#a3a3a3] dark:text-slate-500 uppercase tracking-wide">
+                    <span className="text-[11px] font-semibold text-[#a3a3a3] dark:text-slate-600 uppercase tracking-wide">
                       Q{roundQuestion.sequence}
                     </span>
-                    <span className="text-[11px] px-2 py-0.5 rounded bg-[#f5f5f5] dark:bg-slate-700 text-[#525252] dark:text-slate-400 border border-[#e5e5e5] dark:border-slate-600">
+                    <span className="text-[11px] px-2 py-0.5 rounded bg-[#f5f5f5] dark:bg-slate-900 text-[#525252] dark:text-slate-400 border border-[#e5e5e5] dark:border-slate-700">
                       {roundQuestion.category_name}
                     </span>
                     {roundQuestion.questionDetails?.difficulty && (
                       <span className={`text-[11px] px-2 py-0.5 rounded border ${
-                        roundQuestion.questionDetails.difficulty === 'easy' ? 'bg-[#ecfdf5] dark:bg-emerald-950/30 text-[#065f46] dark:text-emerald-400 border-[#d1fae5] dark:border-emerald-900' :
-                        roundQuestion.questionDetails.difficulty === 'medium' ? 'bg-[#fef3c7] dark:bg-yellow-950/30 text-[#92400e] dark:text-yellow-400 border-[#fde68a] dark:border-yellow-900' :
-                        'bg-[#fee2e2] dark:bg-red-950/30 text-[#991b1b] dark:text-red-400 border-[#fecaca] dark:border-red-900'
+                        roundQuestion.questionDetails.difficulty === 'easy' ? 'bg-[#ecfdf5] dark:bg-emerald-950/40 text-[#065f46] dark:text-emerald-400 border-[#d1fae5] dark:border-emerald-900/50' :
+                        roundQuestion.questionDetails.difficulty === 'medium' ? 'bg-[#fef3c7] dark:bg-yellow-950/40 text-[#92400e] dark:text-yellow-400 border-[#fde68a] dark:border-yellow-900/50' :
+                        'bg-[#fee2e2] dark:bg-red-950/40 text-[#991b1b] dark:text-red-400 border-[#fecaca] dark:border-red-900/50'
                       }`}>
                         {roundQuestion.questionDetails.difficulty}
                       </span>
                     )}
                   </div>
-                  <p className="text-[13px] font-medium text-[#0a0a0a] dark:text-slate-100 mb-2">
+                  <p className="text-[13px] font-medium text-[#0a0a0a] dark:text-white mb-2">
                     {roundQuestion.questionDetails?.question || 'Question not found'}
                   </p>
                   {roundQuestion.questionDetails?.answer_a && (() => {
@@ -246,7 +246,7 @@ export default function QuestionsList({ roundId, roundTitle }: QuestionsListProp
                             className={`text-[12px] ${
                               answer.originalIndex === 0
                                 ? 'font-medium text-[#065f46] dark:text-emerald-400'
-                                : 'text-[#737373] dark:text-slate-400'
+                                : 'text-[#737373] dark:text-slate-500'
                             }`}
                           >
                             {answer.label}) {answer.text}
@@ -264,7 +264,7 @@ export default function QuestionsList({ roundId, roundTitle }: QuestionsListProp
                 <button
                   onClick={() => handleRecycleQuestion(roundQuestion.id)}
                   disabled={recyclingQuestionId === roundQuestion.id || !round?.categories || round.categories.length === 0}
-                  className="w-8 h-8 flex items-center justify-center rounded-md border border-[#e5e5e5] dark:border-slate-600 text-[#737373] dark:text-slate-400 hover:bg-[#fafafa] dark:hover:bg-slate-600 hover:border-[#d4d4d4] dark:hover:border-slate-500 hover:text-[#0a0a0a] dark:hover:text-slate-100 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                  className="w-8 h-8 flex items-center justify-center rounded-md border border-[#e5e5e5] dark:border-slate-700 text-[#737373] dark:text-slate-400 hover:bg-[#fafafa] dark:hover:bg-slate-700 hover:border-[#d4d4d4] dark:hover:border-slate-600 hover:text-[#0a0a0a] dark:hover:text-white transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                   title="Replace with a new question"
                 >
                   {recyclingQuestionId === roundQuestion.id ? (
