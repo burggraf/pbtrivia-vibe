@@ -259,8 +259,24 @@ export default function HostPage() {
     }
   }
 
-  const handlePlayGame = (gameId: string) => {
-    navigate(`/controller/${gameId}`)
+  const handlePlayGame = async (gameId: string) => {
+    try {
+      console.log('🎮 Starting game:', gameId)
+
+      // Initialize game data with starting state
+      await pb.collection('games').update(gameId, {
+        data: {
+          state: 'game-start',
+          name: games.find(g => g.id === gameId)?.name || 'Trivia Game',
+          currentRound: 0
+        }
+      })
+
+      console.log('✅ Game initialized with starting state')
+      navigate(`/controller/${gameId}`)
+    } catch (error) {
+      console.error('❌ Failed to start game:', error)
+    }
   }
 
   

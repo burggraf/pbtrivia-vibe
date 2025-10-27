@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
@@ -38,6 +38,19 @@ export default function RoundPlay({ gameData, onAnswerSubmit }: RoundPlayProps) 
   const [selectedAnswer, setSelectedAnswer] = useState<string | null>(null)
   const [hasSubmitted, setHasSubmitted] = useState(false)
   const [showAnswerDebug, setShowAnswerDebug] = useState(false) // Debug flag to test answer reveal
+
+  // Reset local state when question changes
+  useEffect(() => {
+    console.log('🔄 RoundPlay: Question changed, resetting local state', {
+      newQuestionId: gameData.question?.id,
+      newQuestionNumber: gameData.question?.question_number
+    })
+
+    // Reset local state when a new question loads
+    setSelectedAnswer(null)
+    setHasSubmitted(false)
+    setShowAnswerDebug(false)
+  }, [gameData.question?.id, gameData.question?.question_number])
 
   // Show answer if either the game data says to show it OR if correct_answer exists in the data
   const shouldShowAnswer = gameData.showAnswer || showAnswerDebug || !!gameData.question?.correct_answer
