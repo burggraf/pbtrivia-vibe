@@ -54,29 +54,38 @@ export default function ThemeToggle() {
         <Button
           variant="outline"
           size="sm"
-          className="border-slate-300 dark:border-slate-600 text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800"
+          className="h-[32px] w-[32px] p-0 border-[#e5e5e5] dark:border-slate-600 text-[#525252] dark:text-slate-300 hover:bg-[#fafafa] dark:hover:bg-slate-800"
           title={`Current theme: ${theme}. Click to change.`}
         >
           {getIcon(theme)}
         </Button>
       </DropdownMenuTrigger>
-      <DropdownMenuContent align="end">
+      <DropdownMenuContent align="end" className="z-50">
         <DropdownMenuItem
-          onClick={() => setTheme('light')}
+          onClick={() => {
+            console.log('Setting theme to light')
+            setTheme('light')
+          }}
           className="gap-2 cursor-pointer"
         >
           {getIcon('light')}
           <span>Light</span>
         </DropdownMenuItem>
         <DropdownMenuItem
-          onClick={() => setTheme('dark')}
+          onClick={() => {
+            console.log('Setting theme to dark')
+            setTheme('dark')
+          }}
           className="gap-2 cursor-pointer"
         >
           {getIcon('dark')}
           <span>Dark</span>
         </DropdownMenuItem>
         <DropdownMenuItem
-          onClick={() => setTheme('system')}
+          onClick={() => {
+            console.log('Setting theme to system')
+            setTheme('system')
+          }}
           className="gap-2 cursor-pointer"
         >
           {getIcon('system')}
