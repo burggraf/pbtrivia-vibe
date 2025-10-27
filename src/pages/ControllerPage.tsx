@@ -8,6 +8,7 @@ import { gamesService } from '@/lib/games'
 import { roundsService } from '@/lib/rounds'
 import { gameQuestionsService } from '@/lib/gameQuestions'
 import { questionsService } from '@/lib/questions'
+import { getCorrectAnswerLabel } from '@/lib/answerShuffler'
 import pb from '@/lib/pocketbase'
 import { Game } from '@/types/games'
 
@@ -150,7 +151,8 @@ export default function ControllerPage() {
       await updateGameData({
         state: 'game-start',
         name: game.name,
-        rounds: rounds.length
+        rounds: rounds.length,
+        currentRound: 0 // Initialize to first round
       })
     } catch (error) {
       console.error('Failed to start game:', error)
@@ -214,20 +216,22 @@ export default function ControllerPage() {
       } else {
         // Show the answer for current question (add correct_answer to question data)
         if (gameData.question) {
-          // Determine correct answer from the question data
+          // Get the correct answer label for this question
+          const correctAnswerLabel = getCorrectAnswerLabel(gameData.question.id)
+
           const questionWithAnswer = gameData.question
 
-          // Add correct_answer when revealing - use the actual correct answer from the question
+          // Add correct_answer when revealing - use the shuffled correct answer label
           console.log('Reveal answer clicked in controller, current question:', gameData.question)
           await updateGameDataClean({
             state: 'round-play',
             round: gameData.round,
             question: {
               ...questionWithAnswer,
-              correct_answer: questionWithAnswer.correct_answer || 'A'
+              correct_answer: correctAnswerLabel
             }
           } as GameData)
-          console.log('Updated game data with correct answer:', questionWithAnswer.correct_answer || 'A')
+          console.log('Updated game data with correct answer:', correctAnswerLabel)
         }
         return
       }
@@ -342,6 +346,44 @@ export default function ControllerPage() {
           state: 'thanks',
           gameName: game?.name
         })
+        return
+      }
+
+      // Handle special round progression logic
+      if (gameData.state === 'round-end' && nextState === 'round-start') {
+        const currentRoundIndex = gameData.currentRound || 0
+        const nextRoundIndex = currentRoundIndex + 1
+
+        // Check if there are more rounds
+        if (nextRoundIndex < rounds.length) {
+          // Start next round
+          const nextRound = rounds[nextRoundIndex]
+          if (nextRound) {
+            await updateGameData({
+              state: 'round-start',
+              currentRound: nextRoundIndex, // Increment the round index
+              name: nextRound.title,
+              round: nextRound.sequence_number,
+              rounds: rounds.length,
+              questions: nextRound.question_count,
+              categories: nextRound.categories || []
+            })
+            console.log(`🎯 Starting round ${nextRoundIndex + 1}: ${nextRound.title}`)
+          }
+        } else {
+          // All rounds completed, go to game-end
+          if (game) {
+            await gamesService.updateGame(game.id, { status: 'completed' })
+            console.log('🏁 All rounds completed, transitioning to game-end')
+          }
+
+          await updateGameData({
+            state: 'game-end',
+            currentRound: currentRoundIndex,
+            gameName: game?.name,
+            totalRounds: rounds.length
+          })
+        }
         return
       }
 

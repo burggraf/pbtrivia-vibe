@@ -5,6 +5,7 @@ import ThemeToggle from '@/components/ThemeToggle'
 import GameStateRenderer from '@/components/games/GameStateRenderer'
 import { gamesService } from '@/lib/games'
 import { gameAnswersService } from '@/lib/gameAnswers'
+import { isCorrectAnswer } from '@/lib/answerShuffler'
 import pb from '@/lib/pocketbase'
 import { Game } from '@/types/games'
 
@@ -25,7 +26,7 @@ export default function GamePage() {
     }
   }
 
-  const handleAnswerSubmit = async (answer: string) => {
+  const handleAnswerSubmit = async (selectedLabel: string) => {
     if (!id || !gameData?.question || !currentTeamId || isSubmittingAnswer) return
 
     setIsSubmittingAnswer(true)
@@ -35,12 +36,19 @@ export default function GamePage() {
       // This assumes the question ID can be used as game_questions_id
       const questionId = gameData.question?.id
 
-      console.log('Submitting answer with question ID:', questionId)
+      console.log('Submitting answer with question ID:', questionId, 'selected label:', selectedLabel)
 
       if (!questionId) {
         console.error('No question ID found in game data')
         return
       }
+
+      // Determine if the selected answer is correct
+      const isCorrect = isCorrectAnswer(questionId, selectedLabel as 'A' | 'B' | 'C' | 'D')
+
+      // The database expects the actual correct answer (always 'A' since answer_a is correct)
+      // But we want to store what the user actually selected for scoring
+      const translatedAnswer = isCorrect ? 'A' : selectedLabel
 
       // Submit answer using question ID directly as game_questions_id
       // This is a simplified approach - in a full implementation,
@@ -49,8 +57,8 @@ export default function GamePage() {
         id,
         questionId, // Using question ID directly for now
         currentTeamId,
-        answer,
-        gameData.question.correct_answer
+        translatedAnswer,
+        'A' // The correct answer is always 'A' in the database
       )
 
       // Update the game data to reflect that this team has submitted
@@ -58,11 +66,11 @@ export default function GamePage() {
         ...prev,
         submittedAnswers: {
           ...prev.submittedAnswers,
-          [currentTeamId]: answer
+          [currentTeamId]: selectedLabel // Store what the user actually selected
         }
       }))
 
-      console.log(`Answer ${answer} submitted for team ${currentTeamId}`)
+      console.log(`Answer ${selectedLabel} (${isCorrect ? 'CORRECT' : 'INCORRECT'}) submitted for team ${currentTeamId}`)
     } catch (error) {
       console.error('Failed to submit answer:', error)
     } finally {
@@ -275,16 +283,6 @@ export default function GamePage() {
         </div>
 
         {/* Game State Renderer */}
-        {console.log('🎮 GamePage rendering GameStateRenderer with:', {
-          gameDataState: gameData?.state,
-          hasGameData: !!gameData,
-          questionId: gameData?.question?.id,
-          showAnswer: gameData?.showAnswer,
-          correctAnswer: gameData?.question?.correct_answer,
-          playerTeam: currentTeamId,
-          isSubmittingAnswer,
-          isLoading
-        })}
         <GameStateRenderer
           gameData={{
             ...gameData,

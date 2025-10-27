@@ -2,6 +2,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Trophy, Clock, Users, Star, ChevronRight, PartyPopper } from 'lucide-react'
 import { GameScoreboard, ScoreboardTeam } from '@/types/games'
+import { getShuffledAnswers, getCorrectAnswerLabel } from '@/lib/answerShuffler'
 
 type GameState = 'game-start' | 'round-start' | 'round-play' | 'round-end' | 'game-end' | 'thanks' | 'return-to-lobby'
 
@@ -167,31 +168,41 @@ export default function GameStateDisplay({ gameData, rounds, game }: GameStateDi
                   </CardTitle>
                 </CardHeader>
                 <CardContent>
-                  <div className="space-y-3">
-                    {gameData.question && [
-                      { key: 'A', text: gameData.question.a },
-                      { key: 'B', text: gameData.question.b },
-                      { key: 'C', text: gameData.question.c },
-                      { key: 'D', text: gameData.question.d }
-                    ].map((answer) => (
-                      <div
-                        key={answer.key}
-                        className={`p-4 rounded-lg border-2 transition-colors ${
-                          gameData.showAnswer && gameData.question?.correct_answer
-                            ? answer.key === gameData.question.correct_answer
-                              ? 'bg-green-100 border-green-500 text-green-800 dark:bg-green-900 dark:text-green-200'
-                              : 'bg-slate-50 border-slate-300 text-slate-700 dark:bg-slate-800 dark:text-slate-300'
-                            : 'bg-blue-50 border-blue-300 text-blue-700 hover:bg-blue-100 dark:bg-blue-900'
-                        }`}
-                      >
-                        <span className="font-medium">{answer.key}.</span> {answer.text}
+                  {/* Get shuffled answers using the question ID as roundQuestionId */}
+                  {(() => {
+                    const shuffledResult = getShuffledAnswers(
+                      gameData.question.id, // Using question ID as roundQuestionId
+                      gameData.question.a,
+                      gameData.question.b,
+                      gameData.question.c,
+                      gameData.question.d
+                    );
+
+                    const correctAnswerLabel = getCorrectAnswerLabel(gameData.question.id);
+
+                    return (
+                      <div className="space-y-3">
+                        {shuffledResult.shuffledAnswers.map((answer) => (
+                          <div
+                            key={answer.label}
+                            className={`p-4 rounded-lg border-2 transition-colors ${
+                              gameData.showAnswer
+                                ? answer.label === correctAnswerLabel
+                                  ? 'bg-green-100 border-green-500 text-green-800 dark:bg-green-900 dark:text-green-200'
+                                  : 'bg-slate-50 border-slate-300 text-slate-700 dark:bg-slate-800 dark:text-slate-300'
+                                : 'bg-blue-50 border-blue-300 text-blue-700 hover:bg-blue-100 dark:bg-blue-900'
+                            }`}
+                          >
+                            <span className="font-medium">{answer.label}.</span> {answer.text}
+                          </div>
+                        ))}
                       </div>
-                    ))}
-                  </div>
-                  {gameData.showAnswer && gameData.question?.correct_answer && (
+                    );
+                  })()}
+                  {gameData.showAnswer && (
                     <div className="mt-4 p-3 bg-green-100 dark:bg-green-900 rounded-lg">
                       <p className="text-green-800 dark:text-green-200 font-medium">
-                        Correct Answer: {gameData.question.correct_answer}
+                        Correct Answer: {getCorrectAnswerLabel(gameData.question.id)}
                       </p>
                     </div>
                   )}
@@ -209,7 +220,7 @@ export default function GameStateDisplay({ gameData, rounds, game }: GameStateDi
         return (
           <div className="text-center py-12">
             <h2 className="text-3xl font-bold text-slate-800 dark:text-slate-100 mb-6">
-              End of Round {gameData.round?.sequence_number || 1}
+              End of Round {gameData.round?.round_number || 1}
             </h2>
             <div className="bg-white dark:bg-slate-800 rounded-xl shadow-lg p-8 max-w-2xl mx-auto">
               <h3 className="text-xl font-semibold text-slate-700 dark:text-slate-200 mb-4">
