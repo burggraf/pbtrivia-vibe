@@ -185,6 +185,7 @@ export default function ControllerPage() {
             // Move to next question
             await updateGameDataClean({
               state: 'round-play',
+              currentRound: currentRoundIndex, // Preserve the round index
               round: gameData.round,
               question: {
                 id: gameQuestions[nextQuestionNumber - 1].id,
@@ -208,6 +209,7 @@ export default function ControllerPage() {
           if (nextState === 'round-end') {
             await updateGameData({
               state: 'round-end',
+              currentRound: currentRoundIndex, // Preserve the round index
               round: currentRound
             })
             return
@@ -239,9 +241,11 @@ export default function ControllerPage() {
 
     const currentStateIndex = GAME_STATES.indexOf(gameData.state)
     const nextStateIndex = currentStateIndex + 1
+    const nextState = GAME_STATES[nextStateIndex]
+
+    console.log(`🎮 State transition: ${gameData.state} -> ${nextState} (currentRound: ${gameData.currentRound})`)
 
     if (nextStateIndex < GAME_STATES.length) {
-      const nextState = GAME_STATES[nextStateIndex]
 
       // Handle special logic for state transitions
       if (nextState === 'return-to-lobby') {
@@ -353,6 +357,8 @@ export default function ControllerPage() {
       if (gameData.state === 'round-end' && nextState === 'round-start') {
         const currentRoundIndex = gameData.currentRound || 0
         const nextRoundIndex = currentRoundIndex + 1
+
+        console.log(`🔄 Round progression check: current=${currentRoundIndex}, next=${nextRoundIndex}, total=${rounds.length}`)
 
         // Check if there are more rounds
         if (nextRoundIndex < rounds.length) {
