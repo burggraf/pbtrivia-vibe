@@ -4,10 +4,30 @@ import { Game, CreateGameData, UpdateGameData, GameTeam, CreateGameTeamData, Gam
 export const gamesService = {
   async getGames(): Promise<Game[]> {
     try {
-      // Use getList with simple parameters that work with PocketBase
+      // Get games without server-side sorting to avoid field name issues
       const result = await pb.collection('games').getList<Game>(1, 50);
       // Filter client-side by host ID for security
       const userGames = result.items.filter(game => game.host === pb.authStore.model?.id);
+
+      // Sort client-side: start_date (desc), then updated (desc)
+      userGames.sort((a, b) => {
+        // Compare start dates (newest first), treating null/undefined as oldest
+        const aStartDate = a.startdate ? new Date(a.startdate) : new Date('1970-01-01');
+        const bStartDate = b.startdate ? new Date(b.startdate) : new Date('1970-01-01');
+
+        if (aStartDate > bStartDate) return -1;
+        if (aStartDate < bStartDate) return 1;
+
+        // If start dates are equal, sort by updated (newest first)
+        const aUpdated = new Date(a.updated);
+        const bUpdated = new Date(b.updated);
+
+        if (aUpdated > bUpdated) return -1;
+        if (aUpdated < bUpdated) return 1;
+
+        return 0;
+      });
+
       return userGames;
     } catch (error) {
       console.error('Failed to fetch games:', error);

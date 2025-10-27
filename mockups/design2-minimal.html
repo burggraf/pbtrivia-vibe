@@ -1,0 +1,776 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Host Dashboard - Minimal Design</title>
+  <style>
+    /* Reset and Base Styles */
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Roboto", "Oxygen", "Ubuntu", "Cantarell", "Fira Sans", "Droid Sans", "Helvetica Neue", sans-serif;
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
+      background: #fafafa;
+      color: #1a1a1a;
+      line-height: 1.6;
+    }
+
+    /* Container */
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 48px 24px;
+    }
+
+    /* Header */
+    .header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 48px;
+    }
+
+    .header-title {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+
+    .header-title h1 {
+      font-size: 28px;
+      font-weight: 600;
+      letter-spacing: -0.02em;
+      color: #0a0a0a;
+    }
+
+    .header-subtitle {
+      font-size: 14px;
+      color: #737373;
+      font-weight: 400;
+    }
+
+    .header-actions {
+      display: flex;
+      gap: 8px;
+      align-items: center;
+    }
+
+    /* Buttons */
+    .btn {
+      padding: 6px 12px;
+      border-radius: 6px;
+      font-size: 13px;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all 0.15s ease;
+      border: 1px solid transparent;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .btn-primary {
+      background: #0a0a0a;
+      color: #fff;
+      border-color: #0a0a0a;
+    }
+
+    .btn-primary:hover {
+      background: #262626;
+      border-color: #262626;
+    }
+
+    .btn-secondary {
+      background: transparent;
+      color: #525252;
+      border-color: #e5e5e5;
+    }
+
+    .btn-secondary:hover {
+      background: #fafafa;
+      border-color: #d4d4d4;
+    }
+
+    /* Table */
+    .table-container {
+      background: #fff;
+      border: 1px solid #e5e5e5;
+      border-radius: 8px;
+      overflow: hidden;
+    }
+
+    .table-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 16px 20px;
+      border-bottom: 1px solid #e5e5e5;
+    }
+
+    .table-header h2 {
+      font-size: 15px;
+      font-weight: 600;
+      color: #0a0a0a;
+      letter-spacing: -0.01em;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+    }
+
+    thead {
+      border-bottom: 1px solid #e5e5e5;
+    }
+
+    th {
+      text-align: left;
+      padding: 12px 20px;
+      font-size: 12px;
+      font-weight: 500;
+      color: #737373;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      background: #fafafa;
+    }
+
+    tbody tr {
+      border-bottom: 1px solid #f5f5f5;
+      transition: background 0.15s ease;
+    }
+
+    tbody tr:last-child {
+      border-bottom: none;
+    }
+
+    tbody tr:hover {
+      background: #fafafa;
+    }
+
+    td {
+      padding: 16px 20px;
+      font-size: 14px;
+      vertical-align: middle;
+    }
+
+    /* Game Name Cell */
+    .game-name {
+      font-weight: 500;
+      color: #0a0a0a;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .game-code {
+      font-family: 'SF Mono', Monaco, 'Cascadia Code', 'Roboto Mono', Consolas, 'Courier New', monospace;
+      font-size: 12px;
+      color: #525252;
+      background: #f5f5f5;
+      padding: 3px 8px;
+      border-radius: 4px;
+      font-weight: 500;
+      letter-spacing: 0.02em;
+    }
+
+    /* Status Badge */
+    .status-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 4px 10px;
+      border-radius: 6px;
+      font-size: 12px;
+      font-weight: 500;
+      white-space: nowrap;
+    }
+
+    .status-dot {
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+    }
+
+    .status-setup {
+      background: #f5f5f5;
+      color: #525252;
+    }
+
+    .status-setup .status-dot {
+      background: #a3a3a3;
+    }
+
+    .status-ready {
+      background: #ecfdf5;
+      color: #065f46;
+    }
+
+    .status-ready .status-dot {
+      background: #10b981;
+    }
+
+    .status-in-progress {
+      background: #eff6ff;
+      color: #1e40af;
+    }
+
+    .status-in-progress .status-dot {
+      background: #3b82f6;
+    }
+
+    .status-completed {
+      background: #f5f5f5;
+      color: #737373;
+    }
+
+    .status-completed .status-dot {
+      background: #a3a3a3;
+    }
+
+    /* Metadata */
+    .metadata {
+      color: #737373;
+      font-size: 13px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .metadata-separator {
+      color: #d4d4d4;
+    }
+
+    /* Rounds Column */
+    .rounds-info {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      color: #525252;
+      font-size: 13px;
+    }
+
+    .rounds-count {
+      font-weight: 500;
+      color: #0a0a0a;
+    }
+
+    /* Actions Column */
+    .actions {
+      display: flex;
+      gap: 6px;
+      justify-content: flex-end;
+    }
+
+    .icon-btn {
+      width: 32px;
+      height: 32px;
+      border-radius: 6px;
+      border: 1px solid #e5e5e5;
+      background: transparent;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.15s ease;
+      color: #737373;
+    }
+
+    .icon-btn:hover {
+      background: #fafafa;
+      border-color: #d4d4d4;
+      color: #0a0a0a;
+    }
+
+    .icon-btn.primary {
+      background: #0a0a0a;
+      border-color: #0a0a0a;
+      color: #fff;
+    }
+
+    .icon-btn.primary:hover {
+      background: #262626;
+      border-color: #262626;
+    }
+
+    /* Empty State */
+    .empty-state {
+      padding: 80px 20px;
+      text-align: center;
+    }
+
+    .empty-state-title {
+      font-size: 15px;
+      font-weight: 500;
+      color: #0a0a0a;
+      margin-bottom: 4px;
+    }
+
+    .empty-state-subtitle {
+      font-size: 13px;
+      color: #737373;
+    }
+
+    /* Icons (Simple SVG) */
+    .icon {
+      width: 16px;
+      height: 16px;
+    }
+
+    /* User Menu */
+    .user-menu {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 6px 10px;
+      border-radius: 6px;
+      border: 1px solid #e5e5e5;
+      background: #fff;
+      cursor: pointer;
+      transition: all 0.15s ease;
+    }
+
+    .user-menu:hover {
+      background: #fafafa;
+      border-color: #d4d4d4;
+    }
+
+    .user-avatar {
+      width: 20px;
+      height: 20px;
+      border-radius: 50%;
+      background: #0a0a0a;
+      color: #fff;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 10px;
+      font-weight: 600;
+    }
+
+    .user-name {
+      font-size: 13px;
+      font-weight: 500;
+      color: #0a0a0a;
+    }
+
+    /* Theme Toggle */
+    .theme-toggle {
+      width: 32px;
+      height: 32px;
+      border-radius: 6px;
+      border: 1px solid #e5e5e5;
+      background: #fff;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.15s ease;
+    }
+
+    .theme-toggle:hover {
+      background: #fafafa;
+      border-color: #d4d4d4;
+    }
+
+    /* Responsive */
+    @media (max-width: 768px) {
+      .container {
+        padding: 24px 16px;
+      }
+
+      .header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 16px;
+      }
+
+      .metadata {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 4px;
+      }
+
+      .metadata-separator {
+        display: none;
+      }
+    }
+
+    /* Subtle Animations */
+    @keyframes fadeIn {
+      from {
+        opacity: 0;
+        transform: translateY(4px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    tbody tr {
+      animation: fadeIn 0.3s ease;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <!-- Header -->
+    <header class="header">
+      <div class="header-title">
+        <h1>Host Dashboard</h1>
+        <p class="header-subtitle">Manage your trivia games</p>
+      </div>
+      <div class="header-actions">
+        <button class="theme-toggle" title="Toggle theme">
+          <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <circle cx="12" cy="12" r="5"/>
+            <line x1="12" y1="1" x2="12" y2="3"/>
+            <line x1="12" y1="21" x2="12" y2="23"/>
+            <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/>
+            <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/>
+            <line x1="1" y1="12" x2="3" y2="12"/>
+            <line x1="21" y1="12" x2="23" y2="12"/>
+            <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/>
+            <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/>
+          </svg>
+        </button>
+        <div class="user-menu">
+          <div class="user-avatar">H</div>
+          <span class="user-name">Host</span>
+        </div>
+      </div>
+    </header>
+
+    <!-- Games Table -->
+    <div class="table-container">
+      <div class="table-header">
+        <h2>Games</h2>
+        <button class="btn btn-primary">
+          <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <line x1="12" y1="5" x2="12" y2="19"/>
+            <line x1="5" y1="12" x2="19" y2="12"/>
+          </svg>
+          New Game
+        </button>
+      </div>
+      <table>
+        <thead>
+          <tr>
+            <th>Name</th>
+            <th>Status</th>
+            <th>Details</th>
+            <th>Rounds</th>
+            <th style="text-align: right;">Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          <!-- Game Six - Setup -->
+          <tr>
+            <td>
+              <div class="game-name">
+                <span>Game Six</span>
+                <span class="game-code">4YJE5P</span>
+              </div>
+            </td>
+            <td>
+              <span class="status-badge status-setup">
+                <span class="status-dot"></span>
+                Setup
+              </span>
+            </td>
+            <td>
+              <div class="metadata">
+                <span>Jan 15, 2025 at 7:00 PM</span>
+                <span class="metadata-separator">·</span>
+                <span>90 min</span>
+                <span class="metadata-separator">·</span>
+                <span>Downtown Venue</span>
+              </div>
+            </td>
+            <td>
+              <div class="rounds-info">
+                <span class="rounds-count">3</span>
+                <span>rounds</span>
+              </div>
+            </td>
+            <td>
+              <div class="actions">
+                <button class="icon-btn" title="Edit game">
+                  <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
+                    <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>
+                  </svg>
+                </button>
+                <button class="icon-btn" title="More options">
+                  <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <circle cx="12" cy="12" r="1"/>
+                    <circle cx="12" cy="5" r="1"/>
+                    <circle cx="12" cy="19" r="1"/>
+                  </svg>
+                </button>
+              </div>
+            </td>
+          </tr>
+
+          <!-- Game Five - Ready -->
+          <tr>
+            <td>
+              <div class="game-name">
+                <span>Game Five</span>
+                <span class="game-code">M8KL2Q</span>
+              </div>
+            </td>
+            <td>
+              <span class="status-badge status-ready">
+                <span class="status-dot"></span>
+                Ready
+              </span>
+            </td>
+            <td>
+              <div class="metadata">
+                <span>Jan 20, 2025 at 6:30 PM</span>
+                <span class="metadata-separator">·</span>
+                <span>2h 30m</span>
+                <span class="metadata-separator">·</span>
+                <span>Community Center</span>
+              </div>
+            </td>
+            <td>
+              <div class="rounds-info">
+                <span class="rounds-count">5</span>
+                <span>rounds</span>
+              </div>
+            </td>
+            <td>
+              <div class="actions">
+                <button class="icon-btn primary" title="Start game">
+                  <svg class="icon" viewBox="0 0 24 24" fill="currentColor">
+                    <polygon points="5 3 19 12 5 21 5 3"/>
+                  </svg>
+                </button>
+                <button class="icon-btn" title="Edit game">
+                  <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
+                    <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>
+                  </svg>
+                </button>
+                <button class="icon-btn" title="More options">
+                  <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <circle cx="12" cy="12" r="1"/>
+                    <circle cx="12" cy="5" r="1"/>
+                    <circle cx="12" cy="19" r="1"/>
+                  </svg>
+                </button>
+              </div>
+            </td>
+          </tr>
+
+          <!-- Game Four - In Progress -->
+          <tr>
+            <td>
+              <div class="game-name">
+                <span>Game Four</span>
+                <span class="game-code">N7P3QW</span>
+              </div>
+            </td>
+            <td>
+              <span class="status-badge status-in-progress">
+                <span class="status-dot"></span>
+                In Progress
+              </span>
+            </td>
+            <td>
+              <div class="metadata">
+                <span>Jan 10, 2025 at 8:00 PM</span>
+                <span class="metadata-separator">·</span>
+                <span>60 min</span>
+                <span class="metadata-separator">·</span>
+                <span>Local Pub</span>
+              </div>
+            </td>
+            <td>
+              <div class="rounds-info">
+                <span class="rounds-count">4</span>
+                <span>rounds</span>
+              </div>
+            </td>
+            <td>
+              <div class="actions">
+                <button class="icon-btn primary" title="Continue game">
+                  <svg class="icon" viewBox="0 0 24 24" fill="currentColor">
+                    <polygon points="5 3 19 12 5 21 5 3"/>
+                  </svg>
+                </button>
+                <button class="icon-btn" title="View details">
+                  <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <circle cx="12" cy="12" r="10"/>
+                    <line x1="12" y1="16" x2="12" y2="12"/>
+                    <line x1="12" y1="8" x2="12.01" y2="8"/>
+                  </svg>
+                </button>
+                <button class="icon-btn" title="More options">
+                  <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <circle cx="12" cy="12" r="1"/>
+                    <circle cx="12" cy="5" r="1"/>
+                    <circle cx="12" cy="19" r="1"/>
+                  </svg>
+                </button>
+              </div>
+            </td>
+          </tr>
+
+          <!-- Game Three - Completed -->
+          <tr>
+            <td>
+              <div class="game-name">
+                <span>Game Three</span>
+                <span class="game-code">R2T9XY</span>
+              </div>
+            </td>
+            <td>
+              <span class="status-badge status-completed">
+                <span class="status-dot"></span>
+                Completed
+              </span>
+            </td>
+            <td>
+              <div class="metadata">
+                <span>Jan 5, 2025 at 7:30 PM</span>
+                <span class="metadata-separator">·</span>
+                <span>90 min</span>
+                <span class="metadata-separator">·</span>
+                <span>Office Space</span>
+              </div>
+            </td>
+            <td>
+              <div class="rounds-info">
+                <span class="rounds-count">3</span>
+                <span>rounds</span>
+              </div>
+            </td>
+            <td>
+              <div class="actions">
+                <button class="icon-btn" title="View results">
+                  <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
+                    <circle cx="12" cy="12" r="3"/>
+                  </svg>
+                </button>
+                <button class="icon-btn" title="More options">
+                  <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <circle cx="12" cy="12" r="1"/>
+                    <circle cx="12" cy="5" r="1"/>
+                    <circle cx="12" cy="19" r="1"/>
+                  </svg>
+                </button>
+              </div>
+            </td>
+          </tr>
+
+          <!-- Game Two - Completed -->
+          <tr>
+            <td>
+              <div class="game-name">
+                <span>Game Two</span>
+                <span class="game-code">A5B9CD</span>
+              </div>
+            </td>
+            <td>
+              <span class="status-badge status-completed">
+                <span class="status-dot"></span>
+                Completed
+              </span>
+            </td>
+            <td>
+              <div class="metadata">
+                <span>Dec 28, 2024 at 6:00 PM</span>
+                <span class="metadata-separator">·</span>
+                <span>2h</span>
+                <span class="metadata-separator">·</span>
+                <span>Convention Hall</span>
+              </div>
+            </td>
+            <td>
+              <div class="rounds-info">
+                <span class="rounds-count">6</span>
+                <span>rounds</span>
+              </div>
+            </td>
+            <td>
+              <div class="actions">
+                <button class="icon-btn" title="View results">
+                  <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
+                    <circle cx="12" cy="12" r="3"/>
+                  </svg>
+                </button>
+                <button class="icon-btn" title="More options">
+                  <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <circle cx="12" cy="12" r="1"/>
+                    <circle cx="12" cy="5" r="1"/>
+                    <circle cx="12" cy="19" r="1"/>
+                  </svg>
+                </button>
+              </div>
+            </td>
+          </tr>
+
+          <!-- Game One - Completed -->
+          <tr>
+            <td>
+              <div class="game-name">
+                <span>Game One</span>
+                <span class="game-code">XNKTNA</span>
+              </div>
+            </td>
+            <td>
+              <span class="status-badge status-completed">
+                <span class="status-dot"></span>
+                Completed
+              </span>
+            </td>
+            <td>
+              <div class="metadata">
+                <span>Dec 20, 2024 at 7:00 PM</span>
+                <span class="metadata-separator">·</span>
+                <span>90 min</span>
+                <span class="metadata-separator">·</span>
+                <span>Startup Lounge</span>
+              </div>
+            </td>
+            <td>
+              <div class="rounds-info">
+                <span class="rounds-count">4</span>
+                <span>rounds</span>
+              </div>
+            </td>
+            <td>
+              <div class="actions">
+                <button class="icon-btn" title="View results">
+                  <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
+                    <circle cx="12" cy="12" r="3"/>
+                  </svg>
+                </button>
+                <button class="icon-btn" title="More options">
+                  <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <circle cx="12" cy="12" r="1"/>
+                    <circle cx="12" cy="5" r="1"/>
+                    <circle cx="12" cy="19" r="1"/>
+                  </svg>
+                </button>
+              </div>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</body>
+</html>
