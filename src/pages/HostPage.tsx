@@ -209,7 +209,7 @@ export default function HostPage() {
     }
   }
 
-  const handleSaveRound = async (data: UpdateRoundData) => {
+  const handleSaveRound = async (data: UpdateRoundData, shouldReplaceQuestions?: boolean) => {
     try {
       setSaving(true)
       if (isRoundCreateMode && currentGameId) {
@@ -250,7 +250,42 @@ export default function HostPage() {
 
         await fetchGames()
       } else if (editingRound && !isRoundCreateMode) {
+        // If replacing questions, delete existing ones first
+        if (shouldReplaceQuestions) {
+          await gameQuestionsService.deleteGameQuestions(editingRound.id)
+        }
+
         await roundsService.updateRound(editingRound.id, data)
+
+        // If replacing questions, generate new ones
+        if (shouldReplaceQuestions && data.categories && data.categories.length > 0 && data.question_count && data.question_count > 0) {
+          try {
+            // Get random questions from the selected categories that haven't been used by this host
+            const selectedQuestions = await questionsService.getRandomQuestionsFromCategories(
+              data.categories,
+              data.question_count,
+              pb.authStore.model?.id
+            )
+
+            if (selectedQuestions.length > 0) {
+              // Create game_questions entries
+              const questionsForRound = selectedQuestions.map((question, index) => ({
+                questionId: question.id,
+                sequence: index + 1,
+                categoryName: question.category
+              }))
+
+              await gameQuestionsService.createGameQuestionsBatch(editingRound.id, questionsForRound)
+              console.log(`Replaced questions for round "${editingRound.title}" with ${selectedQuestions.length} new questions`)
+            } else {
+              console.warn(`No available questions found for categories: ${data.categories.join(', ')}`)
+            }
+          } catch (questionError) {
+            console.error('Failed to add questions to round:', questionError)
+            // Note: We don't throw here to allow the round update to succeed even if question assignment fails
+          }
+        }
+
         await fetchGames()
       }
       setRoundModalOpen(false)

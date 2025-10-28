@@ -12,7 +12,7 @@ interface RoundEditModalProps {
   round: Round | null
   isOpen: boolean
   onClose: () => void
-  onSave: (data: UpdateRoundData) => Promise<void>
+  onSave: (data: UpdateRoundData, shouldReplaceQuestions?: boolean) => Promise<void>
   onDelete?: () => Promise<void>
   isLoading?: boolean
   isCreateMode?: boolean
@@ -26,6 +26,7 @@ export default function RoundEditModal({ round, isOpen, onClose, onSave, onDelet
     sequence_number: 1
   })
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false)
+  const [showReplaceConfirm, setShowReplaceConfirm] = useState(false)
 
   useEffect(() => {
     if (round) {
@@ -50,6 +51,13 @@ export default function RoundEditModal({ round, isOpen, onClose, onSave, onDelet
     e.preventDefault()
     if (!round && !isCreateMode) return
 
+    // If editing an existing round, show confirmation first
+    if (!isCreateMode && round) {
+      setShowReplaceConfirm(true)
+      return
+    }
+
+    // Create mode proceeds normally
     await onSave(formData)
     onClose()
   }
@@ -95,6 +103,16 @@ export default function RoundEditModal({ round, isOpen, onClose, onSave, onDelet
 
   const handleDeleteCancel = () => {
     setShowDeleteConfirm(false)
+  }
+
+  const handleReplaceConfirm = async () => {
+    await onSave(formData, true)
+    setShowReplaceConfirm(false)
+    onClose()
+  }
+
+  const handleReplaceCancel = () => {
+    setShowReplaceConfirm(false)
   }
 
   if (!round && !isCreateMode) return null
@@ -243,6 +261,31 @@ export default function RoundEditModal({ round, isOpen, onClose, onSave, onDelet
             </Button>
             <Button type="button" variant="destructive" onClick={handleDeleteConfirm}>
               Delete Round
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Replace Questions Confirmation Dialog */}
+      <Dialog open={showReplaceConfirm} onOpenChange={setShowReplaceConfirm}>
+        <DialogContent className="sm:max-w-[425px]">
+          <DialogHeader>
+            <DialogTitle>Replace Round Questions?</DialogTitle>
+            <DialogDescription>
+              This will delete all existing questions for this round and generate new questions based on the selected categories and question count.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="py-4">
+            <p className="text-sm text-slate-600 dark:text-slate-400">
+              This action will permanently remove the current questions and replace them with newly generated ones.
+            </p>
+          </div>
+          <DialogFooter>
+            <Button type="button" variant="outline" onClick={handleReplaceCancel}>
+              Cancel
+            </Button>
+            <Button type="button" onClick={handleReplaceConfirm} disabled={isLoading}>
+              Replace Questions
             </Button>
           </DialogFooter>
         </DialogContent>
