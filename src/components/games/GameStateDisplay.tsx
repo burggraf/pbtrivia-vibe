@@ -4,6 +4,7 @@ import { Trophy, Clock, Users, Star, ChevronRight, PartyPopper } from 'lucide-re
 import { GameScoreboard, ScoreboardTeam } from '@/types/games'
 import { getShuffledAnswers, getCorrectAnswerLabel } from '@/lib/answerShuffler'
 import RoundStartDisplay from './RoundStartDisplay'
+import RoundPlayDisplay from './RoundPlayDisplay'
 
 type GameState = 'game-start' | 'round-start' | 'round-play' | 'round-end' | 'game-end' | 'thanks' | 'return-to-lobby'
 
@@ -109,64 +110,8 @@ export default function GameStateDisplay({ gameData, rounds, game }: GameStateDi
 
       case 'round-play':
         return (
-          <div className="text-center py-12">
-            <h2 className="text-2xl font-bold text-slate-800 dark:text-slate-100 mb-6">
-              Round {gameData.round?.round_number || 1} of {gameData.round?.rounds || 1} - Question {gameData.question?.question_number || 1}
-            </h2>
-            {gameData.question ? (
-              <Card className="max-w-2xl mx-auto">
-                <CardHeader>
-                  <CardTitle className="text-xl">
-                    {gameData.question.question}
-                  </CardTitle>
-                </CardHeader>
-                <CardContent>
-                  {/* Get shuffled answers using the question ID as roundQuestionId */}
-                  {(() => {
-                    const shuffledResult = getShuffledAnswers(
-                      gameData.question.id, // Using question ID as roundQuestionId
-                      gameData.question.a,
-                      gameData.question.b,
-                      gameData.question.c,
-                      gameData.question.d
-                    );
-
-                    const correctAnswerLabel = getCorrectAnswerLabel(gameData.question.id);
-                    const isAnswerRevealed = !!gameData.question.correct_answer;
-
-                    return (
-                      <div className="space-y-3">
-                        {shuffledResult.shuffledAnswers.map((answer) => (
-                          <div
-                            key={answer.label}
-                            className={`p-4 rounded-lg border-2 transition-colors ${
-                              isAnswerRevealed
-                                ? answer.label === correctAnswerLabel
-                                  ? 'bg-green-100 border-green-500 text-green-800 dark:bg-green-900 dark:text-green-200'
-                                  : 'bg-slate-50 border-slate-300 text-slate-700 dark:bg-slate-800 dark:text-slate-300'
-                                : 'bg-blue-50 border-blue-300 text-blue-700 hover:bg-blue-100 dark:bg-blue-900'
-                            }`}
-                          >
-                            <span className="font-medium">{answer.label}.</span> {answer.text}
-                          </div>
-                        ))}
-                      </div>
-                    );
-                  })()}
-                  {gameData.question.correct_answer && (
-                    <div className="mt-4 p-3 bg-green-100 dark:bg-green-900 rounded-lg">
-                      <p className="text-green-800 dark:text-green-200 font-medium">
-                        Correct Answer: {gameData.question.correct_answer}
-                      </p>
-                    </div>
-                  )}
-                </CardContent>
-              </Card>
-            ) : (
-              <div className="text-center py-8">
-                <p className="text-slate-600 dark:text-slate-400">Loading question...</p>
-              </div>
-            )}
+          <div className="py-12">
+            <RoundPlayDisplay gameData={gameData} mode="controller" />
           </div>
         )
 
