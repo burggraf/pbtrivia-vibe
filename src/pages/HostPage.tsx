@@ -183,18 +183,12 @@ export default function HostPage() {
       try {
         setSaving(true)
 
-        // First, get all rounds for this game
-        const gameRounds = await roundsService.getRounds(editingGame.id)
-
-        // Delete all associated game_questions and rounds first
-        for (const round of gameRounds) {
-          // Delete game_questions for this round first
-          await gameQuestionsService.deleteGameQuestions(round.id)
-          // Then delete the round itself
-          await roundsService.deleteRound(round.id)
-        }
-
-        // Now delete the game
+        // With cascade delete enabled, deleting the game will automatically delete:
+        // - rounds
+        // - game_questions
+        // - game_answers
+        // - game_teams
+        // - game_players
         await gamesService.deleteGame(editingGame.id)
 
         await fetchGames()
@@ -249,6 +243,7 @@ export default function HostPage() {
       } else if (editingRound && !isRoundCreateMode) {
         // If replacing questions, delete existing ones first
         if (shouldReplaceQuestions) {
+          // With cascade delete enabled, deleting game_questions will automatically delete game_answers
           await gameQuestionsService.deleteGameQuestions(editingRound.id)
         }
 
@@ -300,10 +295,10 @@ export default function HostPage() {
       try {
         setSaving(true)
 
-        // First, delete all game_questions associated with this round
-        await gameQuestionsService.deleteGameQuestions(editingRound.id)
-
-        // Then delete the round itself
+        // With cascade delete enabled, we only need to delete the round
+        // PocketBase will automatically delete:
+        // - game_questions
+        // - game_answers
         await roundsService.deleteRound(editingRound.id)
 
         await fetchGames()

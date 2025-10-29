@@ -90,7 +90,7 @@ export default function LobbyPage() {
         const newTeam = await gameTeamsService.createTeam({
           game: currentGame.id,
           name: newTeamName
-        })
+        }, currentGame.host) // Pass the game host ID
         finalTeamId = newTeam.id
       }
 
@@ -109,7 +109,7 @@ export default function LobbyPage() {
           game: currentGame.id,
           player: pb.authStore.model.id,
           team: finalTeamId || undefined
-        })
+        }, currentGame.host) // Pass the game host ID
         console.log('Created new player record')
       }
 

@@ -131,11 +131,11 @@ export const gameTeamsService = {
     }
   },
 
-  async createTeam(data: CreateGameTeamData): Promise<GameTeam> {
+  async createTeam(data: CreateGameTeamData, gameHostId?: string): Promise<GameTeam> {
     try {
       const teamData = {
         ...data,
-        host: pb.authStore.model?.id,
+        host: gameHostId || pb.authStore.model?.id, // Use game host if provided, otherwise current user
       };
 
       const record = await pb.collection('game_teams').create<GameTeam>(teamData);
@@ -148,11 +148,11 @@ export const gameTeamsService = {
 };
 
 export const gamePlayersService = {
-  async createPlayer(data: CreateGamePlayerData): Promise<GamePlayer> {
+  async createPlayer(data: CreateGamePlayerData, gameHostId?: string): Promise<GamePlayer> {
     try {
       const playerData = {
         ...data,
-        host: pb.authStore.model?.id,
+        host: gameHostId || pb.authStore.model?.id, // Use game host if provided, otherwise current user
       };
 
       const record = await pb.collection('game_players').create<GamePlayer>(playerData);

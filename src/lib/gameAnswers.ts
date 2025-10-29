@@ -4,15 +4,11 @@ import { GameAnswer, CreateGameAnswerData } from '@/types/games'
 class GameAnswersService {
   async createAnswer(data: CreateGameAnswerData): Promise<GameAnswer> {
     try {
-      // Ensure the host field is set
-      const hostId = pb.authStore.model?.id
-      if (!hostId) {
-        throw new Error('User not authenticated')
-      }
-
+      // For game_answers, the host should be the game host, not the current user
+      // The calling code should ensure the host field is properly set
       const answerData = {
         ...data,
-        host: hostId // Explicitly set the host
+        host: data.host // Use the provided host (should be game host)
       }
 
       console.log('📝 Creating answer with data:', {
@@ -104,6 +100,7 @@ class GameAnswersService {
     }
   }
 
+  
   async submitTeamAnswer(
     gameId: string,
     gameQuestionsId: string,
@@ -125,18 +122,19 @@ class GameAnswersService {
     })
 
     try {
+      // Get the game to find the actual game host
+      const game = await pb.collection('games').getOne(gameId)
+      const gameHostId = game.host
+
+      console.log('🏠 Found game host:', gameHostId)
+
       // Check if answer already exists for this team and question
       const existingAnswers = await this.getTeamAnswersForQuestion(gameId, gameQuestionsId)
       const existingAnswer = existingAnswers.find(a => a.team === teamId)
 
       const isCorrect = correctAnswer ? answer.toUpperCase() === correctAnswer.toUpperCase() : undefined
-      const hostId = pb.authStore.model?.id
 
-      if (!hostId) {
-        throw new Error('User not authenticated')
-      }
-
-      console.log('✅ Submitting answer with host:', hostId, {
+      console.log('✅ Submitting answer with game host:', gameHostId, {
         gameId,
         gameQuestionsId,
         teamId,
@@ -146,19 +144,20 @@ class GameAnswersService {
       })
 
       if (existingAnswer) {
-        // Update existing answer
+        // Update existing answer - keep the original host (game host)
         return await this.updateAnswer(existingAnswer.id, {
           answer,
           is_correct: isCorrect
         })
       } else {
-        // Create new answer with explicit host
+        // Create new answer with game host (not current user)
         return await this.createAnswer({
           game: gameId,
           game_questions_id: gameQuestionsId,
           team: teamId,
           answer,
-          is_correct: isCorrect
+          is_correct: isCorrect,
+          host: gameHostId // Explicitly set the game host
         })
       }
     } catch (error) {
