@@ -189,12 +189,16 @@ export default function RoundPlayDisplay({ gameData, mode = 'controller', onAnsw
                   return (
                     <div
                       key={answer.label}
-                      className={answerClasses}
+                      className={`${answerClasses} flex justify-between items-start`}
                     >
-                      <span className="font-medium">{answer.label}.</span> {answer.text}
-                      {isCorrectAnswer && (
-                        <span className="ml-2 text-green-600 dark:text-green-400">✓</span>
-                      )}
+                      <div>
+                        <span className="font-medium">{answer.label}.</span> {answer.text}
+                      </div>
+                      <div className="flex-shrink-0 ml-2">
+                        {isCorrectAnswer && (
+                          <span className="text-green-600 dark:text-green-400">✓</span>
+                        )}
+                      </div>
                     </div>
                   )
                 } else {
