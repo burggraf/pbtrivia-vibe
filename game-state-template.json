@@ -1,0 +1,22 @@
+{
+    "state": "round-play",
+    "round": {
+        "round_number": <round_sequence_number>,
+        "rounds": <total_rounds>,
+        "question_count": <questions_in_round>,
+        "title": "<round_title>"
+    },
+    "question": {
+        "id": "<game_questions.id>",
+        "question_number": <question_sequence_number>,
+        "category": "<question_category>",
+        "question": "<question_text>",
+        "difficulty": "<question_difficulty>",
+        "a": "<answer_option_a>",
+        "b": "<answer_option_b>",
+        "c": "<answer_option_c>",
+        "d": "<answer_option_d>",
+        "correct_answer": "<correct_answer_option>",
+        "submitted_answer": "<team_submitted_answer>"
+    }
+}

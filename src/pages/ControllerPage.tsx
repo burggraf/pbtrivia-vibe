@@ -555,6 +555,16 @@ export default function ControllerPage() {
             </div>
           </div>
         )}
+
+        {/* Debug State Display */}
+        <div className="mt-8 p-4 bg-slate-100 dark:bg-slate-800 rounded-lg">
+          <h3 className="text-sm font-semibold text-slate-700 dark:text-slate-300 mb-2">
+            Debug: Current Game State
+          </h3>
+          <pre className="text-xs text-slate-600 dark:text-slate-400 overflow-auto">
+            {JSON.stringify(gameData, null, 2)}
+          </pre>
+        </div>
       </div>
     </div>
   )
