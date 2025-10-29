@@ -6,7 +6,12 @@ interface RoundStartProps {
     state: 'round-start'
     name?: string
     title?: string
-    round?: number
+    round?: {
+      round_number: number
+      rounds: number
+      question_count: number
+      title: string
+    }
     round_number?: number
     rounds?: number | { rounds: number; round_number: number; question_count: number; title: string }
     questions?: number
@@ -17,13 +22,15 @@ interface RoundStartProps {
 
 export default function RoundStart({ gameData }: RoundStartProps) {
   // Handle both property naming conventions and object/number types
-  const roundNumber = gameData.round || gameData.round_number || 1
+  const roundNumber = gameData.round?.round_number || gameData.round_number || 1
   const gameTitle = gameData.name || gameData.title || 'Trivia Game'
   const questionCount = gameData.questions || gameData.question_count || 0
 
   // Handle rounds being either a number or an object
   let totalRounds: number
-  if (typeof gameData.rounds === 'number') {
+  if (gameData.round?.rounds) {
+    totalRounds = gameData.round.rounds
+  } else if (typeof gameData.rounds === 'number') {
     totalRounds = gameData.rounds
   } else if (typeof gameData.rounds === 'object' && gameData.rounds !== null) {
     totalRounds = gameData.rounds.rounds || 1
