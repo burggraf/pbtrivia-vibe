@@ -89,7 +89,6 @@ export default function RoundPlayDisplay({ gameData, mode = 'controller', onAnsw
   const roundNumber = gameData.round?.round_number || 1
   const totalRounds = gameData.round?.rounds || 1
   const questionNumber = gameData.question?.question_number || 1
-  const roundTitle = gameData.round?.title || 'Round'
 
   return (
     <div className="text-center mb-8">

@@ -124,7 +124,7 @@ export default function GamePage() {
           console.log('Current user team ID:', userTeam[0])
         }
       }
-    } catch (error) {
+    } catch (error: any) {
       console.error('❌ Failed to fetch game data:', error)
       console.error('Error details:', {
         message: error?.message,

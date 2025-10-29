@@ -35,6 +35,9 @@ export interface CreateGameData {
   duration?: number;
   location?: string;
   status?: 'setup' | 'ready' | 'in-progress' | 'completed';
+  rounds?: number;
+  questionsPerRound?: number;
+  categories?: string[];
 }
 
 export interface UpdateGameData {
@@ -43,6 +46,9 @@ export interface UpdateGameData {
   duration?: number;
   location?: string;
   status?: 'setup' | 'ready' | 'in-progress' | 'completed';
+  rounds?: number;
+  questionsPerRound?: number;
+  categories?: string[];
 }
 
 export interface GameTeam {
@@ -90,6 +96,7 @@ export interface GameAnswer {
 }
 
 export interface CreateGameAnswerData {
+  host: string;
   game: string;
   game_questions_id: string;
   team: string;

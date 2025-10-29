@@ -79,7 +79,7 @@ export default function GameEditModal({ game, isOpen, onClose, onSave, onDelete,
     if (checked) {
       handleInputChange('categories', [...currentCategories, category])
     } else {
-      handleInputChange('categories', currentCategories.filter(cat => cat !== category))
+      handleInputChange('categories', currentCategories.filter((cat: string) => cat !== category))
     }
   }
 

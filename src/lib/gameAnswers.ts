@@ -25,7 +25,7 @@ class GameAnswersService {
         const answer = await pb.collection('game_answers').create(answerData)
         console.log('✅ Successfully created game answer:', answer)
         return answer as unknown as GameAnswer
-      } catch (createError) {
+      } catch (createError: any) {
         console.error('❌ Failed to create game answer with detailed error:', {
           error: createError,
           message: createError?.message,

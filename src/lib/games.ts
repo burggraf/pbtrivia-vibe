@@ -48,7 +48,7 @@ export const gamesService = {
       const record = await pb.collection('games').getOne<Game>(id);
       console.log('✅ gamesService.getGame succeeded:', record);
       return record;
-    } catch (error) {
+    } catch (error: any) {
       console.error('❌ gamesService.getGame failed:', error);
       console.error('❌ Error details:', {
         message: error?.message,

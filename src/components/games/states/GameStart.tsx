@@ -4,7 +4,7 @@ interface GameStartProps {
   }
 }
 
-export default function GameStart({ gameData }: GameStartProps) {
+export default function GameStart({ gameData: _gameData }: GameStartProps) {
   return (
     <div className="text-center mb-8">
       <h2 className="text-3xl font-bold text-slate-800 dark:text-slate-100 mb-4">

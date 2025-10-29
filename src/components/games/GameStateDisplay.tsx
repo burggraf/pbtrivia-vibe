@@ -2,7 +2,6 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Trophy, Clock, Users, Star, ChevronRight, PartyPopper } from 'lucide-react'
 import { GameScoreboard, ScoreboardTeam } from '@/types/games'
-import { getShuffledAnswers, getCorrectAnswerLabel } from '@/lib/answerShuffler'
 import RoundStartDisplay from './RoundStartDisplay'
 import RoundPlayDisplay from './RoundPlayDisplay'
 
@@ -111,7 +110,7 @@ export default function GameStateDisplay({ gameData, rounds, game }: GameStateDi
       case 'round-play':
         return (
           <div className="py-12">
-            <RoundPlayDisplay gameData={gameData} mode="controller" />
+            <RoundPlayDisplay gameData={gameData as any} mode="controller" />
           </div>
         )
 
