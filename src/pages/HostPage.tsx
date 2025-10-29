@@ -4,7 +4,6 @@ import { Button } from '@/components/ui/button'
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion'
 import ThemeToggle from '@/components/ThemeToggle'
 import GameEditModal from '@/components/games/GameEditModal'
-import GameStatusModal from '@/components/games/GameStatusModal'
 import RoundEditModal from '@/components/games/RoundEditModal'
 import QuestionsList from '@/components/games/QuestionsList'
 import CategoryIcon, { getAvailableCategories } from '@/components/ui/CategoryIcon'
@@ -28,8 +27,6 @@ export default function HostPage() {
   const [editingRound, setEditingRound] = useState<Round | null>(null)
   const [gameModalOpen, setGameModalOpen] = useState(false)
   const [roundModalOpen, setRoundModalOpen] = useState(false)
-  const [statusModalOpen, setStatusModalOpen] = useState(false)
-  const [statusGame, setStatusGame] = useState<Game | null>(null)
   const [isCreateMode, setIsCreateMode] = useState(false)
   const [isRoundCreateMode, setIsRoundCreateMode] = useState(false)
   const [currentGameId, setCurrentGameId] = useState<string | null>(null)
@@ -318,40 +315,23 @@ export default function HostPage() {
     }
   }
 
-  const handleStatusClick = (game: Game) => {
-    if (game.status === 'setup' || game.status === 'ready') {
-      if (rounds[game.id]?.length > 0) {
-        setStatusGame(game)
-        setStatusModalOpen(true)
-      }
-    }
-  }
-
-  const handleStatusChange = async (newStatus: 'setup' | 'ready') => {
-    if (statusGame) {
-      try {
-        setSaving(true)
-        await gamesService.updateGame(statusGame.id, { status: newStatus })
-        await fetchGames()
-        setStatusModalOpen(false)
-        setStatusGame(null)
-      } catch (error) {
-        console.error('Failed to update game status:', error)
-      } finally {
-        setSaving(false)
-      }
-    }
-  }
-
   const handlePlayGame = async (gameId: string) => {
     try {
       console.log('🎮 Starting game:', gameId)
+
+      const game = games.find(g => g.id === gameId)
+
+      // If game is in setup, change status to ready first
+      if (game?.status === 'setup') {
+        await gamesService.updateGame(gameId, { status: 'ready' })
+        console.log('✅ Game status updated to ready')
+      }
 
       // Initialize game data with starting state
       await pb.collection('games').update(gameId, {
         data: {
           state: 'game-start',
-          name: games.find(g => g.id === gameId)?.name || 'Trivia Game',
+          name: game?.name || 'Trivia Game',
           currentRound: 0
         }
       })
@@ -461,24 +441,7 @@ export default function HostPage() {
 
                             {/* STATUS Column */}
                             <div>
-                              <span
-                                className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-[12px] font-medium transition-colors ${
-                                  (game.status === 'setup' || game.status === 'ready') && rounds[game.id]?.length > 0
-                                    ? 'cursor-pointer hover:opacity-80'
-                                    : 'cursor-not-allowed opacity-50'
-                                } ${getStatusBadgeClasses(game.status)}`}
-                                onClick={(e) => {
-                                  e.stopPropagation()
-                                  handleStatusClick(game)
-                                }}
-                                title={
-                                  (game.status === 'setup' || game.status === 'ready') && rounds[game.id]?.length === 0
-                                    ? "Add rounds before changing status"
-                                    : game.status !== 'setup' && game.status !== 'ready'
-                                    ? "Status cannot be changed"
-                                    : "Click to change game status"
-                                }
-                              >
+                              <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-[12px] font-medium ${getStatusBadgeClasses(game.status)}`}>
                                 <span className="w-1.5 h-1.5 rounded-full bg-current"></span>
                                 {formatGameStatus(game.status)}
                               </span>
@@ -519,14 +482,25 @@ export default function HostPage() {
                                 >
                                   <Eye className="h-4 w-4" />
                                 </button>
-                              ) : (game.status === 'ready' || game.status === 'in-progress') ? (
+                              ) : (game.status === 'setup' || game.status === 'ready' || game.status === 'in-progress') ? (
                                 <button
-                                  className="w-8 h-8 flex items-center justify-center rounded-md bg-[#0a0a0a] dark:bg-white text-white dark:text-slate-900 hover:bg-[#262626] dark:hover:bg-slate-200 transition-colors"
+                                  className={`w-8 h-8 flex items-center justify-center rounded-md transition-colors ${
+                                    game.status === 'setup' && (!rounds[game.id] || rounds[game.id].length === 0)
+                                      ? 'bg-[#f5f5f5] dark:bg-slate-700 text-[#d4d4d4] dark:text-slate-600 cursor-not-allowed'
+                                      : 'bg-[#0a0a0a] dark:bg-white text-white dark:text-slate-900 hover:bg-[#262626] dark:hover:bg-slate-200'
+                                  }`}
                                   onClick={(e) => {
                                     e.stopPropagation()
-                                    handlePlayGame(game.id)
+                                    if (game.status !== 'setup' || (rounds[game.id] && rounds[game.id].length > 0)) {
+                                      handlePlayGame(game.id)
+                                    }
                                   }}
-                                  title="Start game controller"
+                                  disabled={game.status === 'setup' && (!rounds[game.id] || rounds[game.id].length === 0)}
+                                  title={
+                                    game.status === 'setup' && (!rounds[game.id] || rounds[game.id].length === 0)
+                                      ? "Add rounds before starting the game"
+                                      : "Start game controller"
+                                  }
                                 >
                                   <Play className="h-4 w-4" />
                                 </button>
@@ -664,17 +638,6 @@ export default function HostPage() {
           onDelete={!isRoundCreateMode ? handleDeleteRound : undefined}
           isLoading={saving}
           isCreateMode={isRoundCreateMode}
-        />
-
-        <GameStatusModal
-          game={statusGame}
-          isOpen={statusModalOpen}
-          onClose={() => {
-            setStatusModalOpen(false)
-            setStatusGame(null)
-          }}
-          onSave={handleStatusChange}
-          isLoading={saving}
         />
       </div>
     </div>
