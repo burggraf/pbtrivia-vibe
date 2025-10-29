@@ -479,7 +479,56 @@ export default function ControllerPage() {
               </div>
             )}
           </div>
-          <div className="flex gap-3">
+          <div className="flex gap-3 items-center">
+            {/* Navigation Controls */}
+            {game?.scoreboard && Object.keys(game.scoreboard.teams).length > 0 && (
+              <>
+                {game?.status === 'ready' && (
+                  <Button
+                    className="bg-green-600 hover:bg-green-700 dark:bg-green-700 dark:hover:bg-green-600 text-white"
+                    onClick={handleStartGame}
+                  >
+                    Start Game
+                  </Button>
+                )}
+                {gameData && (
+                  <>
+                    <Button
+                      variant="outline"
+                      className="border-slate-300 dark:border-slate-600 text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800"
+                      onClick={handlePreviousState}
+                      disabled={GAME_STATES.indexOf(gameData.state) === 0}
+                    >
+                      {gameData.state === 'round-play' && !!gameData.question?.correct_answer
+                        ? '← Question'
+                        : gameData.state === 'round-play' && !gameData.question?.correct_answer
+                        ? `← Q${Math.max(1, (gameData.question?.question_number || 1) - 1)}`
+                        : '← Back'}
+                    </Button>
+                    <Button
+                      className="bg-blue-600 hover:bg-blue-700 dark:bg-blue-700 dark:hover:bg-blue-600 text-white"
+                      onClick={handleNextState}
+                      disabled={gameData.state === 'return-to-lobby'}
+                    >
+                      {(() => {
+                        const isAnswerRevealed = !!gameData.question?.correct_answer
+                        return gameData.state === 'round-play' && !isAnswerRevealed
+                          ? 'Reveal Answer'
+                          : gameData.state === 'round-play' && isAnswerRevealed
+                          ? `Next Question →`
+                          : gameData.state === 'game-end'
+                          ? 'Thanks →'
+                          : gameData.state === 'thanks'
+                          ? 'Return to Lobby →'
+                          : 'Next →'
+                      })()}
+                    </Button>
+                  </>
+                )}
+              </>
+            )}
+            <div className="w-px h-6 bg-slate-300 dark:bg-slate-600"></div>
+            {/* Page Controls */}
             <ThemeToggle />
             <Button
               variant="outline"
@@ -517,61 +566,7 @@ export default function ControllerPage() {
           />
         )}
 
-        {/* Control Buttons */}
-        {game?.scoreboard && Object.keys(game.scoreboard.teams).length > 0 && (
-          <div className="text-center">
-            <div className="mb-4">
-              <div className="text-sm text-slate-600 dark:text-slate-400 mb-2">
-                Game State: <span className="font-medium">{gameData?.state || 'Not Started'}</span>
-              </div>
-            </div>
-            <div className="flex gap-4 justify-center">
-              {game?.status === 'ready' && (
-                <Button
-                  className="bg-green-600 hover:bg-green-700 dark:bg-green-700 dark:hover:bg-green-600 text-white"
-                  onClick={handleStartGame}
-                >
-                  Start Game
-                </Button>
-              )}
-              {gameData && (
-                <>
-                  <Button
-                    variant="outline"
-                    className="border-slate-300 dark:border-slate-600 text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800"
-                    onClick={handlePreviousState}
-                    disabled={GAME_STATES.indexOf(gameData.state) === 0}
-                  >
-                    {gameData.state === 'round-play' && !!gameData.question?.correct_answer
-                      ? '← Question'
-                      : gameData.state === 'round-play' && !gameData.question?.correct_answer
-                      ? `← Q${Math.max(1, (gameData.question?.question_number || 1) - 1)}`
-                      : '← Back'}
-                  </Button>
-                  <Button
-                    className="bg-blue-600 hover:bg-blue-700 dark:bg-blue-700 dark:hover:bg-blue-600 text-white"
-                    onClick={handleNextState}
-                    disabled={gameData.state === 'return-to-lobby'}
-                  >
-                    {(() => {
-                      const isAnswerRevealed = !!gameData.question?.correct_answer
-                      return gameData.state === 'round-play' && !isAnswerRevealed
-                        ? 'Reveal Answer'
-                        : gameData.state === 'round-play' && isAnswerRevealed
-                        ? `Next Question →`
-                        : gameData.state === 'game-end'
-                        ? 'Thanks →'
-                        : gameData.state === 'thanks'
-                        ? 'Return to Lobby →'
-                        : 'Next →'
-                    })()}
-                  </Button>
-                </>
-              )}
-            </div>
-          </div>
-        )}
-
+  
         {/* Debug State Display */}
         <div className="mt-8 p-4 bg-slate-100 dark:bg-slate-800 rounded-lg">
           <h3 className="text-sm font-semibold text-slate-700 dark:text-slate-300 mb-2">
