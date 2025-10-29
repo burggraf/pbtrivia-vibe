@@ -227,15 +227,7 @@ export default function RoundPlayDisplay({ gameData, mode = 'controller', onAnsw
           )}
 
     
-          {/* Controller-specific answer display */}
-          {mode === 'controller' && shouldShowAnswer && correctAnswerLabel && (
-            <div className="mt-4 p-3 bg-green-100 dark:bg-green-900 rounded-lg">
-              <p className="text-green-800 dark:text-green-200 font-medium">
-                Correct Answer: {correctAnswerLabel}
-              </p>
-            </div>
-          )}
-        </CardContent>
+          </CardContent>
       </Card>
     </div>
   )
