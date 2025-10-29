@@ -21,6 +21,7 @@ interface GameData {
     rounds: number
     question_count: number
     title: string
+    categories: string[]
   }
   question?: {
     id: string
@@ -157,14 +158,30 @@ export default function ControllerPage() {
     }
 
     // Helper to create round object for a given round index
-    const createRoundObject = (roundIndex: number) => {
+    const createRoundObject = async (roundIndex: number) => {
       const round = rounds[roundIndex]
       if (!round) return undefined
+
+      // Get categories for this round
+      let categories: string[] = []
+      try {
+        const gameQuestions = await gameQuestionsService.getGameQuestions(round.id)
+        const uniqueCategories = new Set<string>()
+        for (const gameQuestion of gameQuestions) {
+          const question = await questionsService.getQuestionById(gameQuestion.question)
+          uniqueCategories.add(question.category)
+        }
+        categories = Array.from(uniqueCategories)
+      } catch (error) {
+        console.error('Failed to fetch categories for round:', error)
+      }
+
       return {
         round_number: round.sequence_number,
         rounds: rounds.length,
         question_count: round.question_count,
-        title: round.title
+        title: round.title,
+        categories
       }
     }
 
@@ -250,7 +267,7 @@ export default function ControllerPage() {
     switch (gameData.state) {
       case 'game-start':
         // Move to first round
-        const firstRound = createRoundObject(0)
+        const firstRound = await createRoundObject(0)
         if (firstRound) {
           await updateGameDataClean({
             state: 'round-start',
@@ -296,7 +313,7 @@ export default function ControllerPage() {
         const nextRoundIndex = getCurrentRoundIndex() + 1
         if (nextRoundIndex < rounds.length) {
           // Start next round
-          const nextRound = createRoundObject(nextRoundIndex)
+          const nextRound = await createRoundObject(nextRoundIndex)
           if (nextRound) {
             await updateGameDataClean({
               state: 'round-start',
@@ -445,7 +462,6 @@ export default function ControllerPage() {
       <div className="max-w-6xl mx-auto">
         <div className="flex justify-between items-center mb-8">
           <div>
-            <h1 className="text-3xl font-bold text-slate-800 dark:text-slate-100">Game Controller</h1>
             <p className="text-slate-600 dark:text-slate-400 mt-2">
               Game ID: {id} {game && `- ${game.name}`}
             </p>
@@ -482,15 +498,6 @@ export default function ControllerPage() {
           </div>
         </div>
 
-        {/* Controller Section */}
-        <div className="text-center mb-8">
-          <h2 className="text-2xl font-bold text-slate-800 dark:text-slate-100 mb-4">
-            Game Controller
-          </h2>
-          <p className="text-slate-600 dark:text-slate-400">
-            Manage your game from here. Teams and players are displayed in real-time.
-          </p>
-        </div>
 
         {/* Game State Display */}
         {gameData && game && (

@@ -4,7 +4,12 @@
         "round_number": <round_sequence_number>,
         "rounds": <total_rounds>,
         "question_count": <questions_in_round>,
-        "title": "<round_title>"
+        "title": "<round_title>",
+        "categories": [
+            "<category_1>",
+            "<category_2>",
+            "<category_3>"
+        ]
     },
     "question": {
         "id": "<game_questions.id>",

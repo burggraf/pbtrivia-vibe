@@ -3,6 +3,7 @@ import { Badge } from '@/components/ui/badge'
 import { Trophy, Clock, Users, Star, ChevronRight, PartyPopper } from 'lucide-react'
 import { GameScoreboard, ScoreboardTeam } from '@/types/games'
 import { getShuffledAnswers, getCorrectAnswerLabel } from '@/lib/answerShuffler'
+import RoundStartDisplay from './RoundStartDisplay'
 
 type GameState = 'game-start' | 'round-start' | 'round-play' | 'round-end' | 'game-end' | 'thanks' | 'return-to-lobby'
 
@@ -13,6 +14,7 @@ interface GameData {
     rounds: number
     question_count: number
     title: string
+    categories: string[]
   }
   question?: {
     id: string
@@ -100,36 +102,8 @@ export default function GameStateDisplay({ gameData, rounds, game }: GameStateDi
 
       case 'round-start':
         return (
-          <div className="text-center py-12">
-            <h2 className="text-3xl font-bold text-slate-800 dark:text-slate-100 mb-4">
-              Round {gameData.round?.round_number || 1}
-            </h2>
-            <h3 className="text-2xl text-slate-700 dark:text-slate-200 mb-6">
-              {gameData.round?.title || 'Loading round...'}
-            </h3>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 max-w-2xl mx-auto">
-              <Card>
-                <CardHeader>
-                  <CardTitle className="text-lg">Questions</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <p className="text-2xl font-bold text-slate-800 dark:text-slate-100">
-                    {gameData.round?.question_count || 0}
-                  </p>
-                </CardContent>
-              </Card>
-              <Card>
-                <CardHeader>
-                  <CardTitle className="text-lg">Categories</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div className="flex flex-wrap gap-2 justify-center">
-                    {/* Categories are not in the template - we can get them from the rounds array if needed */}
-                    <p className="text-slate-500">Ready to begin!</p>
-                  </div>
-                </CardContent>
-              </Card>
-            </div>
+          <div className="py-12">
+            <RoundStartDisplay round={gameData.round} rounds={rounds} />
           </div>
         )
 
