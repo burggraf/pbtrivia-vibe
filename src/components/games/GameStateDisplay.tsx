@@ -8,20 +8,6 @@ type GameState = 'game-start' | 'round-start' | 'round-play' | 'round-end' | 'ga
 
 interface GameData {
   state: GameState
-  name?: string
-  rounds?: number
-  currentRound?: number
-  currentQuestion?: number
-  questions?: number
-  categories?: string[]
-  roundData?: any
-  showAnswer?: boolean
-  gameName?: string
-  totalRounds?: number
-  roundScores?: { [teamId: string]: number }
-  playerTeam?: string
-  submittedAnswers?: { [key: string]: string }
-  // New round-play structure
   round?: {
     round_number: number
     rounds: number
@@ -70,9 +56,6 @@ export default function GameStateDisplay({ gameData, rounds, game }: GameStateDi
               <h1 className="text-4xl font-bold text-slate-800 dark:text-slate-100 mb-4">
                 Welcome to the Game!
               </h1>
-              <p className="text-xl text-slate-600 dark:text-slate-400">
-                {gameData?.name}
-              </p>
               <p className="text-lg text-slate-500 dark:text-slate-500 mt-2">
                 Game Code: <span className="font-mono font-bold">{game?.code}</span>
               </p>
@@ -96,7 +79,7 @@ export default function GameStateDisplay({ gameData, rounds, game }: GameStateDi
                 </CardHeader>
                 <CardContent>
                   <p className="text-2xl font-bold text-slate-800 dark:text-slate-100">
-                    {gameData?.rounds || rounds.length}
+                    {rounds.length}
                   </p>
                 </CardContent>
               </Card>
@@ -116,14 +99,13 @@ export default function GameStateDisplay({ gameData, rounds, game }: GameStateDi
         )
 
       case 'round-start':
-        const currentRound = rounds[gameData.currentRound || 0]
         return (
           <div className="text-center py-12">
             <h2 className="text-3xl font-bold text-slate-800 dark:text-slate-100 mb-4">
-              Round {currentRound?.sequence_number || 1}
+              Round {gameData.round?.round_number || 1}
             </h2>
             <h3 className="text-2xl text-slate-700 dark:text-slate-200 mb-6">
-              {currentRound?.title || 'Loading round...'}
+              {gameData.round?.title || 'Loading round...'}
             </h3>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6 max-w-2xl mx-auto">
               <Card>
@@ -132,7 +114,7 @@ export default function GameStateDisplay({ gameData, rounds, game }: GameStateDi
                 </CardHeader>
                 <CardContent>
                   <p className="text-2xl font-bold text-slate-800 dark:text-slate-100">
-                    {currentRound?.question_count || 0}
+                    {gameData.round?.question_count || 0}
                   </p>
                 </CardContent>
               </Card>
@@ -142,11 +124,8 @@ export default function GameStateDisplay({ gameData, rounds, game }: GameStateDi
                 </CardHeader>
                 <CardContent>
                   <div className="flex flex-wrap gap-2 justify-center">
-                    {currentRound?.categories?.map((category: string) => (
-                      <Badge key={category} variant="secondary">
-                        {category}
-                      </Badge>
-                    )) || <p className="text-slate-500">No categories</p>}
+                    {/* Categories are not in the template - we can get them from the rounds array if needed */}
+                    <p className="text-slate-500">Ready to begin!</p>
                   </div>
                 </CardContent>
               </Card>
@@ -179,6 +158,7 @@ export default function GameStateDisplay({ gameData, rounds, game }: GameStateDi
                     );
 
                     const correctAnswerLabel = getCorrectAnswerLabel(gameData.question.id);
+                    const isAnswerRevealed = !!gameData.question.correct_answer;
 
                     return (
                       <div className="space-y-3">
@@ -186,7 +166,7 @@ export default function GameStateDisplay({ gameData, rounds, game }: GameStateDi
                           <div
                             key={answer.label}
                             className={`p-4 rounded-lg border-2 transition-colors ${
-                              gameData.showAnswer
+                              isAnswerRevealed
                                 ? answer.label === correctAnswerLabel
                                   ? 'bg-green-100 border-green-500 text-green-800 dark:bg-green-900 dark:text-green-200'
                                   : 'bg-slate-50 border-slate-300 text-slate-700 dark:bg-slate-800 dark:text-slate-300'
@@ -199,10 +179,10 @@ export default function GameStateDisplay({ gameData, rounds, game }: GameStateDi
                       </div>
                     );
                   })()}
-                  {gameData.showAnswer && (
+                  {gameData.question.correct_answer && (
                     <div className="mt-4 p-3 bg-green-100 dark:bg-green-900 rounded-lg">
                       <p className="text-green-800 dark:text-green-200 font-medium">
-                        Correct Answer: {getCorrectAnswerLabel(gameData.question.id)}
+                        Correct Answer: {gameData.question.correct_answer}
                       </p>
                     </div>
                   )}

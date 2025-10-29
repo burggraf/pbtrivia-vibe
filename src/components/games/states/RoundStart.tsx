@@ -4,39 +4,20 @@ import { Badge } from '@/components/ui/badge'
 interface RoundStartProps {
   gameData: {
     state: 'round-start'
-    name?: string
-    title?: string
     round?: {
       round_number: number
       rounds: number
       question_count: number
       title: string
     }
-    round_number?: number
-    rounds?: number | { rounds: number; round_number: number; question_count: number; title: string }
-    questions?: number
-    question_count?: number
-    categories: string[]
   }
 }
 
 export default function RoundStart({ gameData }: RoundStartProps) {
-  // Handle both property naming conventions and object/number types
-  const roundNumber = gameData.round?.round_number || gameData.round_number || 1
-  const gameTitle = gameData.name || gameData.title || 'Trivia Game'
-  const questionCount = gameData.questions || gameData.question_count || 0
-
-  // Handle rounds being either a number or an object
-  let totalRounds: number
-  if (gameData.round?.rounds) {
-    totalRounds = gameData.round.rounds
-  } else if (typeof gameData.rounds === 'number') {
-    totalRounds = gameData.rounds
-  } else if (typeof gameData.rounds === 'object' && gameData.rounds !== null) {
-    totalRounds = gameData.rounds.rounds || 1
-  } else {
-    totalRounds = 1
-  }
+  const roundNumber = gameData.round?.round_number || 1
+  const totalRounds = gameData.round?.rounds || 1
+  const roundTitle = gameData.round?.title || 'Round'
+  const questionCount = gameData.round?.question_count || 0
 
   return (
     <div className="text-center mb-8">
@@ -44,7 +25,7 @@ export default function RoundStart({ gameData }: RoundStartProps) {
         Round {roundNumber} of {totalRounds}
       </h2>
       <h3 className="text-2xl text-slate-700 dark:text-slate-200 mb-6">
-        {gameTitle}
+        {roundTitle}
       </h3>
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6 max-w-2xl mx-auto">
         <Card>
@@ -59,20 +40,12 @@ export default function RoundStart({ gameData }: RoundStartProps) {
         </Card>
         <Card>
           <CardHeader>
-            <CardTitle className="text-lg">Categories</CardTitle>
+            <CardTitle className="text-lg">Ready to Begin!</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="flex flex-wrap gap-2 justify-center">
-              {gameData.categories.length > 0 ? (
-                gameData.categories.map((category: string) => (
-                  <Badge key={category} variant="secondary">
-                    {category}
-                  </Badge>
-                ))
-              ) : (
-                <p className="text-slate-500">No categories</p>
-              )}
-            </div>
+            <p className="text-slate-600 dark:text-slate-400">
+              Get ready for {questionCount} questions
+            </p>
           </CardContent>
         </Card>
       </div>

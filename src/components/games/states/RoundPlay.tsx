@@ -26,8 +26,7 @@ interface RoundPlayProps {
       correct_answer?: string
       submitted_answer?: string
     }
-    currentQuestion?: number
-    showAnswer?: boolean
+    // These are added by GamePage for player interaction
     playerTeam?: string
     submittedAnswers?: { [key: string]: string }
     isSubmittingAnswer?: boolean
@@ -53,8 +52,8 @@ export default function RoundPlay({ gameData, onAnswerSubmit }: RoundPlayProps) 
     setShowAnswerDebug(false)
   }, [gameData.question?.id, gameData.question?.question_number])
 
-  // Show answer if either the game data says to show it OR if correct_answer exists in the data
-  const shouldShowAnswer = gameData.showAnswer || showAnswerDebug || !!gameData.question?.correct_answer
+  // Show answer if correct_answer exists in the data
+  const shouldShowAnswer = showAnswerDebug || !!gameData.question?.correct_answer
 
   // Get shuffled answers for this question
   const shuffledResult = gameData.question ? getShuffledAnswers(
@@ -139,7 +138,7 @@ export default function RoundPlay({ gameData, onAnswerSubmit }: RoundPlayProps) 
       {/* Round Progress */}
       <div className="mb-6">
         <h2 className="text-xl font-bold text-slate-800 dark:text-slate-100 mb-2">
-          {gameData.round?.title || 'Round'} - Question {gameData.currentQuestion || 1}
+          {gameData.round?.title || 'Round'} - Question {gameData.question.question_number || 1}
         </h2>
         <div className="flex items-center justify-center gap-2">
           <Badge variant="secondary">
@@ -172,7 +171,7 @@ export default function RoundPlay({ gameData, onAnswerSubmit }: RoundPlayProps) 
       <Card className="max-w-3xl mx-auto mb-6">
         <CardHeader>
           <CardTitle className="text-xl">
-            Question {gameData.currentQuestion || 1}
+            Question {gameData.question.question_number || 1}
           </CardTitle>
         </CardHeader>
         <CardContent>

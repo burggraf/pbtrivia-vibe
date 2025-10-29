@@ -9,11 +9,12 @@ interface RoundEndProps {
   gameData: {
     state: 'round-end'
     round?: {
+      round_number: number
+      rounds: number
+      question_count: number
       title: string
-      sequence_number: number
     }
-    roundScores?: { [teamId: string]: number }
-    gameId?: string // Add gameId for score calculation
+    gameId?: string // Add gameId for score calculation (passed separately by renderer)
   }
   scoreboard?: GameScoreboard
 }
@@ -84,7 +85,7 @@ export default function RoundEnd({ gameData, scoreboard }: RoundEndProps) {
   return (
     <div className="text-center mb-8">
       <h2 className="text-3xl font-bold text-slate-800 dark:text-slate-100 mb-4">
-        End of Round {gameData.round?.sequence_number || 1}
+        End of Round {gameData.round?.round_number || 1}
       </h2>
       {gameData.round?.title && (
         <p className="text-xl text-slate-600 dark:text-slate-400 mb-6">

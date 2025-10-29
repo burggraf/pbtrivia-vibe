@@ -8,9 +8,7 @@ import { useState, useEffect } from 'react'
 interface GameEndProps {
   gameData: {
     state: 'game-end'
-    gameName?: string
-    totalRounds?: number
-    gameId?: string // Add gameId for score calculation
+    gameId?: string // Add gameId for score calculation (passed separately by renderer)
   }
   scoreboard?: GameScoreboard
 }
@@ -95,17 +93,9 @@ export default function GameEnd({ gameData, scoreboard }: GameEndProps) {
           <Crown className="h-12 w-12 text-yellow-500" />
         </div>
 
-        {gameData.gameName && (
-          <p className="text-xl text-slate-600 dark:text-slate-400 mb-2">
-            {gameData.gameName}
-          </p>
-        )}
-
-        {gameData.totalRounds && (
-          <p className="text-lg text-slate-500 dark:text-slate-500">
-            {gameData.totalRounds} round{gameData.totalRounds !== 1 ? 's' : ''} completed
-          </p>
-        )}
+        <p className="text-lg text-slate-500 dark:text-slate-500">
+          Congratulations to all teams!
+        </p>
       </div>
 
       {/* Winner Display */}

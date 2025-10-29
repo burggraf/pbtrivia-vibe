@@ -330,9 +330,7 @@ export default function HostPage() {
       // Initialize game data with starting state
       await pb.collection('games').update(gameId, {
         data: {
-          state: 'game-start',
-          name: game?.name || 'Trivia Game',
-          currentRound: 0
+          state: 'game-start'
         }
       })
 
