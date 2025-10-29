@@ -17,6 +17,7 @@ export default function GamePage() {
   const [gameData, setGameData] = useState<any>(null)
   const [isSubmittingAnswer, setIsSubmittingAnswer] = useState(false)
   const [currentTeamId, setCurrentTeamId] = useState<string | null>(null)
+  const [teamAnswer, setTeamAnswer] = useState<{ answer: string, isCorrect?: boolean } | null>(null)
 
   const handleLogout = async () => {
     try {
@@ -62,15 +63,7 @@ export default function GamePage() {
         'A' // The correct answer is always 'A' in the database
       )
 
-      // Update the game data to reflect that this team has submitted
-      setGameData((prev: any) => ({
-        ...prev,
-        submittedAnswers: {
-          ...prev.submittedAnswers,
-          [currentTeamId]: selectedLabel // Store what the user actually selected
-        }
-      }))
-
+      // Note: The subscription will automatically update teamAnswer state when the answer is saved
       console.log(`Answer ${selectedLabel} (${isCorrect ? 'CORRECT' : 'INCORRECT'}) submitted for team ${currentTeamId}`)
     } catch (error) {
       console.error('Failed to submit answer:', error)
@@ -157,6 +150,84 @@ export default function GamePage() {
       setIsLoading(false)
     }
   }
+
+  // Set up realtime subscription for team answers on current question
+  useEffect(() => {
+    if (!id || !currentTeamId || !gameData?.question?.id) {
+      // Clear team answer if no question
+      setTeamAnswer(null)
+      return
+    }
+
+    const questionId = gameData.question.id
+
+    console.log('🔔 Setting up game_answers subscription:', {
+      gameId: id,
+      questionId,
+      teamId: currentTeamId
+    })
+
+    // Fetch existing answer first
+    const fetchExistingAnswer = async () => {
+      try {
+        const answers = await gameAnswersService.getTeamAnswersForQuestion(id, questionId)
+        const teamAnswerRecord = answers.find(a => a.team === currentTeamId)
+
+        if (teamAnswerRecord) {
+          console.log('✅ Found existing team answer:', teamAnswerRecord)
+          setTeamAnswer({
+            answer: teamAnswerRecord.answer || '',
+            isCorrect: teamAnswerRecord.is_correct
+          })
+        } else {
+          console.log('ℹ️ No existing answer found for this question')
+          setTeamAnswer(null)
+        }
+      } catch (error) {
+        console.error('Failed to fetch existing answer:', error)
+      }
+    }
+
+    fetchExistingAnswer()
+
+    // Subscribe to real-time updates for this question's answers
+    const unsubscribeAnswers = pb.collection('game_answers').subscribe('*', (e) => {
+      console.log('🔄 game_answers subscription event:', {
+        action: e.action,
+        recordId: e.record.id,
+        game: (e.record as any).game,
+        gameQuestionsId: (e.record as any).game_questions_id,
+        team: (e.record as any).team,
+        answer: (e.record as any).answer
+      })
+
+      // Check if this answer is for our game, question, and team
+      if ((e.record as any).game === id &&
+          (e.record as any).game_questions_id === questionId &&
+          (e.record as any).team === currentTeamId) {
+
+        console.log('✅ Team answer updated in real-time:', e.record)
+
+        if (e.action === 'create' || e.action === 'update') {
+          setTeamAnswer({
+            answer: (e.record as any).answer || '',
+            isCorrect: (e.record as any).is_correct
+          })
+        } else if (e.action === 'delete') {
+          setTeamAnswer(null)
+        }
+      }
+    }, {
+      // Filter to only subscribe to answers for this game and question
+      filter: `game = "${id}" && game_questions_id = "${questionId}"`
+    })
+
+    // Cleanup subscription when question changes or component unmounts
+    return () => {
+      console.log('🧹 Cleaning up game_answers subscription for question:', questionId)
+      unsubscribeAnswers.then((unsub) => unsub())
+    }
+  }, [id, currentTeamId, gameData?.question?.id])
 
   // Set up realtime subscription for game changes
   useEffect(() => {
@@ -288,7 +359,9 @@ export default function GamePage() {
           gameData={{
             ...gameData,
             playerTeam: currentTeamId,
-            isSubmittingAnswer
+            isSubmittingAnswer,
+            teamAnswer: teamAnswer?.answer || null,
+            teamAnswerIsCorrect: teamAnswer?.isCorrect
           }}
           gameId={game?.id}
           scoreboard={game?.scoreboard}

@@ -28,27 +28,23 @@ interface RoundPlayProps {
     }
     // These are added by GamePage for player interaction
     playerTeam?: string
-    submittedAnswers?: { [key: string]: string }
     isSubmittingAnswer?: boolean
+    teamAnswer?: string | null  // The answer from game_answers subscription
+    teamAnswerIsCorrect?: boolean  // Whether the team's answer is correct
   }
   onAnswerSubmit?: (answer: string) => void
 }
 
 export default function RoundPlay({ gameData, onAnswerSubmit }: RoundPlayProps) {
-  const [selectedAnswer, setSelectedAnswer] = useState<string | null>(null)
-  const [hasSubmitted, setHasSubmitted] = useState(false)
   const [showAnswerDebug, setShowAnswerDebug] = useState(false) // Debug flag to test answer reveal
 
-  // Reset local state when question changes
+  // Reset debug state when question changes
   useEffect(() => {
-    console.log('🔄 RoundPlay: Question changed, resetting local state', {
+    console.log('🔄 RoundPlay: Question changed', {
       newQuestionId: gameData.question?.id,
-      newQuestionNumber: gameData.question?.question_number
+      newQuestionNumber: gameData.question?.question_number,
+      teamAnswer: gameData.teamAnswer
     })
-
-    // Reset local state when a new question loads
-    setSelectedAnswer(null)
-    setHasSubmitted(false)
     setShowAnswerDebug(false)
   }, [gameData.question?.id, gameData.question?.question_number])
 
@@ -66,17 +62,12 @@ export default function RoundPlay({ gameData, onAnswerSubmit }: RoundPlayProps) 
 
   const correctAnswerLabel = gameData.question ? getCorrectAnswerLabel(gameData.question.id) : null
 
-  // Determine current player's team (simplified for now)
-  const playerTeam = gameData.playerTeam || 'team-1' // This would come from auth/context
-
-  // Check if this team has already submitted an answer
-  const hasTeamSubmitted = !!gameData.submittedAnswers?.[playerTeam]
+  // Use team answer from subscription (real-time synced across all team members)
+  const teamAnswer = gameData.teamAnswer
+  const hasTeamSubmitted = !!teamAnswer
 
   const handleAnswerClick = async (answer: string) => {
-    if (hasSubmitted || shouldShowAnswer || gameData.isSubmittingAnswer || hasTeamSubmitted) return
-
-    setSelectedAnswer(answer)
-    setHasSubmitted(true)
+    if (hasTeamSubmitted || shouldShowAnswer || gameData.isSubmittingAnswer) return
 
     if (onAnswerSubmit) {
       await onAnswerSubmit(answer)
@@ -84,7 +75,7 @@ export default function RoundPlay({ gameData, onAnswerSubmit }: RoundPlayProps) 
   }
 
   const getAnswerButtonVariant = (answerLabel: string) => {
-    if (!shouldShowAnswer && !hasSubmitted) {
+    if (!shouldShowAnswer && !hasTeamSubmitted) {
       return 'default'
     }
 
@@ -92,13 +83,13 @@ export default function RoundPlay({ gameData, onAnswerSubmit }: RoundPlayProps) 
       if (answerLabel === correctAnswerLabel) {
         return 'default'
       }
-      if (answerLabel === selectedAnswer && answerLabel !== correctAnswerLabel) {
+      if (answerLabel === teamAnswer && answerLabel !== correctAnswerLabel) {
         return 'destructive'
       }
       return 'outline'
     }
 
-    if (hasSubmitted && answerLabel === selectedAnswer) {
+    if (hasTeamSubmitted && answerLabel === teamAnswer) {
       return 'default'
     }
 
@@ -106,7 +97,7 @@ export default function RoundPlay({ gameData, onAnswerSubmit }: RoundPlayProps) 
   }
 
   const getAnswerButtonClass = (answerLabel: string) => {
-    if (!shouldShowAnswer && !hasSubmitted) {
+    if (!shouldShowAnswer && !hasTeamSubmitted) {
       return 'hover:bg-slate-100 dark:hover:bg-slate-800'
     }
 
@@ -114,7 +105,7 @@ export default function RoundPlay({ gameData, onAnswerSubmit }: RoundPlayProps) 
       if (answerLabel === correctAnswerLabel) {
         return 'bg-green-600 hover:bg-green-700 text-white border-green-600'
       }
-      if (answerLabel === selectedAnswer && answerLabel !== correctAnswerLabel) {
+      if (answerLabel === teamAnswer && answerLabel !== correctAnswerLabel) {
         return 'bg-red-600 hover:bg-red-700 text-white border-red-600'
       }
       return 'opacity-50'
@@ -188,7 +179,7 @@ export default function RoundPlay({ gameData, onAnswerSubmit }: RoundPlayProps) 
                   variant={getAnswerButtonVariant(answer.label)}
                   className={`h-auto p-4 text-left justify-start whitespace-normal ${getAnswerButtonClass(answer.label)}`}
                   onClick={() => handleAnswerClick(answer.label)}
-                  disabled={hasSubmitted || shouldShowAnswer || gameData.isSubmittingAnswer || hasTeamSubmitted}
+                  disabled={hasTeamSubmitted || shouldShowAnswer || gameData.isSubmittingAnswer}
                 >
                   <span className="font-medium mr-2">{answer.label}.</span>
                   {answer.text}
@@ -204,15 +195,18 @@ export default function RoundPlay({ gameData, onAnswerSubmit }: RoundPlayProps) 
           {gameData.isSubmittingAnswer && (
             <div className="mt-6 p-4 bg-yellow-50 dark:bg-yellow-900/20 rounded-lg">
               <p className="text-yellow-700 dark:text-yellow-300">
-                Submitting answer for {playerTeam}...
+                Submitting answer for your team...
               </p>
             </div>
           )}
 
-          {(hasSubmitted || hasTeamSubmitted) && !shouldShowAnswer && !gameData.isSubmittingAnswer && (
+          {hasTeamSubmitted && !shouldShowAnswer && !gameData.isSubmittingAnswer && (
             <div className="mt-6 p-4 bg-blue-50 dark:bg-blue-900/20 rounded-lg">
               <p className="text-blue-700 dark:text-blue-300">
-                Answer submitted for {playerTeam}!
+                ✓ Your team has submitted answer: <strong>{teamAnswer}</strong>
+              </p>
+              <p className="text-xs text-blue-600 dark:text-blue-400 mt-1">
+                All team members can see this answer in real-time
               </p>
             </div>
           )}
@@ -221,13 +215,13 @@ export default function RoundPlay({ gameData, onAnswerSubmit }: RoundPlayProps) 
           {shouldShowAnswer && correctAnswerLabel && (
             <div className="mt-6 p-4 bg-slate-50 dark:bg-slate-800 rounded-lg">
               <p className="text-slate-700 dark:text-slate-300">
-                {selectedAnswer === correctAnswerLabel ? (
+                {teamAnswer === correctAnswerLabel ? (
                   <span className="text-green-600 dark:text-green-400 font-medium">
                     Your team got it right! 🎉
                   </span>
                 ) : (
                   <span className="text-red-600 dark:text-red-400 font-medium">
-                    Your team got it wrong. The correct answer is highlighted above.
+                    Your team answered {teamAnswer}. The correct answer is {correctAnswerLabel}.
                   </span>
                 )}
               </p>
