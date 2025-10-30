@@ -51,7 +51,7 @@ export default function HostPage() {
 
         // Add delay between fetching rounds for each game (except last)
         if (i < gamesData.length - 1) {
-          await new Promise(resolve => setTimeout(resolve, 200))
+          await new Promise(resolve => setTimeout(resolve, 300))
         }
       }
       setRounds(roundsData)
@@ -165,7 +165,7 @@ export default function HostPage() {
 
               // Add delay between rounds to respect PocketHost rate limits (except for last round)
               if (i < data.rounds) {
-                await new Promise(resolve => setTimeout(resolve, 300))
+                await new Promise(resolve => setTimeout(resolve, 600))
               }
             }
 
@@ -182,7 +182,7 @@ export default function HostPage() {
 
       // Add delay before refreshing to avoid rate limits after burst of create operations
       if (isCreateMode && data.rounds && data.rounds > 0) {
-        await new Promise(resolve => setTimeout(resolve, 500))
+        await new Promise(resolve => setTimeout(resolve, 1500))
       }
 
       await fetchGames()

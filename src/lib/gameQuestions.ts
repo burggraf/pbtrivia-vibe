@@ -86,7 +86,7 @@ export const gameQuestionsService = {
       const round = await pb.collection('rounds').getOne(roundId);
 
       // Throttle API calls to respect PocketHost rate limits (5 req/sec, 5 concurrent/IP)
-      // Process questions in batches of 3 with 250ms delay between batches
+      // Process questions in batches of 3 with 350ms delay between batches
       const results: GameQuestion[] = [];
       const batchSize = 3;
 
@@ -108,7 +108,7 @@ export const gameQuestionsService = {
 
         // Add delay between batches to stay under rate limits (except for last batch)
         if (i + batchSize < questions.length) {
-          await new Promise(resolve => setTimeout(resolve, 250));
+          await new Promise(resolve => setTimeout(resolve, 350));
         }
       }
 
