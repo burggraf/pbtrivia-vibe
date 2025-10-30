@@ -94,6 +94,7 @@ export interface GameAnswer {
   game_questions_id: string;
   team: string;
   answer?: string;
+  translated_answer?: string; // Answer translated from shuffled to original position
   is_correct?: boolean;
   created: string;
   updated: string;
@@ -105,5 +106,6 @@ export interface CreateGameAnswerData {
   game_questions_id: string;
   team: string;
   answer: string;
+  translated_answer?: string; // Answer translated from shuffled to original position
   is_correct?: boolean;
 }

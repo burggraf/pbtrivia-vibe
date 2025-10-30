@@ -2,7 +2,6 @@ import { useState, useEffect } from 'react'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
-import { getShuffledAnswers, getCorrectAnswerLabel } from '@/lib/answerShuffler'
 
 interface RoundPlayDisplayProps {
   gameData: {
@@ -53,16 +52,17 @@ export default function RoundPlayDisplay({ gameData, mode = 'controller', onAnsw
   // Show answer if correct_answer exists in the data
   const shouldShowAnswer = showAnswerDebug || !!gameData.question?.correct_answer
 
-  // Get shuffled answers for this question
-  const shuffledResult = gameData.question ? getShuffledAnswers(
-    gameData.question.id,
-    gameData.question.a,
-    gameData.question.b,
-    gameData.question.c,
-    gameData.question.d
-  ) : null
+  // Answers are already shuffled server-side and stored in gameData.question
+  // We just need to display them with labels A, B, C, D
+  const answers = gameData.question ? [
+    { label: 'A' as const, text: gameData.question.a },
+    { label: 'B' as const, text: gameData.question.b },
+    { label: 'C' as const, text: gameData.question.c },
+    { label: 'D' as const, text: gameData.question.d }
+  ] : []
 
-  const correctAnswerLabel = gameData.question ? getCorrectAnswerLabel(gameData.question.id) : null
+  // The correct answer label is provided by the host when revealing
+  const correctAnswerLabel = gameData.question?.correct_answer || null
 
   // Player-specific logic
   const teamAnswer = gameData.teamAnswer
@@ -120,7 +120,7 @@ export default function RoundPlayDisplay({ gameData, mode = 'controller', onAnsw
           </Button>
           {showAnswerDebug && correctAnswerLabel && (
             <p className="text-xs text-slate-500 mt-2">
-              Correct Answer: {correctAnswerLabel} - {gameData.question?.a}
+              Correct Answer (Debug Override): {correctAnswerLabel}
             </p>
           )}
         </div>
@@ -136,9 +136,9 @@ export default function RoundPlayDisplay({ gameData, mode = 'controller', onAnsw
         <CardContent>
 
           {/* Answer Options */}
-          {shuffledResult && (
+          {answers.length > 0 && (
             <div className="space-y-3">
-              {shuffledResult.shuffledAnswers.map((answer) => {
+              {answers.map((answer) => {
                 // Determine all the states first
                 const isDisabled = mode === 'player' && (hasTeamSubmitted || shouldShowAnswer || gameData.isSubmittingAnswer)
                 const isSelectedAnswer = mode === 'player' && hasTeamSubmitted && answer.label === teamAnswer

@@ -50,11 +50,12 @@ function seededShuffle<T>(array: T[], seed: string): T[] {
 }
 
 /**
- * Get shuffled answers for a question using round_question ID as seed
+ * Get shuffled answers for a question using secure key as seed
  * Since correct answer is always in answer_a, we track which index contains it after shuffling
+ * @param key - Secure random key from game_questions.key field (only accessible to host)
  */
 export function getShuffledAnswers(
-  roundQuestionId: string,
+  key: string,
   answerA: string,
   answerB: string,
   answerC: string,
@@ -63,9 +64,9 @@ export function getShuffledAnswers(
   // Original answers array (answer_a is always correct)
   const originalAnswers = [answerA, answerB, answerC, answerD];
 
-  // Shuffle using round_question ID as seed
+  // Shuffle using secure key as seed
   const shuffledIndices = [0, 1, 2, 3];
-  const shuffled = seededShuffle(shuffledIndices, roundQuestionId);
+  const shuffled = seededShuffle(shuffledIndices, key);
 
   // Create shuffled answers with labels
   const labels: ('A' | 'B' | 'C' | 'D')[] = ['A', 'B', 'C', 'D'];
@@ -91,27 +92,30 @@ export function getShuffledAnswers(
 
 /**
  * Get just the shuffled answer texts (for display purposes)
+ * @param key - Secure random key from game_questions.key field (only accessible to host)
  */
 export function getShuffledAnswerTexts(
-  roundQuestionId: string,
+  key: string,
   answerA: string,
   answerB: string,
   answerC: string,
   answerD: string
 ): string[] {
-  const result = getShuffledAnswers(roundQuestionId, answerA, answerB, answerC, answerD);
+  const result = getShuffledAnswers(key, answerA, answerB, answerC, answerD);
   return result.shuffledAnswers.map(answer => answer.text);
 }
 
 /**
- * Get the correct answer label for display purposes
+ * Get the correct answer label for a shuffled question
+ * SECURITY: This requires the secure key, which is only accessible to the host
+ * @param key - Secure random key from game_questions.key field (only accessible to host)
  */
 export function getCorrectAnswerLabel(
-  roundQuestionId: string
+  key: string
 ): 'A' | 'B' | 'C' | 'D' {
   // Use a dummy shuffle to determine the correct answer position
   const result = getShuffledAnswers(
-    roundQuestionId,
+    key,
     'Correct',
     'Wrong1',
     'Wrong2',
@@ -121,12 +125,40 @@ export function getCorrectAnswerLabel(
 }
 
 /**
- * Utility function to determine if an answer label is correct
+ * Translate a shuffled answer label back to its original position
+ * This is used by the host when grading answers after reveal
+ * @param key - Secure random key from game_questions.key field
+ * @param selectedLabel - The label (A/B/C/D) that the player selected
+ * @returns The original label (A/B/C/D) before shuffling
  */
-export function isCorrectAnswer(
-  roundQuestionId: string,
+export function translateAnswerToOriginal(
+  key: string,
   selectedLabel: 'A' | 'B' | 'C' | 'D'
+): 'A' | 'B' | 'C' | 'D' {
+  // Get the shuffle mapping
+  const result = getShuffledAnswers(key, 'A', 'B', 'C', 'D');
+
+  // Find which shuffled answer matches the selected label
+  const selectedAnswer = result.shuffledAnswers.find(
+    answer => answer.label === selectedLabel
+  );
+
+  if (!selectedAnswer) {
+    throw new Error(`Invalid answer label: ${selectedLabel}`);
+  }
+
+  // Return the original label (A/B/C/D based on originalIndex 0/1/2/3)
+  const originalLabels: ('A' | 'B' | 'C' | 'D')[] = ['A', 'B', 'C', 'D'];
+  return originalLabels[selectedAnswer.originalIndex];
+}
+
+/**
+ * Check if a translated answer is correct
+ * @param translatedLabel - The answer after translation to original position
+ * @returns true if correct (A is always correct in the original position)
+ */
+export function isTranslatedAnswerCorrect(
+  translatedLabel: 'A' | 'B' | 'C' | 'D'
 ): boolean {
-  const correctLabel = getCorrectAnswerLabel(roundQuestionId);
-  return selectedLabel === correctLabel;
+  return translatedLabel === 'A';
 }

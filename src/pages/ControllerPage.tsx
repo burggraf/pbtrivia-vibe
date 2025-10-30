@@ -8,7 +8,6 @@ import { gamesService } from '@/lib/games'
 import { roundsService } from '@/lib/rounds'
 import { gameQuestionsService } from '@/lib/gameQuestions'
 import { questionsService } from '@/lib/questions'
-import { getCorrectAnswerLabel } from '@/lib/answerShuffler'
 import pb from '@/lib/pocketbase'
 import { Game } from '@/types/games'
 
@@ -300,18 +299,62 @@ export default function ControllerPage() {
       })
 
       if (!isAnswerRevealed) {
-        // Reveal answer
-        console.log('🔍 DEBUG: Revealing answer')
-        if (gameData.question) {
-          const correctAnswerLabel = getCorrectAnswerLabel(gameData.question.id)
-          await updateGameDataClean({
-            state: 'round-play',
-            round: gameData.round,
-            question: {
-              ...gameData.question,
-              correct_answer: correctAnswerLabel
+        // Reveal answer and grade all submissions
+        console.log('🔍 DEBUG: Revealing answer and grading submissions')
+        if (gameData.question && id) {
+          // Get the game_questions record to access the secure key
+          const gameQuestions = await gameQuestionsService.getGameQuestions(currentRound.id)
+          const gameQuestion = gameQuestions.find(gq => gq.id === gameData.question!.id)
+
+          if (gameQuestion) {
+            // Use the secure key to get the correct answer label
+            const { getCorrectAnswerLabel, translateAnswerToOriginal, isTranslatedAnswerCorrect } = await import('@/lib/answerShuffler')
+            const correctAnswerLabel = getCorrectAnswerLabel(gameQuestion.key)
+
+            // Grade all submitted answers for this question
+            const { gameAnswersService } = await import('@/lib/gameAnswers')
+            const submittedAnswers = await gameAnswersService.getTeamAnswersForQuestion(id, gameData.question.id)
+
+            console.log(`🎯 Grading ${submittedAnswers.length} submitted answers`)
+
+            // Update each answer with translation and correctness
+            for (const answer of submittedAnswers) {
+              if (answer.answer) {
+                try {
+                  // Translate the shuffled answer to original position
+                  const translatedAnswer = translateAnswerToOriginal(
+                    gameQuestion.key,
+                    answer.answer as 'A' | 'B' | 'C' | 'D'
+                  )
+
+                  // Check if the translated answer is correct (A is always correct)
+                  const isCorrect = isTranslatedAnswerCorrect(translatedAnswer)
+
+                  // Update the answer record with translation and correctness
+                  await gameAnswersService.updateAnswer(answer.id, {
+                    translated_answer: translatedAnswer,
+                    is_correct: isCorrect
+                  })
+
+                  console.log(`✅ Graded answer for team ${answer.team}: ${answer.answer} → ${translatedAnswer} (${isCorrect ? 'CORRECT' : 'INCORRECT'})`)
+                } catch (error) {
+                  console.error(`❌ Failed to grade answer ${answer.id}:`, error)
+                }
+              }
             }
-          })
+
+            // Update game data with correct answer
+            await updateGameDataClean({
+              state: 'round-play',
+              round: gameData.round,
+              question: {
+                ...gameData.question,
+                correct_answer: correctAnswerLabel
+              }
+            })
+
+            console.log(`🎯 All answers graded. Correct answer: ${correctAnswerLabel}`)
+          }
         }
         return
       } else {
@@ -332,19 +375,31 @@ export default function ControllerPage() {
           const nextQuestionIndex = nextQuestionNumber - 1
           if (gameQuestions.length > nextQuestionIndex) {
             const nextQuestion = await questionsService.getQuestionById(gameQuestions[nextQuestionIndex].question)
+            const gameQuestion = gameQuestions[nextQuestionIndex]
+
+            // Use the secure key to shuffle answers
+            const { getShuffledAnswers } = await import('@/lib/answerShuffler')
+            const shuffled = getShuffledAnswers(
+              gameQuestion.key,
+              nextQuestion.answer_a,
+              nextQuestion.answer_b,
+              nextQuestion.answer_c,
+              nextQuestion.answer_d
+            )
+
             await updateGameDataClean({
               state: 'round-play',
               round: gameData.round,
               question: {
-                id: gameQuestions[nextQuestionIndex].id,
+                id: gameQuestion.id,
                 question_number: nextQuestionNumber,
                 category: nextQuestion.category,
                 question: nextQuestion.question,
                 difficulty: nextQuestion.difficulty,
-                a: nextQuestion.answer_a,
-                b: nextQuestion.answer_b,
-                c: nextQuestion.answer_c,
-                d: nextQuestion.answer_d
+                a: shuffled.shuffledAnswers[0].text,
+                b: shuffled.shuffledAnswers[1].text,
+                c: shuffled.shuffledAnswers[2].text,
+                d: shuffled.shuffledAnswers[3].text
               }
             })
             console.log('🔍 DEBUG: Next question loaded successfully')
@@ -388,19 +443,31 @@ export default function ControllerPage() {
           const gameQuestions = await gameQuestionsService.getGameQuestions(currentRound.id)
           if (gameQuestions.length > 0) {
             const firstQuestion = await questionsService.getQuestionById(gameQuestions[0].question)
+            const gameQuestion = gameQuestions[0]
+
+            // Use the secure key to shuffle answers
+            const { getShuffledAnswers } = await import('@/lib/answerShuffler')
+            const shuffled = getShuffledAnswers(
+              gameQuestion.key,
+              firstQuestion.answer_a,
+              firstQuestion.answer_b,
+              firstQuestion.answer_c,
+              firstQuestion.answer_d
+            )
+
             await updateGameDataClean({
               state: 'round-play',
               round: gameData.round,
               question: {
-                id: gameQuestions[0].id,
+                id: gameQuestion.id,
                 question_number: 1,
                 category: firstQuestion.category,
                 question: firstQuestion.question,
                 difficulty: firstQuestion.difficulty,
-                a: firstQuestion.answer_a,
-                b: firstQuestion.answer_b,
-                c: firstQuestion.answer_c,
-                d: firstQuestion.answer_d
+                a: shuffled.shuffledAnswers[0].text,
+                b: shuffled.shuffledAnswers[1].text,
+                c: shuffled.shuffledAnswers[2].text,
+                d: shuffled.shuffledAnswers[3].text
               }
             })
           }
@@ -493,20 +560,31 @@ export default function ControllerPage() {
             const gameQuestions = await gameQuestionsService.getGameQuestions(currentRound.id)
             if (gameQuestions.length >= prevQuestionNumber) {
               const prevQuestion = await questionsService.getQuestionById(gameQuestions[prevQuestionNumber - 1].question)
+              const gameQuestion = gameQuestions[prevQuestionNumber - 1]
+
+              // Use the secure key to shuffle answers
+              const { getShuffledAnswers } = await import('@/lib/answerShuffler')
+              const shuffled = getShuffledAnswers(
+                gameQuestion.key,
+                prevQuestion.answer_a,
+                prevQuestion.answer_b,
+                prevQuestion.answer_c,
+                prevQuestion.answer_d
+              )
 
               await updateGameDataClean({
                 state: 'round-play',
                 round: gameData.round,
                 question: {
-                  id: gameQuestions[prevQuestionNumber - 1].id,
+                  id: gameQuestion.id,
                   question_number: prevQuestionNumber,
                   category: prevQuestion.category,
                   question: prevQuestion.question,
                   difficulty: prevQuestion.difficulty,
-                  a: prevQuestion.answer_a,
-                  b: prevQuestion.answer_b,
-                  c: prevQuestion.answer_c,
-                  d: prevQuestion.answer_d
+                  a: shuffled.shuffledAnswers[0].text,
+                  b: shuffled.shuffledAnswers[1].text,
+                  c: shuffled.shuffledAnswers[2].text,
+                  d: shuffled.shuffledAnswers[3].text
                 }
               })
             }

@@ -5,7 +5,6 @@ import ThemeToggle from '@/components/ThemeToggle'
 import GameStateRenderer from '@/components/games/GameStateRenderer'
 import { gamesService } from '@/lib/games'
 import { gameAnswersService } from '@/lib/gameAnswers'
-import { isCorrectAnswer, getCorrectAnswerLabel } from '@/lib/answerShuffler'
 import pb from '@/lib/pocketbase'
 import { Game } from '@/types/games'
 
@@ -34,8 +33,6 @@ export default function GamePage() {
     setIsSubmittingAnswer(true)
 
     try {
-      // For now, use a simpler approach - just use the question ID directly
-      // This assumes the question ID can be used as game_questions_id
       const questionId = gameData.question?.id
 
       console.log('Submitting answer with question ID:', questionId, 'selected label:', selectedLabel)
@@ -45,21 +42,18 @@ export default function GamePage() {
         return
       }
 
-      // Determine if the selected answer is correct
-      const isCorrect = isCorrectAnswer(questionId, selectedLabel as 'A' | 'B' | 'C' | 'D')
-
-      // Store the actual selected label (A, B, C, or D) that the user clicked
-      // The is_correct field will track whether it's right or wrong
+      // Submit the selected label (A, B, C, or D) that the user clicked
+      // The host will grade this answer when revealing, using the secure key
+      // Players cannot determine correctness without access to the key
       await gameAnswersService.submitTeamAnswer(
         id,
         questionId,
         currentTeamId,
-        selectedLabel, // Save the actual selected label, not translated
-        getCorrectAnswerLabel(questionId) // Pass the correct answer label for validation
+        selectedLabel // Save the shuffled label the player selected
       )
 
       // Note: The subscription will automatically update teamAnswer state when the answer is saved
-      console.log(`Answer ${selectedLabel} (${isCorrect ? 'CORRECT' : 'INCORRECT'}) submitted for team ${currentTeamId}`)
+      console.log(`Answer ${selectedLabel} submitted for team ${currentTeamId}`)
     } catch (error) {
       console.error('Failed to submit answer:', error)
     } finally {
