@@ -68,32 +68,37 @@ export const questionsService = {
       const currentHostId = hostId || pb.authStore.model?.id;
       if (!currentHostId) throw new Error('User not authenticated');
 
-      // Step 1: Get all available questions from the selected categories
-      const allQuestionsResult = await pb.collection('questions').getFullList<Question>(200, {
-        filter: categories.map(cat => `category = "${cat}"`).join(' || ')
+      // Step 1: Fetch a reasonable pool of random questions (enough to filter but not all 60K+)
+      // Use server-side random sorting and fetch 10x the needed amount to ensure enough after filtering
+      const poolSize = Math.min(questionCount * 10, 1000); // Cap at 1000 to avoid rate limits
+      const randomQuestionsResult = await pb.collection('questions').getList<Question>(1, poolSize, {
+        filter: categories.map(cat => `category = "${cat}"`).join(' || '),
+        sort: '@random', // Server-side random sorting
+        skipTotal: true  // Skip counting total records for performance
       });
 
-      if (allQuestionsResult.length === 0) {
+      if (randomQuestionsResult.items.length === 0) {
         return [];
       }
 
-      // Step 2: Get questions already used by this host
-      const usedQuestionsResult = await pb.collection('game_questions').getFullList(200, {
-        filter: `host = "${currentHostId}"`
+      // Step 2: Get recently used questions by this host (limit to recent 500 to avoid rate limits)
+      const usedQuestionsResult = await pb.collection('game_questions').getList(1, 500, {
+        filter: `host = "${currentHostId}"`,
+        sort: '-created', // Get most recent first
+        skipTotal: true
       });
 
-      const usedQuestionIds = new Set(usedQuestionsResult.map(rq => rq.question));
+      const usedQuestionIds = new Set(usedQuestionsResult.items.map(rq => rq.question));
 
       // Step 3: Filter out used questions
-      const availableQuestions = allQuestionsResult.filter(q => !usedQuestionIds.has(q.id));
+      const availableQuestions = randomQuestionsResult.items.filter(q => !usedQuestionIds.has(q.id));
 
       if (availableQuestions.length < questionCount) {
         console.warn(`Only ${availableQuestions.length} unique questions available, but ${questionCount} requested`);
       }
 
-      // Step 4: Randomly select questions
-      const shuffled = availableQuestions.sort(() => 0.5 - Math.random());
-      return shuffled.slice(0, Math.min(questionCount, availableQuestions.length));
+      // Step 4: Return the requested number of questions (already randomized by server)
+      return availableQuestions.slice(0, Math.min(questionCount, availableQuestions.length));
     } catch (error) {
       console.error('Failed to get unused questions for host:', error);
       return [];
@@ -109,32 +114,37 @@ export const questionsService = {
       const currentHostId = hostId || pb.authStore.model?.id;
       if (!currentHostId) throw new Error('User not authenticated');
 
-      // Step 1: Get all available questions from the selected categories
-      const allQuestionsResult = await pb.collection('questions').getFullList<Question>(200, {
-        filter: categories.map(cat => `category = "${cat}"`).join(' || ')
+      // Step 1: Fetch a reasonable pool of random questions (enough to filter but not all 60K+)
+      // Use server-side random sorting and fetch 10x the needed amount to ensure enough after filtering
+      const poolSize = Math.min(questionCount * 10, 1000); // Cap at 1000 to avoid rate limits
+      const randomQuestionsResult = await pb.collection('questions').getList<Question>(1, poolSize, {
+        filter: categories.map(cat => `category = "${cat}"`).join(' || '),
+        sort: '@random', // Server-side random sorting
+        skipTotal: true  // Skip counting total records for performance
       });
 
-      if (allQuestionsResult.length === 0) {
+      if (randomQuestionsResult.items.length === 0) {
         return [];
       }
 
-      // Step 2: Get questions already used by this host in ALL their rounds (including recycled ones)
-      const usedQuestionsResult = await pb.collection('game_questions').getFullList(1000, {
-        filter: `host = "${currentHostId}"`
+      // Step 2: Get recently used questions by this host (limit to recent 500 to avoid rate limits)
+      const usedQuestionsResult = await pb.collection('game_questions').getList(1, 500, {
+        filter: `host = "${currentHostId}"`,
+        sort: '-created', // Get most recent first
+        skipTotal: true
       });
 
-      const usedQuestionIds = new Set(usedQuestionsResult.map(rq => rq.question));
+      const usedQuestionIds = new Set(usedQuestionsResult.items.map(rq => rq.question));
 
-      // Step 3: Filter out used questions to ensure no reuse (including recycled questions)
-      const availableQuestions = allQuestionsResult.filter(q => !usedQuestionIds.has(q.id));
+      // Step 3: Filter out used questions to ensure no reuse
+      const availableQuestions = randomQuestionsResult.items.filter(q => !usedQuestionIds.has(q.id));
 
       if (availableQuestions.length < questionCount) {
         console.warn(`Only ${availableQuestions.length} unique questions available from categories ${categories.join(', ')}, but ${questionCount} requested`);
       }
 
-      // Step 4: Randomly select the requested number of questions
-      const shuffled = availableQuestions.sort(() => 0.5 - Math.random());
-      return shuffled.slice(0, Math.min(questionCount, availableQuestions.length));
+      // Step 4: Return the requested number of questions (already randomized by server)
+      return availableQuestions.slice(0, Math.min(questionCount, availableQuestions.length));
     } catch (error) {
       console.error('Failed to get random questions from categories:', error);
       return [];
