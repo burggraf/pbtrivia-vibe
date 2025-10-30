@@ -8,6 +8,7 @@ export interface GameQuestion {
   question: string;
   sequence: number;
   category_name: string;
+  key: string; // Secure random key for answer shuffling (only accessible to host)
   created: string;
   updated: string;
 }

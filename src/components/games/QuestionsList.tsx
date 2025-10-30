@@ -230,8 +230,9 @@ export default function QuestionsList({ roundId, roundTitle }: QuestionsListProp
                     {roundQuestion.questionDetails?.question || 'Question not found'}
                   </p>
                   {roundQuestion.questionDetails?.answer_a && (() => {
+                    // Use the secure key to shuffle answers (host-only view)
                     const shuffledResult = getShuffledAnswers(
-                      roundQuestion.id,
+                      roundQuestion.key,
                       roundQuestion.questionDetails.answer_a,
                       roundQuestion.questionDetails.answer_b,
                       roundQuestion.questionDetails.answer_c,
