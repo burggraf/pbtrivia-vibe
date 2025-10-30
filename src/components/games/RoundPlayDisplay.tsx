@@ -197,6 +197,7 @@ export default function RoundPlayDisplay({ gameData, mode = 'controller', onAnsw
                   // Player mode - show as clickable divs (same styling as controller)
                   const showGoldStar = isCorrectAnswer && teamAnswer === correctAnswerLabel
                   const showCheckmark = isCorrectAnswer && teamAnswer !== correctAnswerLabel
+                  const showXMark = isIncorrectSelectedAnswer
 
                   return (
                     <div
@@ -213,6 +214,9 @@ export default function RoundPlayDisplay({ gameData, mode = 'controller', onAnsw
                         )}
                         {showCheckmark && (
                           <span className="text-green-600 dark:text-green-400">✓</span>
+                        )}
+                        {showXMark && (
+                          <span className="text-red-600 dark:text-red-400 text-xl">✗</span>
                         )}
                       </div>
                     </div>
