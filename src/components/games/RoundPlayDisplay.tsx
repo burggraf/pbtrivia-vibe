@@ -139,47 +139,40 @@ export default function RoundPlayDisplay({ gameData, mode = 'controller', onAnsw
           {shuffledResult && (
             <div className="space-y-3">
               {shuffledResult.shuffledAnswers.map((answer) => {
-                const isAnswerCorrect = shouldShowAnswer && answer.label === correctAnswerLabel
-                const baseClasses = "p-4 rounded-lg border-2 transition-colors flex items-start"
-
-                let answerClasses = baseClasses
-                if (isAnswerCorrect) {
-                  answerClasses += ' bg-green-100 border-green-500 text-green-800 dark:bg-green-900 dark:text-green-200'
-                } else if (shouldShowAnswer) {
-                  answerClasses += ' bg-slate-50 border-slate-300 text-slate-700 dark:bg-slate-800 dark:text-slate-300'
-                } else {
-                  answerClasses += ' bg-blue-50 border-blue-300 text-blue-700 dark:bg-blue-900'
-                }
-
-                // Add hover effect only for player mode when not showing answers
-                if (mode === 'player' && !shouldShowAnswer && !hasTeamSubmitted) {
-                  answerClasses += ' hover:bg-blue-100 cursor-pointer'
-                }
-
-                // Add disabled styling
+                // Determine all the states first
                 const isDisabled = mode === 'player' && (hasTeamSubmitted || shouldShowAnswer || gameData.isSubmittingAnswer)
                 const isSelectedAnswer = mode === 'player' && hasTeamSubmitted && answer.label === teamAnswer
                 const isCorrectAnswer = shouldShowAnswer && answer.label === correctAnswerLabel
                 const isIncorrectSelectedAnswer = shouldShowAnswer && answer.label === teamAnswer && answer.label !== correctAnswerLabel
 
-                if (isDisabled) {
-                  if (isSelectedAnswer && !shouldShowAnswer) {
-                    // Highlight the selected answer but don't show if it's correct yet
-                    answerClasses += ' bg-blue-200 border-blue-500 text-blue-900 dark:bg-blue-800 dark:text-blue-100'
-                  } else if (!shouldShowAnswer) {
-                    // Disable other answers
-                    answerClasses += ' opacity-40 cursor-not-allowed'
-                  }
-                }
+                // Build classes based on final state (no conflicting classes)
+                const baseClasses = "p-4 rounded-lg border-2 transition-colors flex items-start"
+                let answerClasses = baseClasses
 
-                // Apply answer reveal styling
+                // Determine styling based on current state
                 if (shouldShowAnswer) {
+                  // Answer is revealed
                   if (isCorrectAnswer) {
+                    // This is the correct answer
                     answerClasses += ' bg-green-100 border-green-500 text-green-800 dark:bg-green-900 dark:text-green-200'
                   } else if (isIncorrectSelectedAnswer) {
+                    // This is the wrong answer that was selected
                     answerClasses += ' bg-red-100 border-red-500 text-red-800 dark:bg-red-900 dark:text-red-200'
                   } else {
-                    answerClasses += ' opacity-40'
+                    // Other wrong answers (not selected)
+                    answerClasses += ' bg-slate-50 border-slate-300 text-slate-700 dark:bg-slate-800 dark:text-slate-300 opacity-40'
+                  }
+                } else if (isSelectedAnswer) {
+                  // Answer was selected but not revealed yet
+                  answerClasses += ' bg-blue-200 border-blue-500 text-blue-900 dark:bg-blue-800 dark:text-blue-100'
+                } else if (hasTeamSubmitted) {
+                  // Other answers when team has submitted
+                  answerClasses += ' bg-blue-50 border-blue-300 text-blue-700 dark:bg-blue-900 opacity-40 cursor-not-allowed'
+                } else {
+                  // Default state (clickable)
+                  answerClasses += ' bg-blue-50 border-blue-300 text-blue-700 dark:bg-blue-900'
+                  if (mode === 'player') {
+                    answerClasses += ' hover:bg-blue-100 cursor-pointer'
                   }
                 }
 
@@ -204,6 +197,7 @@ export default function RoundPlayDisplay({ gameData, mode = 'controller', onAnsw
                   // Player mode - show as clickable divs (same styling as controller)
                   const showGoldStar = isCorrectAnswer && teamAnswer === correctAnswerLabel
                   const showCheckmark = isCorrectAnswer && teamAnswer !== correctAnswerLabel
+                  const showXMark = isIncorrectSelectedAnswer
 
                   return (
                     <div
@@ -220,6 +214,9 @@ export default function RoundPlayDisplay({ gameData, mode = 'controller', onAnsw
                         )}
                         {showCheckmark && (
                           <span className="text-green-600 dark:text-green-400">✓</span>
+                        )}
+                        {showXMark && (
+                          <span className="text-red-600 dark:text-red-400 text-xl">✗</span>
                         )}
                       </div>
                     </div>
