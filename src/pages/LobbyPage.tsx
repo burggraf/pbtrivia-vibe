@@ -100,7 +100,9 @@ export default function LobbyPage() {
       if (existingPlayer) {
         // Update existing player record with team assignment
         await gamePlayersService.updatePlayer(existingPlayer.id, {
-          team: finalTeamId || undefined
+          team: finalTeamId || undefined,
+          name: pb.authStore.model?.name || '',
+          avatar: pb.authStore.model?.avatar || ''
         })
         console.log('Updated existing player with team assignment')
       } else {
@@ -108,7 +110,9 @@ export default function LobbyPage() {
         await gamePlayersService.createPlayer({
           game: currentGame.id,
           player: pb.authStore.model.id,
-          team: finalTeamId || undefined
+          team: finalTeamId || undefined,
+          name: pb.authStore.model?.name || '',
+          avatar: pb.authStore.model?.avatar || ''
         }, currentGame.host) // Pass the game host ID
         console.log('Created new player record')
       }

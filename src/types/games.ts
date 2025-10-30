@@ -1,7 +1,7 @@
 export interface ScoreboardPlayer {
   id: string;
   name: string;
-  email: string;
+  avatar: string;
 }
 
 export interface ScoreboardTeam {
@@ -73,6 +73,8 @@ export interface GamePlayer {
   game: string;
   player: string;
   team?: string;
+  name?: string;
+  avatar?: string;
   created: string;
   updated: string;
 }
@@ -81,6 +83,8 @@ export interface CreateGamePlayerData {
   game: string;
   player: string;
   team?: string;
+  name?: string;
+  avatar?: string;
 }
 
 export interface GameAnswer {

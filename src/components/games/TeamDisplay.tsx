@@ -69,7 +69,7 @@ export default function TeamDisplay({ scoreboard, isLoading = false, className =
                       {player.name}
                     </p>
                     <p className="text-xs text-slate-500 dark:text-slate-400 truncate">
-                      {player.email}
+                      {player.avatar}
                     </p>
                   </div>
                 </div>

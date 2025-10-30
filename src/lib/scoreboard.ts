@@ -33,7 +33,7 @@ export const scoreboardService = {
   /**
    * Format scoreboard for display
    */
-  formatScoreboard(scoreboard: GameScoreboard): Array<{ teamId: string; name: string; players: Array<{ id: string; name: string; email: string }> }> {
+  formatScoreboard(scoreboard: GameScoreboard): Array<{ teamId: string; name: string; players: Array<{ id: string; name: string; avatar: string }> }> {
     return Object.entries(scoreboard.teams).map(([teamId, team]) => ({
       teamId,
       name: team.name,

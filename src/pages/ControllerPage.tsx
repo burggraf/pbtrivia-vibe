@@ -1,5 +1,5 @@
 import { useParams, useNavigate } from 'react-router-dom'
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { Button } from '@/components/ui/button'
 import ThemeToggle from '@/components/ThemeToggle'
 import TeamDisplay from '@/components/games/TeamDisplay'
@@ -68,6 +68,105 @@ export default function ControllerPage() {
   const handleBackToHost = () => {
     navigate('/host')
   }
+
+  // Rebuild scoreboard from database state
+  const rebuildScoreboard = useCallback(async () => {
+    if (!id) return
+
+    console.log('=== REBUILDING SCOREBOARD FOR GAME:', id, ' ===')
+
+    try {
+      // Start with empty teams structure
+      let teams: Record<string, { name: string; players: Array<{ id: string; name: string; avatar: string }> }> = {
+        'no-team': {
+          name: 'No Team',
+          players: []
+        }
+      }
+
+      // Get all teams for this game
+      try {
+        const teamsRecords = await pb.collection('game_teams').getFullList({
+          filter: `game="${id}"`
+        })
+        console.log('Found', teamsRecords.length, 'teams for game')
+
+        teamsRecords.forEach((team: any) => {
+          teams[team.id] = {
+            name: team.name || 'Unknown Team',
+            players: []
+          }
+        })
+      } catch (teamsError) {
+        console.error('Error fetching teams:', teamsError)
+      }
+
+      // Get all players for this game
+      try {
+        const playersRecords = await pb.collection('game_players').getFullList({
+          filter: `game="${id}"`
+        })
+        console.log('Found', playersRecords.length, 'player records for game')
+
+        // Deduplicate players by user ID - keep the latest record for each user
+        const uniquePlayers: Record<string, any> = {}
+        playersRecords.forEach((player: any) => {
+          const playerRef = player.player
+          if (playerRef) {
+            // If this user doesn't exist yet, or this record is newer, keep it
+            if (!uniquePlayers[playerRef] || player.created > uniquePlayers[playerRef].created) {
+              uniquePlayers[playerRef] = player
+            }
+          }
+        })
+
+        console.log('Found', Object.keys(uniquePlayers).length, 'unique players for game')
+
+        // Assign players to teams using name/avatar from game_players record
+        for (const player of Object.values(uniquePlayers)) {
+          const playerRef = player.player
+          const assignedTeamId = player.team || 'no-team'
+
+          // Get player details directly from game_players record
+          const playerInfo = {
+            id: playerRef,
+            name: player.name || '',
+            avatar: player.avatar || ''
+          }
+
+          console.log('Added player', playerInfo.name || playerRef, 'to team', assignedTeamId)
+
+          // Ensure the team exists
+          if (!teams[assignedTeamId]) {
+            teams[assignedTeamId] = {
+              name: assignedTeamId === 'no-team' ? 'No Team' : 'Unknown Team',
+              players: []
+            }
+          }
+
+          // Add player to their team
+          teams[assignedTeamId].players.push(playerInfo)
+        }
+      } catch (playersError) {
+        console.error('Error fetching players:', playersError)
+      }
+
+      // Create the final scoreboard object
+      const scoreboardData = {
+        updated: new Date().toISOString(),
+        teams: teams
+      }
+
+      // Save to game
+      await pb.collection('games').update(id, {
+        scoreboard: scoreboardData
+      })
+
+      console.log('Scoreboard rebuilt successfully with', Object.keys(teams).length, 'teams')
+    } catch (error) {
+      console.error('Error rebuilding scoreboard:', error)
+    }
+  }, [id])
 
   // Fetch game data
   const fetchGameData = async () => {
@@ -451,11 +550,44 @@ export default function ControllerPage() {
       }
     })
 
+    // Subscribe to game_players changes to rebuild scoreboard
+    const unsubscribePlayers = pb.collection('game_players').subscribe('*', (e) => {
+      // Check if the player record belongs to this game
+      if (e.record.game === id) {
+        console.log(`=== PLAYER ${e.action.toUpperCase()} ===`)
+        console.log('Player ID:', e.record.id)
+        console.log('Game ID:', e.record.game)
+        console.log('Team ID:', e.record.team)
+
+        // Rebuild scoreboard on any player change
+        rebuildScoreboard()
+      }
+    }, {
+      filter: `game="${id}"`
+    })
+
+    // Subscribe to game_teams changes to rebuild scoreboard
+    const unsubscribeTeams = pb.collection('game_teams').subscribe('*', (e) => {
+      // Check if the team record belongs to this game
+      if (e.record.game === id) {
+        console.log(`=== TEAM ${e.action.toUpperCase()} ===`)
+        console.log('Team ID:', e.record.id)
+        console.log('Game ID:', e.record.game)
+
+        // Rebuild scoreboard on any team change
+        rebuildScoreboard()
+      }
+    }, {
+      filter: `game="${id}"`
+    })
+
     // Cleanup subscriptions on unmount
     return () => {
       unsubscribeGame.then((unsub) => unsub())
+      unsubscribePlayers.then((unsub) => unsub())
+      unsubscribeTeams.then((unsub) => unsub())
     }
-  }, [id, navigate])
+  }, [id, navigate, rebuildScoreboard])
 
   return (
     <div className="min-h-screen bg-slate-50 dark:bg-slate-900 p-8">
