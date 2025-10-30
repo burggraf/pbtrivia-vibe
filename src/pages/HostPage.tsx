@@ -156,6 +156,11 @@ export default function HostPage() {
               } catch (questionError) {
                 console.error(`Failed to add questions to Round ${i}:`, questionError)
               }
+
+              // Add delay between rounds to respect PocketHost rate limits (except for last round)
+              if (i < data.rounds) {
+                await new Promise(resolve => setTimeout(resolve, 300))
+              }
             }
 
             console.log(`Successfully created ${data.rounds} rounds with ${questionsPerRound} questions each for game "${createdGame.name}"`)
