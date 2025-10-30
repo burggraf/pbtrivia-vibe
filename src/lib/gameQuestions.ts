@@ -85,18 +85,34 @@ export const gameQuestionsService = {
       // Get the round to find the game ID
       const round = await pb.collection('rounds').getOne(roundId);
 
-      const createPromises = questions.map(q =>
-        this.createGameQuestion({
-          host: hostId,
-          game: round.game,
-          round: roundId,
-          question: q.questionId,
-          sequence: q.sequence,
-          category_name: q.categoryName
-        })
-      );
+      // Throttle API calls to respect PocketHost rate limits (5 req/sec, 5 concurrent/IP)
+      // Process questions in batches of 3 with 250ms delay between batches
+      const results: GameQuestion[] = [];
+      const batchSize = 3;
 
-      return await Promise.all(createPromises);
+      for (let i = 0; i < questions.length; i += batchSize) {
+        const batch = questions.slice(i, i + batchSize);
+        const batchPromises = batch.map(q =>
+          this.createGameQuestion({
+            host: hostId,
+            game: round.game,
+            round: roundId,
+            question: q.questionId,
+            sequence: q.sequence,
+            category_name: q.categoryName
+          })
+        );
+
+        const batchResults = await Promise.all(batchPromises);
+        results.push(...batchResults);
+
+        // Add delay between batches to stay under rate limits (except for last batch)
+        if (i + batchSize < questions.length) {
+          await new Promise(resolve => setTimeout(resolve, 250));
+        }
+      }
+
+      return results;
     } catch (error) {
       console.error('Failed to create game questions batch:', error);
       throw error;
