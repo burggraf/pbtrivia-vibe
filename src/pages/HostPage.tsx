@@ -37,15 +37,21 @@ export default function HostPage() {
       const gamesData = await gamesService.getGames()
       setGames(gamesData)
 
-      // Fetch rounds for each game
+      // Fetch rounds for each game with throttling to respect rate limits
       const roundsData: { [key: string]: Round[] } = {}
-      for (const game of gamesData) {
+      for (let i = 0; i < gamesData.length; i++) {
+        const game = gamesData[i]
         try {
           const gameRounds = await roundsService.getRounds(game.id)
           roundsData[game.id] = gameRounds.sort((a, b) => a.sequence_number - b.sequence_number)
         } catch (error) {
           console.error('Failed to load rounds for game:', game.id)
           roundsData[game.id] = []
+        }
+
+        // Add delay between fetching rounds for each game (except last)
+        if (i < gamesData.length - 1) {
+          await new Promise(resolve => setTimeout(resolve, 200))
         }
       }
       setRounds(roundsData)
@@ -173,6 +179,12 @@ export default function HostPage() {
       } else if (editingGame) {
         await gamesService.updateGame(editingGame.id, data as UpdateGameData)
       }
+
+      // Add delay before refreshing to avoid rate limits after burst of create operations
+      if (isCreateMode && data.rounds && data.rounds > 0) {
+        await new Promise(resolve => setTimeout(resolve, 500))
+      }
+
       await fetchGames()
       setGameModalOpen(false)
       setIsCreateMode(false)
