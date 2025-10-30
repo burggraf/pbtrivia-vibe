@@ -5,7 +5,7 @@ import ThemeToggle from '@/components/ThemeToggle'
 import GameStateRenderer from '@/components/games/GameStateRenderer'
 import { gamesService } from '@/lib/games'
 import { gameAnswersService } from '@/lib/gameAnswers'
-import { isCorrectAnswer } from '@/lib/answerShuffler'
+import { isCorrectAnswer, getCorrectAnswerLabel } from '@/lib/answerShuffler'
 import pb from '@/lib/pocketbase'
 import { Game } from '@/types/games'
 
@@ -48,19 +48,14 @@ export default function GamePage() {
       // Determine if the selected answer is correct
       const isCorrect = isCorrectAnswer(questionId, selectedLabel as 'A' | 'B' | 'C' | 'D')
 
-      // The database expects the actual correct answer (always 'A' since answer_a is correct)
-      // But we want to store what the user actually selected for scoring
-      const translatedAnswer = isCorrect ? 'A' : selectedLabel
-
-      // Submit answer using question ID directly as game_questions_id
-      // This is a simplified approach - in a full implementation,
-      // you'd need proper round_questions record creation/management
+      // Store the actual selected label (A, B, C, or D) that the user clicked
+      // The is_correct field will track whether it's right or wrong
       await gameAnswersService.submitTeamAnswer(
         id,
-        questionId, // Using question ID directly for now
+        questionId,
         currentTeamId,
-        translatedAnswer,
-        'A' // The correct answer is always 'A' in the database
+        selectedLabel, // Save the actual selected label, not translated
+        getCorrectAnswerLabel(questionId) // Pass the correct answer label for validation
       )
 
       // Note: The subscription will automatically update teamAnswer state when the answer is saved
