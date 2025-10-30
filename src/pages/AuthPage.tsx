@@ -11,6 +11,7 @@ interface AuthFormData {
   email: string
   password: string
   passwordConfirm?: string
+  name?: string
 }
 
 export default function AuthPage() {
@@ -23,7 +24,8 @@ export default function AuthPage() {
   const [formData, setFormData] = useState<AuthFormData>({
     email: '',
     password: '',
-    passwordConfirm: ''
+    passwordConfirm: '',
+    name: ''
   })
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -66,12 +68,13 @@ export default function AuthPage() {
       await pb.collection('users').create({
         email: formData.email,
         password: formData.password,
-        passwordConfirm: formData.passwordConfirm
+        passwordConfirm: formData.passwordConfirm,
+        name: formData.name
       })
 
       setSuccess('Registration successful! Please check your email to verify your account.')
       setMode('login')
-      setFormData({ email: '', password: '', passwordConfirm: '' })
+      setFormData({ email: '', password: '', passwordConfirm: '', name: '' })
     } catch (err: any) {
       setError(err.message || 'Registration failed')
     } finally {
@@ -87,7 +90,7 @@ export default function AuthPage() {
     try {
       await pb.collection('users').requestPasswordReset(formData.email)
       setSuccess('Password reset email sent! Please check your inbox.')
-      setFormData({ email: '', password: '', passwordConfirm: '' })
+      setFormData({ email: '', password: '', passwordConfirm: '', name: '' })
     } catch (err: any) {
       setError(err.message || 'Failed to send password reset email')
     } finally {
@@ -175,6 +178,22 @@ export default function AuthPage() {
                 className="border-slate-200 dark:border-slate-600 dark:bg-slate-700 dark:text-slate-100 focus:border-slate-400 dark:focus:border-slate-500 focus:ring-slate-200 dark:focus:ring-slate-700"
               />
             </div>
+
+            {mode === 'register' && (
+              <div className="space-y-2">
+                <Label htmlFor="name" className="text-slate-700 dark:text-slate-300">Name</Label>
+                <Input
+                  id="name"
+                  name="name"
+                  type="text"
+                  placeholder="Enter your name"
+                  value={formData.name}
+                  onChange={handleInputChange}
+                  required
+                  className="border-slate-200 dark:border-slate-600 dark:bg-slate-700 dark:text-slate-100 focus:border-slate-400 dark:focus:border-slate-500 focus:ring-slate-200 dark:focus:ring-slate-700"
+                />
+              </div>
+            )}
 
             {(mode === 'login' || mode === 'register') && (
               <div className="space-y-2">
