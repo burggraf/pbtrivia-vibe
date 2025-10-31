@@ -535,8 +535,20 @@ export default function HostPage() {
                                   <div className="hover:bg-white/50 dark:hover:bg-slate-700/50 transition-colors">
                                     <div className="flex items-center gap-3 px-4 py-3">
                                       <AccordionTrigger className="hover:no-underline p-0" />
-                                      <div className="flex-1 flex items-center gap-3 min-w-0">
+                                      <div className="flex items-center gap-3 min-w-0">
                                         <span className="font-medium text-[13px] text-[#0a0a0a] dark:text-white">{round.title}</span>
+                                        <button
+                                          className="w-7 h-7 flex items-center justify-center rounded-md border border-[#e5e5e5] dark:border-slate-700 text-[#737373] dark:text-slate-400 hover:bg-white dark:hover:bg-slate-700 hover:border-[#d4d4d4] dark:hover:border-slate-600 hover:text-[#0a0a0a] dark:hover:text-white transition-colors"
+                                          onClick={(e) => {
+                                            e.stopPropagation()
+                                            handleEditRound(round)
+                                          }}
+                                          title="Edit round"
+                                        >
+                                          <Info className="h-3.5 w-3.5" />
+                                        </button>
+                                      </div>
+                                      <div className="flex-1 flex items-center gap-3 min-w-0">
                                         <span className="text-[12px] text-[#737373] dark:text-slate-400 bg-white dark:bg-slate-900 px-2 py-0.5 rounded border border-[#e5e5e5] dark:border-slate-700">
                                           {round.question_count} questions
                                         </span>
@@ -557,21 +569,6 @@ export default function HostPage() {
                                             )
                                           })}
                                         </div>
-                                      </div>
-                                      <div className="flex items-center gap-2">
-                                        <span className="text-[12px] text-[#737373] dark:text-slate-500">
-                                          Round {round.sequence_number}
-                                        </span>
-                                        <button
-                                          className="w-7 h-7 flex items-center justify-center rounded-md border border-[#e5e5e5] dark:border-slate-700 text-[#737373] dark:text-slate-400 hover:bg-white dark:hover:bg-slate-700 hover:border-[#d4d4d4] dark:hover:border-slate-600 hover:text-[#0a0a0a] dark:hover:text-white transition-colors"
-                                          onClick={(e) => {
-                                            e.stopPropagation()
-                                            handleEditRound(round)
-                                          }}
-                                          title="Edit round"
-                                        >
-                                          <Info className="h-3.5 w-3.5" />
-                                        </button>
                                       </div>
                                     </div>
                                   </div>
