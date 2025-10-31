@@ -35,6 +35,7 @@ interface GameStateDisplayProps {
   gameData: GameData | null
   rounds: any[]
   game: {
+    id: string
     code: string
     scoreboard?: GameScoreboard
   }
@@ -110,7 +111,12 @@ export default function GameStateDisplay({ gameData, rounds, game }: GameStateDi
       case 'round-play':
         return (
           <div className="py-12">
-            <RoundPlayDisplay gameData={gameData as any} mode="controller" />
+            <RoundPlayDisplay
+              gameData={gameData as any}
+              mode="controller"
+              gameId={game.id}
+              scoreboard={game.scoreboard}
+            />
           </div>
         )
 

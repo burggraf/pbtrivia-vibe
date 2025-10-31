@@ -377,15 +377,6 @@ export default function GamePage() {
           </div>
         )}
 
-        {/* Start Game Button - Only show when game is ready and not started */}
-        {game?.status === 'ready' && game?.scoreboard && Object.keys(game.scoreboard.teams).length > 0 && (
-          <div className="text-center">
-            <Button className="bg-slate-700 hover:bg-slate-800 dark:bg-slate-600 dark:hover:bg-slate-700 text-white">
-              Start Game
-            </Button>
-          </div>
-        )}
-
         {/* Debug State Display */}
         <div className="mt-8 p-4 bg-slate-100 dark:bg-slate-800 rounded-lg">
           <h3 className="text-sm font-semibold text-slate-700 dark:text-slate-300 mb-2">

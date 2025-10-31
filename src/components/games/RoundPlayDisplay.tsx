@@ -2,6 +2,9 @@ import { useState, useEffect } from 'react'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
+import pb from '@/lib/pocketbase'
+import { gameAnswersService } from '@/lib/gameAnswers'
+import { GameScoreboard } from '@/types/games'
 
 interface RoundPlayDisplayProps {
   gameData: {
@@ -33,12 +36,15 @@ interface RoundPlayDisplayProps {
   }
   mode?: 'controller' | 'player'  // Different display modes for controller vs game screen
   onAnswerSubmit?: (answer: string) => void  // Only used in player mode
+  gameId?: string  // Added for controller mode to track answers
+  scoreboard?: GameScoreboard  // Added for controller mode to show teams
 }
 
-export default function RoundPlayDisplay({ gameData, mode = 'controller', onAnswerSubmit }: RoundPlayDisplayProps) {
+export default function RoundPlayDisplay({ gameData, mode = 'controller', onAnswerSubmit, gameId, scoreboard }: RoundPlayDisplayProps) {
   const [showAnswerDebug, setShowAnswerDebug] = useState(false) // Debug flag to test answer reveal
+  const [teamAnswerStatus, setTeamAnswerStatus] = useState<Map<string, { answered: boolean, isCorrect?: boolean }>>(new Map()) // Track which teams have answered and their correctness
 
-  // Reset debug state when question changes
+  // Reset debug state and team answer status when question changes
   useEffect(() => {
     console.log('🔄 RoundPlayDisplay: Question changed', {
       newQuestionId: gameData.question?.id,
@@ -47,7 +53,57 @@ export default function RoundPlayDisplay({ gameData, mode = 'controller', onAnsw
       mode
     })
     setShowAnswerDebug(false)
+    setTeamAnswerStatus(new Map()) // Reset team answer status for new question
   }, [gameData.question?.id, gameData.question?.question_number, mode])
+
+  // Track team answers in realtime (controller mode only)
+  useEffect(() => {
+    if (mode !== 'controller' || !gameId || !gameData.question?.id) return
+
+    const questionId = gameData.question.id
+
+    // Fetch existing answers for this question
+    const fetchExistingAnswers = async () => {
+      try {
+        const answers = await gameAnswersService.getTeamAnswersForQuestion(gameId, questionId)
+        const answeredTeamsMap = new Map(
+          answers.map(a => [a.team, { answered: true, isCorrect: a.is_correct }])
+        )
+        setTeamAnswerStatus(answeredTeamsMap)
+        console.log('📊 Loaded existing answers for', answeredTeamsMap.size, 'teams')
+      } catch (error) {
+        console.error('Failed to fetch existing answers:', error)
+      }
+    }
+
+    fetchExistingAnswers()
+
+    // Subscribe to realtime answer updates
+    const unsubscribe = pb.collection('game_answers').subscribe('*', (e) => {
+      // Check if this answer is for our game and question
+      if ((e.record as any).game === gameId && (e.record as any).game_questions_id === questionId) {
+        const teamId = (e.record as any).team
+        const isCorrect = (e.record as any).is_correct
+
+        setTeamAnswerStatus(prev => {
+          const newMap = new Map(prev)
+          if (e.action === 'create' || e.action === 'update') {
+            newMap.set(teamId, { answered: true, isCorrect })
+            console.log('✅ Team', teamId, 'has answered. Correct:', isCorrect)
+          } else if (e.action === 'delete') {
+            newMap.delete(teamId)
+          }
+          return newMap
+        })
+      }
+    }, {
+      filter: `game = "${gameId}" && game_questions_id = "${questionId}"`
+    })
+
+    return () => {
+      unsubscribe.then(unsub => unsub())
+    }
+  }, [mode, gameId, gameData.question?.id])
 
   // Show answer if correct_answer exists in the data
   const shouldShowAnswer = showAnswerDebug || !!gameData.question?.correct_answer
@@ -226,9 +282,70 @@ export default function RoundPlayDisplay({ gameData, mode = 'controller', onAnsw
             </div>
           )}
 
-    
+
           </CardContent>
       </Card>
+
+      {/* Team Answer Status - Only show in controller mode */}
+      {mode === 'controller' && scoreboard && Object.keys(scoreboard.teams).length > 0 && (
+        <Card className="max-w-3xl mx-auto">
+          <CardHeader>
+            <CardTitle className="text-lg">Team Answer Status</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3">
+              {Object.entries(scoreboard.teams)
+                .filter(([teamId]) => teamId !== 'no-team') // Exclude "No Team"
+                .map(([teamId, teamData]) => {
+                  const teamStatus = teamAnswerStatus.get(teamId)
+                  const hasAnswered = teamStatus?.answered || false
+                  const isCorrect = teamStatus?.isCorrect
+                  const isAnswerRevealed = shouldShowAnswer
+
+                  // Determine styling based on state
+                  let bgColor = 'bg-slate-50 border-slate-300 text-slate-700 dark:bg-slate-800 dark:border-slate-600 dark:text-slate-300'
+                  let icon = null
+
+                  if (hasAnswered) {
+                    if (isAnswerRevealed) {
+                      // Answer revealed - show correct/incorrect
+                      if (isCorrect) {
+                        bgColor = 'bg-green-100 border-green-500 text-green-800 dark:bg-green-900 dark:border-green-600 dark:text-green-200'
+                        icon = <span className="text-2xl">✓</span>
+                      } else {
+                        bgColor = 'bg-red-100 border-red-500 text-red-800 dark:bg-red-900 dark:border-red-600 dark:text-red-200'
+                        icon = <span className="text-2xl">✗</span>
+                      }
+                    } else {
+                      // Answer not revealed yet - show blue
+                      bgColor = 'bg-blue-100 border-blue-500 text-blue-800 dark:bg-blue-900 dark:border-blue-600 dark:text-blue-200'
+                      icon = <span className="text-2xl">✓</span>
+                    }
+                  }
+
+                  return (
+                    <div
+                      key={teamId}
+                      className={`p-3 rounded-lg border-2 transition-all ${bgColor}`}
+                    >
+                      <div className="flex items-center justify-between">
+                        <div>
+                          <div className="font-medium">
+                            {teamData.name}
+                          </div>
+                          <div className="text-sm opacity-75">
+                            ({teamData.players.length} player{teamData.players.length !== 1 ? 's' : ''})
+                          </div>
+                        </div>
+                        {icon}
+                      </div>
+                    </div>
+                  )
+                })}
+            </div>
+          </CardContent>
+        </Card>
+      )}
     </div>
   )
 }
