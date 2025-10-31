@@ -533,33 +533,32 @@ export default function HostPage() {
                               {rounds[game.id].map((round) => (
                                 <AccordionItem key={round.id} value={round.id} className="border-none">
                                   <div className="hover:bg-white/50 dark:hover:bg-slate-700/50 transition-colors">
-                                    <div className="flex items-center px-4 py-3">
-                                      <AccordionTrigger className="hover:no-underline flex-1 justify-start p-0">
-                                        <div className="flex items-center gap-3 min-w-0">
-                                          <span className="font-medium text-[13px] text-[#0a0a0a] dark:text-white">{round.title}</span>
-                                          <span className="text-[12px] text-[#737373] dark:text-slate-400 bg-white dark:bg-slate-900 px-2 py-0.5 rounded border border-[#e5e5e5] dark:border-slate-700">
-                                            {round.question_count} questions
-                                          </span>
-                                          <div className="flex gap-1">
-                                            {getAvailableCategories().map((category) => {
-                                              const isUsed = round.categories && round.categories.includes(category)
-                                              return (
-                                                <div key={category} title={category}>
-                                                  <CategoryIcon
-                                                    category={category}
-                                                    size={14}
-                                                    className={`${isUsed
-                                                      ? 'text-[#525252] dark:text-slate-300'
-                                                      : 'text-[#d4d4d4] dark:text-slate-600'
-                                                    }`}
-                                                  />
-                                                </div>
-                                              )
-                                            })}
-                                          </div>
+                                    <div className="flex items-center gap-3 px-4 py-3">
+                                      <AccordionTrigger className="hover:no-underline p-0" />
+                                      <div className="flex-1 flex items-center gap-3 min-w-0">
+                                        <span className="font-medium text-[13px] text-[#0a0a0a] dark:text-white">{round.title}</span>
+                                        <span className="text-[12px] text-[#737373] dark:text-slate-400 bg-white dark:bg-slate-900 px-2 py-0.5 rounded border border-[#e5e5e5] dark:border-slate-700">
+                                          {round.question_count} questions
+                                        </span>
+                                        <div className="flex gap-1">
+                                          {getAvailableCategories().map((category) => {
+                                            const isUsed = round.categories && round.categories.includes(category)
+                                            return (
+                                              <div key={category} title={category}>
+                                                <CategoryIcon
+                                                  category={category}
+                                                  size={14}
+                                                  className={`${isUsed
+                                                    ? 'text-[#525252] dark:text-slate-300'
+                                                    : 'text-[#d4d4d4] dark:text-slate-600'
+                                                  }`}
+                                                />
+                                              </div>
+                                            )
+                                          })}
                                         </div>
-                                      </AccordionTrigger>
-                                      <div className="flex items-center gap-2 ml-4">
+                                      </div>
+                                      <div className="flex items-center gap-2">
                                         <span className="text-[12px] text-[#737373] dark:text-slate-500">
                                           Round {round.sequence_number}
                                         </span>
