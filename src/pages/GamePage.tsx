@@ -309,12 +309,12 @@ export default function GamePage() {
   }, [id])
 
   return (
-    <div className="min-h-screen bg-slate-50 dark:bg-slate-900 p-8">
+    <div className="min-h-screen bg-slate-50 dark:bg-slate-900 p-4 md:p-6 lg:p-8">
       <div className="max-w-6xl mx-auto">
-        <div className="flex justify-between items-center mb-8">
+        <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4 mb-4 md:mb-8">
           <div>
-            <h1 className="text-3xl font-bold text-slate-800 dark:text-slate-100">Game Room</h1>
-            <p className="text-slate-600 dark:text-slate-400 mt-2">
+            <h1 className="text-xl md:text-3xl font-bold text-slate-800 dark:text-slate-100">Game Room</h1>
+            <p className="text-sm md:text-base text-slate-600 dark:text-slate-400 mt-2">
               Game ID: {id} {game && `- ${game.name}`}
             </p>
             {game && (
@@ -331,19 +331,21 @@ export default function GamePage() {
               </div>
             )}
           </div>
-          <div className="flex gap-3">
+          <div className="flex flex-col sm:flex-row gap-2 sm:gap-3">
             <Button
               variant="outline"
               onClick={() => navigate('/lobby')}
-              className="border-slate-300 dark:border-slate-600 text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800"
+              className="w-full sm:w-auto border-slate-300 dark:border-slate-600 text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800"
             >
               Return to Lobby
             </Button>
-            <ThemeToggle />
+            <div className="w-full sm:w-auto">
+              <ThemeToggle />
+            </div>
             <Button
               variant="outline"
               onClick={handleLogout}
-              className="border-slate-300 dark:border-slate-600 text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800"
+              className="w-full sm:w-auto border-slate-300 dark:border-slate-600 text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800"
             >
               Logout
             </Button>
