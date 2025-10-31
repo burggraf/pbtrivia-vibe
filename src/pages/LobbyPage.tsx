@@ -130,11 +130,13 @@ export default function LobbyPage() {
 
   return (
     <div className="min-h-screen bg-slate-50 dark:bg-slate-900 p-4 md:p-6 lg:p-8">
-      <div className="max-w-4xl mx-auto">
-        <div className="flex justify-between items-center mb-4 md:mb-6">
-          <h1 className="text-lg md:text-2xl font-semibold text-slate-800 dark:text-slate-100">Game Lobby</h1>
-          <div className="flex gap-2">
-            <ThemeToggle />
+      <div className="w-full max-w-4xl mx-auto">
+        <div className="flex justify-between items-center mb-4 md:mb-6 gap-2">
+          <h1 className="text-lg md:text-2xl font-semibold text-slate-800 dark:text-slate-100 truncate">Game Lobby</h1>
+          <div className="flex gap-2 flex-shrink-0">
+            <div className="hidden sm:block">
+              <ThemeToggle />
+            </div>
             <Button
               variant="outline"
               size="sm"
@@ -147,7 +149,7 @@ export default function LobbyPage() {
         </div>
 
         {/* Join Game Section */}
-        <Card className="max-w-md mx-auto bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700 mb-4 md:mb-6">
+        <Card className="w-full max-w-md mx-auto bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700 mb-4 md:mb-6">
             <CardHeader className="pb-2 md:pb-3">
               <CardTitle className="text-base md:text-lg text-slate-800 dark:text-slate-100">Join a Game</CardTitle>
             </CardHeader>
