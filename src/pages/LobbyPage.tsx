@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { Button } from '@/components/ui/button'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import ThemeToggle from '@/components/ThemeToggle'
@@ -132,10 +132,7 @@ export default function LobbyPage() {
     <div className="min-h-screen bg-slate-50 dark:bg-slate-900 p-4 md:p-6 lg:p-8">
       <div className="max-w-4xl mx-auto">
         <div className="flex justify-between items-center mb-4 md:mb-6">
-          <div>
-            <h1 className="text-lg md:text-2xl font-semibold text-slate-800 dark:text-slate-100">Game Lobby</h1>
-            <p className="text-sm md:text-base text-slate-600 dark:text-slate-400 mt-1 md:mt-2">Join or wait for trivia games</p>
-          </div>
+          <h1 className="text-lg md:text-2xl font-semibold text-slate-800 dark:text-slate-100">Game Lobby</h1>
           <div className="flex gap-2">
             <ThemeToggle />
             <Button
@@ -154,9 +151,6 @@ export default function LobbyPage() {
           <Card className="bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700 mb-4 md:mb-6">
             <CardHeader className="pb-2 md:pb-3">
               <CardTitle className="text-base md:text-lg text-slate-800 dark:text-slate-100">Join a Game</CardTitle>
-              <CardDescription className="text-sm md:text-base text-slate-600 dark:text-slate-400">
-                Enter a game code to join an existing game
-              </CardDescription>
             </CardHeader>
             <CardContent className="px-3 md:px-6 space-y-3 md:space-y-4">
               <div className="space-y-2">
