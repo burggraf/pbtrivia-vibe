@@ -5,6 +5,7 @@ import { GameScoreboard, ScoreboardTeam } from '@/types/games'
 import RoundStartDisplay from './RoundStartDisplay'
 import RoundPlayDisplay from './RoundPlayDisplay'
 import QRCode from 'react-qr-code'
+import { getPublicUrl } from '@/lib/networkUrl'
 
 type GameState = 'game-start' | 'round-start' | 'round-play' | 'round-end' | 'game-end' | 'thanks' | 'return-to-lobby'
 
@@ -66,7 +67,7 @@ export default function GameStateDisplay({ gameData, rounds, game }: GameStateDi
               <div className="flex justify-center">
                 <div className="p-4 bg-white dark:bg-slate-800 rounded-lg border border-slate-200 dark:border-slate-700 shadow-sm inline-block">
                   <QRCode
-                    value={`${window.location.origin}/join?code=${game?.code}`}
+                    value={`${getPublicUrl()}/join?code=${game?.code}`}
                     size={200}
                     level="M"
                     aria-label={`QR code to join game ${game?.code}`}
