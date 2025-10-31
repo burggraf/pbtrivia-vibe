@@ -42,6 +42,19 @@ This is a trivia game application built with React + TypeScript frontend and Poc
 - **Context-based theme system** with dark/light mode support
 - **Real-time PocketBase subscriptions** for live game updates
 
+### UI/UX Standards
+
+**IMPORTANT**: When creating or modifying UI components, always reference the UI Style Guide:
+
+- **Style Guide**: See `docs/design/ui-style-guide.md` for comprehensive UI/UX standards
+- **Component Library**: **ALWAYS use shadcn/ui components** - never create custom HTML components
+- **Mobile-First**: Design for mobile first (375px width minimum), then enhance for larger screens
+- **Responsive Design**: Use Tailwind responsive modifiers (`sm:`, `md:`, `lg:`) throughout
+- **Dark Mode**: Include dark mode variants for all UI elements
+- **Spacing Standards**: Follow progressive spacing patterns (mobile → tablet → desktop)
+- **Typography Standards**: Use documented font size scales and responsive patterns
+- **Touch Targets**: Maintain minimum 44px height for interactive elements on mobile
+
 ### Backend Architecture
 
 - **PocketBase** as backend database and API server

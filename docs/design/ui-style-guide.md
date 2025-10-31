@@ -8,6 +8,38 @@
 
 This style guide documents the UI design principles, patterns, and standards used throughout the PB Trivia application. It's based on the mobile-first responsive approach developed for the game page.
 
+### Component Library
+
+**CRITICAL: Always Use shadcn/ui Components**
+
+- **NEVER create custom HTML components** (divs, buttons, inputs, etc.)
+- **ALWAYS use shadcn/ui components** from `src/components/ui/`
+- Available components include: Button, Card, Badge, Dialog, Input, Label, etc.
+- If you need a component that doesn't exist, add it from shadcn/ui library
+- Only extend existing shadcn components with Tailwind classes
+
+**Why?**
+- Consistent styling and behavior across the app
+- Built on Radix UI primitives for accessibility
+- Already integrated with our theme system
+- Reduces code duplication and maintenance
+
+**Example - Wrong vs Right**:
+
+❌ **Wrong** - Custom HTML:
+```tsx
+<div className="px-4 py-2 bg-blue-500 text-white rounded">
+  Click me
+</div>
+```
+
+✅ **Right** - shadcn Button:
+```tsx
+<Button variant="default">
+  Click me
+</Button>
+```
+
 ---
 
 ## Design Principles
