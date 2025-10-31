@@ -68,96 +68,108 @@ export default function TeamSelectionModal({
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="sm:max-w-[425px]">
-        <DialogHeader>
-          <DialogTitle>Join Game</DialogTitle>
-          <DialogDescription>
-            Select an existing team or create a new team to join the game.
+      <DialogContent className="w-[calc(100%-2rem)] sm:max-w-md p-0">
+        <DialogHeader className="text-center px-6 pt-6 pb-4">
+          <DialogTitle className="text-2xl font-bold">Join Game</DialogTitle>
+          <DialogDescription className="text-slate-600 dark:text-slate-400 pt-1">
+            {teams.length > 0
+              ? "Select your team"
+              : "Create your team"}
           </DialogDescription>
         </DialogHeader>
 
-        <div className="space-y-6 py-4">
+        <div className="px-6 pb-6">
           {isLoading ? (
-            <div className="text-center py-4">
-              <p className="text-sm text-slate-600 dark:text-slate-400">Loading teams...</p>
+            <div className="text-center py-12">
+              <p className="text-slate-600 dark:text-slate-400">Loading teams...</p>
             </div>
           ) : (
-            <>
+            <div className="space-y-3">
               {teams.length > 0 && (
                 <div className="space-y-3">
-                  <Label className="text-sm font-medium">Select Existing Team</Label>
-                  <div className="space-y-2">
-                    {teams.map((team) => (
-                      <Button
-                        key={team.id}
-                        variant={selectedTeam === team.id && !createNewTeam ? "default" : "outline"}
-                        onClick={() => {
-                          setSelectedTeam(team.id)
-                          setCreateNewTeam(false)
-                        }}
-                        className={`w-full justify-start ${
-                          selectedTeam === team.id && !createNewTeam
-                            ? "bg-slate-700 hover:bg-slate-800 dark:bg-slate-600 dark:hover:bg-slate-700 text-white"
-                            : "border-slate-300 dark:border-slate-600 text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800"
-                        }`}
-                      >
-                        {team.name}
-                      </Button>
-                    ))}
+                  {teams.map((team) => (
+                    <button
+                      key={team.id}
+                      onClick={() => {
+                        setSelectedTeam(team.id)
+                        setCreateNewTeam(false)
+                      }}
+                      className={`w-full p-5 rounded-xl border-2 text-lg font-semibold transition-all ${
+                        selectedTeam === team.id && !createNewTeam
+                          ? "border-blue-500 bg-blue-50 dark:bg-blue-900/20 text-blue-700 dark:text-blue-200 shadow-sm"
+                          : "border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-300 hover:border-blue-300 dark:hover:border-blue-700"
+                      }`}
+                    >
+                      {team.name}
+                    </button>
+                  ))}
+
+                  <div className="relative py-3">
+                    <div className="absolute inset-0 flex items-center">
+                      <div className="w-full border-t border-slate-200 dark:border-slate-700"></div>
+                    </div>
+                    <div className="relative flex justify-center text-xs uppercase">
+                      <span className="bg-white dark:bg-slate-800 px-3 text-slate-500 dark:text-slate-400 font-medium">
+                        Or
+                      </span>
+                    </div>
                   </div>
                 </div>
               )}
 
-              <div className="space-y-3">
-                <Button
-                  variant={createNewTeam ? "default" : "outline"}
-                  onClick={() => {
-                    setCreateNewTeam(!createNewTeam)
-                    setSelectedTeam('')
-                  }}
-                  className={`w-full justify-start ${
-                    createNewTeam
-                      ? "bg-slate-700 hover:bg-slate-800 dark:bg-slate-600 dark:hover:bg-slate-700 text-white"
-                      : "border-slate-300 dark:border-slate-600 text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800"
-                  }`}
-                >
-                  Create New Team
-                </Button>
-
-                {createNewTeam && (
-                  <div className="space-y-2">
-                    <Label htmlFor="teamName" className="text-sm">
-                      Team Name
-                    </Label>
+              {createNewTeam ? (
+                <div className="space-y-3">
+                  <div className="p-5 rounded-xl border-2 border-blue-500 bg-blue-50 dark:bg-blue-900/20">
                     <Input
                       id="teamName"
                       placeholder="Enter team name"
                       value={newTeamName}
                       onChange={(e) => setNewTeamName(e.target.value)}
                       maxLength={30}
-                      className="border-slate-200 dark:border-slate-600 dark:bg-slate-700 dark:text-slate-100"
+                      autoFocus
+                      className="h-12 text-lg font-semibold border-0 bg-white dark:bg-slate-800 focus-visible:ring-2 focus-visible:ring-blue-500"
                     />
                   </div>
-                )}
-              </div>
-            </>
+                  <button
+                    onClick={() => {
+                      setCreateNewTeam(false)
+                      setNewTeamName('')
+                    }}
+                    className="text-sm text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200"
+                  >
+                    ← Back to teams
+                  </button>
+                </div>
+              ) : (
+                <button
+                  onClick={() => {
+                    setCreateNewTeam(true)
+                    setSelectedTeam('')
+                  }}
+                  className="w-full p-5 rounded-xl border-2 border-dashed border-slate-300 dark:border-slate-600 bg-slate-50 dark:bg-slate-800/50 text-lg font-semibold text-slate-600 dark:text-slate-400 hover:border-blue-400 hover:text-blue-600 dark:hover:text-blue-400 hover:bg-blue-50/50 dark:hover:bg-blue-900/10 transition-all"
+                >
+                  + Create New Team
+                </button>
+              )}
+            </div>
           )}
         </div>
 
-        <div className="flex justify-end space-x-3 pt-4">
-          <Button
-            variant="outline"
-            onClick={onClose}
-            className="border-slate-300 dark:border-slate-600 text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800"
-          >
-            Cancel
-          </Button>
+        <div className="flex flex-col gap-2 px-6 pb-6 pt-0">
           <Button
             onClick={handleJoinGame}
             disabled={!isFormValid || isLoading}
-            className="bg-slate-700 hover:bg-slate-800 dark:bg-slate-600 dark:hover:bg-slate-700 text-white"
+            size="lg"
+            className="w-full h-14 text-lg bg-blue-600 hover:bg-blue-700 dark:bg-blue-500 dark:hover:bg-blue-600 text-white font-semibold disabled:opacity-40 disabled:cursor-not-allowed"
           >
             Join Game
+          </Button>
+          <Button
+            variant="ghost"
+            onClick={onClose}
+            className="w-full text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200 hover:bg-transparent"
+          >
+            Cancel
           </Button>
         </div>
       </DialogContent>

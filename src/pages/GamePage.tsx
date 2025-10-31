@@ -311,13 +311,13 @@ export default function GamePage() {
   return (
     <div className="min-h-screen bg-slate-50 dark:bg-slate-900 p-4 md:p-6 lg:p-8">
       <div className="max-w-6xl mx-auto">
-        <div className="flex justify-between items-center mb-4 md:mb-6">
+        <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-3 mb-4 md:mb-6">
           {game?.name && (
-            <h1 className="text-lg md:text-2xl font-semibold text-slate-800 dark:text-slate-100">
+            <h1 className="text-lg md:text-2xl font-semibold text-slate-800 dark:text-slate-100 text-center sm:text-left">
               {game.name}
             </h1>
           )}
-          <div className="flex gap-2">
+          <div className="flex gap-2 justify-center sm:justify-end">
             <Button
               variant="outline"
               size="sm"
