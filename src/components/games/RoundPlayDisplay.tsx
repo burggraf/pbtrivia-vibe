@@ -208,10 +208,10 @@ export default function RoundPlayDisplay({ gameData, mode = 'controller', onAnsw
                   // Other answers when team has submitted
                   answerClasses += ' bg-blue-50 border-blue-300 text-blue-700 dark:bg-blue-900 opacity-40 cursor-not-allowed'
                 } else {
-                  // Default state (clickable)
-                  answerClasses += ' bg-blue-50 border-blue-300 text-blue-700 dark:bg-blue-900'
+                  // Default state (clickable) - no hover effects to prevent mobile Safari focus issues
+                  answerClasses += ' bg-blue-50 border-blue-300 text-blue-700 dark:bg-blue-900 dark:border-blue-600 dark:text-blue-200'
                   if (mode === 'player') {
-                    answerClasses += ' hover:bg-blue-100 cursor-pointer'
+                    answerClasses += ' cursor-pointer'
                   }
                 }
 
