@@ -271,7 +271,7 @@ export default function RoundPlayDisplay({ gameData, mode = 'controller', onAnsw
             <CardTitle className="text-lg">Team Answer Status</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3">
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-2 md:gap-3">
               {Object.entries(scoreboard.teams)
                 .filter(([teamId]) => teamId !== 'no-team') // Exclude "No Team"
                 .map(([teamId, teamData]) => {
@@ -304,7 +304,7 @@ export default function RoundPlayDisplay({ gameData, mode = 'controller', onAnsw
                   return (
                     <div
                       key={teamId}
-                      className={`p-3 rounded-lg border-2 transition-all ${bgColor}`}
+                      className={`p-2 md:p-3 rounded-lg border-2 transition-all ${bgColor}`}
                     >
                       <div className="flex items-center justify-between">
                         <div>
