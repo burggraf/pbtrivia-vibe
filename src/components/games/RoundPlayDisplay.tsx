@@ -121,8 +121,13 @@ export default function RoundPlayDisplay({ gameData, mode = 'controller', onAnsw
   const teamAnswer = gameData.teamAnswer
   const hasTeamSubmitted = !!teamAnswer
 
-  const handleAnswerClick = async (answer: string) => {
+  const handleAnswerClick = async (answer: string, event: React.MouseEvent<HTMLDivElement>) => {
     if (mode !== 'player' || hasTeamSubmitted || shouldShowAnswer || gameData.isSubmittingAnswer) return
+
+    // Remove focus from the clicked element to prevent persistent highlighting on mobile
+    if (event.currentTarget) {
+      event.currentTarget.blur()
+    }
 
     if (onAnswerSubmit) {
       await onAnswerSubmit(answer)
@@ -180,7 +185,7 @@ export default function RoundPlayDisplay({ gameData, mode = 'controller', onAnsw
                 const isIncorrectSelectedAnswer = shouldShowAnswer && answer.label === teamAnswer && answer.label !== correctAnswerLabel
 
                 // Build classes based on final state (no conflicting classes)
-                const baseClasses = "p-3 md:p-4 rounded-lg border-2 transition-colors flex items-start"
+                const baseClasses = "p-3 md:p-4 rounded-lg border-2 transition-colors flex items-start outline-none focus:outline-none"
                 let answerClasses = baseClasses
 
                 // Determine styling based on current state
@@ -237,7 +242,8 @@ export default function RoundPlayDisplay({ gameData, mode = 'controller', onAnsw
                     <div
                       key={answer.label}
                       className={`${answerClasses} flex justify-between items-start`}
-                      onClick={() => !isDisabled && handleAnswerClick(answer.label)}
+                      onClick={(e) => !isDisabled && handleAnswerClick(answer.label, e)}
+                      tabIndex={-1}
                     >
                       <div>
                         <span className="font-medium">{answer.label}.</span> {answer.text}
