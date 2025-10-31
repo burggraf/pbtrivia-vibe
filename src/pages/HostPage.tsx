@@ -7,7 +7,7 @@ import GameEditModal from '@/components/games/GameEditModal'
 import RoundEditModal from '@/components/games/RoundEditModal'
 import QuestionsList from '@/components/games/QuestionsList'
 import CategoryIcon, { getAvailableCategories } from '@/components/ui/CategoryIcon'
-import { Info, Plus, Play, MoreVertical, Eye } from 'lucide-react'
+import { Info, Plus, Play } from 'lucide-react'
 import pb from '@/lib/pocketbase'
 import { gamesService } from '@/lib/games'
 import { roundsService } from '@/lib/rounds'
@@ -425,12 +425,13 @@ export default function HostPage() {
               ) : (
                 <div>
                   {/* Table Headers */}
-                  <div className="grid grid-cols-[2fr,1.2fr,3fr,1fr,1.5fr] gap-4 px-5 py-3 bg-[#fafafa] dark:bg-slate-800 border-b border-[#e5e5e5] dark:border-slate-800">
+                  <div className="grid grid-cols-[auto,2fr,1.5fr,1.2fr,3fr,1fr] gap-4 px-5 py-3 bg-[#fafafa] dark:bg-slate-800 border-b border-[#e5e5e5] dark:border-slate-800">
+                    <div></div>
                     <div className="text-[12px] font-medium text-[#737373] dark:text-slate-500 uppercase tracking-wider">Name</div>
+                    <div className="text-[12px] font-medium text-[#737373] dark:text-slate-500 uppercase tracking-wider">Actions</div>
                     <div className="text-[12px] font-medium text-[#737373] dark:text-slate-500 uppercase tracking-wider">Status</div>
                     <div className="text-[12px] font-medium text-[#737373] dark:text-slate-500 uppercase tracking-wider">Details</div>
                     <div className="text-[12px] font-medium text-[#737373] dark:text-slate-500 uppercase tracking-wider">Rounds</div>
-                    <div className="text-[12px] font-medium text-[#737373] dark:text-slate-500 uppercase tracking-wider text-right">Actions</div>
                   </div>
 
                   {/* Table Rows with Accordion */}
@@ -438,16 +439,51 @@ export default function HostPage() {
                     {games.map((game) => (
                       <AccordionItem key={game.id} value={game.id} className="border-none">
                         <div className="hover:bg-[#fafafa] dark:hover:bg-slate-800 transition-colors">
-                          <div className="grid grid-cols-[2fr,1.2fr,3fr,1fr,1.5fr] gap-4 items-center px-5 py-4">
+                          <div className="grid grid-cols-[auto,2fr,1.5fr,1.2fr,3fr,1fr] gap-4 items-center px-5 py-4">
+                            {/* ACCORDION TRIGGER Column */}
+                            <AccordionTrigger className="hover:no-underline p-0" />
+
                             {/* NAME Column */}
-                            <AccordionTrigger className="hover:no-underline justify-start p-0">
-                              <div className="flex items-center gap-3 min-w-0">
-                                <span className="font-medium text-[14px] text-[#0a0a0a] dark:text-white">{game.name}</span>
-                                <code className="px-2 py-0.5 bg-[#f5f5f5] dark:bg-slate-800 rounded text-[12px] font-mono text-[#525252] dark:text-slate-400 tracking-wider border border-transparent dark:border-slate-700">
-                                  {game.code}
-                                </code>
-                              </div>
-                            </AccordionTrigger>
+                            <div className="flex items-center gap-3 min-w-0">
+                              <span className="font-medium text-[14px] text-[#0a0a0a] dark:text-white">{game.name}</span>
+                            </div>
+
+                            {/* ACTIONS Column */}
+                            <div className="flex items-center gap-1.5">
+                              {(game.status === 'setup' || game.status === 'ready' || game.status === 'in-progress') && (
+                                <button
+                                  className={`w-8 h-8 flex items-center justify-center rounded-md transition-colors ${
+                                    game.status === 'setup' && (!rounds[game.id] || rounds[game.id].length === 0)
+                                      ? 'bg-[#f5f5f5] dark:bg-slate-700 text-[#d4d4d4] dark:text-slate-600 cursor-not-allowed'
+                                      : 'bg-[#0a0a0a] dark:bg-white text-white dark:text-slate-900 hover:bg-[#262626] dark:hover:bg-slate-200'
+                                  }`}
+                                  onClick={(e) => {
+                                    e.stopPropagation()
+                                    if (game.status !== 'setup' || (rounds[game.id] && rounds[game.id].length > 0)) {
+                                      handlePlayGame(game.id)
+                                    }
+                                  }}
+                                  disabled={game.status === 'setup' && (!rounds[game.id] || rounds[game.id].length === 0)}
+                                  title={
+                                    game.status === 'setup' && (!rounds[game.id] || rounds[game.id].length === 0)
+                                      ? "Add rounds before starting the game"
+                                      : "Start game controller"
+                                  }
+                                >
+                                  <Play className="h-4 w-4" />
+                                </button>
+                              )}
+                              <button
+                                className="w-8 h-8 flex items-center justify-center rounded-md border border-[#e5e5e5] dark:border-slate-700 text-[#737373] dark:text-slate-400 hover:bg-[#fafafa] dark:hover:bg-slate-800 hover:border-[#d4d4d4] dark:hover:border-slate-600 hover:text-[#0a0a0a] dark:hover:text-white transition-colors"
+                                onClick={(e) => {
+                                  e.stopPropagation()
+                                  handleEditGame(game)
+                                }}
+                                title="Edit game"
+                              >
+                                <Info className="h-4 w-4" />
+                              </button>
+                            </div>
 
                             {/* STATUS Column */}
                             <div>
@@ -477,64 +513,6 @@ export default function HostPage() {
                             <div className="text-[13px] text-[#525252] dark:text-slate-400">
                               <span className="font-medium text-[#0a0a0a] dark:text-white">{rounds[game.id]?.length || 0}</span>
                               <span className="ml-1">rounds</span>
-                            </div>
-
-                            {/* ACTIONS Column */}
-                            <div className="flex items-center justify-end gap-1.5">
-                              {game.status === 'completed' ? (
-                                <button
-                                  className="w-8 h-8 flex items-center justify-center rounded-md border border-[#e5e5e5] dark:border-slate-700 text-[#737373] dark:text-slate-400 hover:bg-[#fafafa] dark:hover:bg-slate-800 hover:border-[#d4d4d4] dark:hover:border-slate-600 hover:text-[#0a0a0a] dark:hover:text-white transition-colors"
-                                  onClick={(e) => {
-                                    e.stopPropagation()
-                                    // View results functionality
-                                  }}
-                                  title="View results"
-                                >
-                                  <Eye className="h-4 w-4" />
-                                </button>
-                              ) : (game.status === 'setup' || game.status === 'ready' || game.status === 'in-progress') ? (
-                                <button
-                                  className={`w-8 h-8 flex items-center justify-center rounded-md transition-colors ${
-                                    game.status === 'setup' && (!rounds[game.id] || rounds[game.id].length === 0)
-                                      ? 'bg-[#f5f5f5] dark:bg-slate-700 text-[#d4d4d4] dark:text-slate-600 cursor-not-allowed'
-                                      : 'bg-[#0a0a0a] dark:bg-white text-white dark:text-slate-900 hover:bg-[#262626] dark:hover:bg-slate-200'
-                                  }`}
-                                  onClick={(e) => {
-                                    e.stopPropagation()
-                                    if (game.status !== 'setup' || (rounds[game.id] && rounds[game.id].length > 0)) {
-                                      handlePlayGame(game.id)
-                                    }
-                                  }}
-                                  disabled={game.status === 'setup' && (!rounds[game.id] || rounds[game.id].length === 0)}
-                                  title={
-                                    game.status === 'setup' && (!rounds[game.id] || rounds[game.id].length === 0)
-                                      ? "Add rounds before starting the game"
-                                      : "Start game controller"
-                                  }
-                                >
-                                  <Play className="h-4 w-4" />
-                                </button>
-                              ) : null}
-                              <button
-                                className="w-8 h-8 flex items-center justify-center rounded-md border border-[#e5e5e5] dark:border-slate-700 text-[#737373] dark:text-slate-400 hover:bg-[#fafafa] dark:hover:bg-slate-800 hover:border-[#d4d4d4] dark:hover:border-slate-600 hover:text-[#0a0a0a] dark:hover:text-white transition-colors"
-                                onClick={(e) => {
-                                  e.stopPropagation()
-                                  handleEditGame(game)
-                                }}
-                                title="Edit game"
-                              >
-                                <Info className="h-4 w-4" />
-                              </button>
-                              <button
-                                className="w-8 h-8 flex items-center justify-center rounded-md border border-[#e5e5e5] dark:border-slate-700 text-[#737373] dark:text-slate-400 hover:bg-[#fafafa] dark:hover:bg-slate-800 hover:border-[#d4d4d4] dark:hover:border-slate-600 hover:text-[#0a0a0a] dark:hover:text-white transition-colors"
-                                onClick={(e) => {
-                                  e.stopPropagation()
-                                  // More options functionality
-                                }}
-                                title="More options"
-                              >
-                                <MoreVertical className="h-4 w-4" />
-                              </button>
                             </div>
                           </div>
                         </div>
