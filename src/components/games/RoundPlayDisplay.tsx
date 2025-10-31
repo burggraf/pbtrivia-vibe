@@ -204,9 +204,9 @@ export default function RoundPlayDisplay({ gameData, mode = 'controller', onAnsw
                   answerClasses += ' bg-blue-50 border-blue-300 text-blue-700 dark:bg-blue-900 opacity-40 cursor-not-allowed'
                 } else {
                   // Default state (clickable)
-                  answerClasses += ' bg-white border-slate-300 text-slate-700 dark:bg-slate-800 dark:border-slate-600 dark:text-slate-300'
+                  answerClasses += ' bg-blue-50 border-blue-300 text-blue-700 dark:bg-blue-900'
                   if (mode === 'player') {
-                    answerClasses += ' hover:bg-slate-50 dark:hover:bg-slate-700 cursor-pointer active:bg-slate-100 dark:active:bg-slate-600'
+                    answerClasses += ' hover:bg-blue-100 cursor-pointer'
                   }
                 }
 
