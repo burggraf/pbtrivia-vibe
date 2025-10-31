@@ -1,6 +1,5 @@
 import { useState, useEffect } from 'react'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import pb from '@/lib/pocketbase'
 import { gameAnswersService } from '@/lib/gameAnswers'
@@ -41,10 +40,9 @@ interface RoundPlayDisplayProps {
 }
 
 export default function RoundPlayDisplay({ gameData, mode = 'controller', onAnswerSubmit, gameId, scoreboard }: RoundPlayDisplayProps) {
-  const [showAnswerDebug, setShowAnswerDebug] = useState(false) // Debug flag to test answer reveal
   const [teamAnswerStatus, setTeamAnswerStatus] = useState<Map<string, { answered: boolean, isCorrect?: boolean }>>(new Map()) // Track which teams have answered and their correctness
 
-  // Reset debug state and team answer status when question changes
+  // Reset team answer status when question changes
   useEffect(() => {
     console.log('🔄 RoundPlayDisplay: Question changed', {
       newQuestionId: gameData.question?.id,
@@ -52,7 +50,6 @@ export default function RoundPlayDisplay({ gameData, mode = 'controller', onAnsw
       teamAnswer: gameData.teamAnswer,
       mode
     })
-    setShowAnswerDebug(false)
     setTeamAnswerStatus(new Map()) // Reset team answer status for new question
   }, [gameData.question?.id, gameData.question?.question_number, mode])
 
@@ -106,7 +103,7 @@ export default function RoundPlayDisplay({ gameData, mode = 'controller', onAnsw
   }, [mode, gameId, gameData.question?.id])
 
   // Show answer if correct_answer exists in the data
-  const shouldShowAnswer = showAnswerDebug || !!gameData.question?.correct_answer
+  const shouldShowAnswer = !!gameData.question?.correct_answer
 
   // Answers are already shuffled server-side and stored in gameData.question
   // We just need to display them with labels A, B, C, D
@@ -162,25 +159,6 @@ export default function RoundPlayDisplay({ gameData, mode = 'controller', onAnsw
           </Badge>
         </div>
       </div>
-
-      {/* Debug Controls - Only in player mode */}
-      {mode === 'player' && (
-        <div className="mb-4 text-center">
-          <Button
-            onClick={() => setShowAnswerDebug(!showAnswerDebug)}
-            variant="outline"
-            size="sm"
-            className="text-xs"
-          >
-            {showAnswerDebug ? 'Hide' : 'Show'} Answer Override (Debug)
-          </Button>
-          {showAnswerDebug && correctAnswerLabel && (
-            <p className="text-xs text-slate-500 mt-2">
-              Correct Answer (Debug Override): {correctAnswerLabel}
-            </p>
-          )}
-        </div>
-      )}
 
       {/* Question Card */}
       <Card className="max-w-3xl mx-auto mb-6">
