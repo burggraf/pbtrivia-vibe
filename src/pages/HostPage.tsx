@@ -450,6 +450,16 @@ export default function HostPage() {
 
                             {/* ACTIONS Column */}
                             <div className="flex items-center gap-1.5">
+                              <button
+                                className="w-8 h-8 flex items-center justify-center rounded-md border border-[#e5e5e5] dark:border-slate-700 text-[#737373] dark:text-slate-400 hover:bg-[#fafafa] dark:hover:bg-slate-800 hover:border-[#d4d4d4] dark:hover:border-slate-600 hover:text-[#0a0a0a] dark:hover:text-white transition-colors"
+                                onClick={(e) => {
+                                  e.stopPropagation()
+                                  handleEditGame(game)
+                                }}
+                                title="Edit game"
+                              >
+                                <Info className="h-4 w-4" />
+                              </button>
                               {(game.status === 'setup' || game.status === 'ready' || game.status === 'in-progress') && (
                                 <button
                                   className={`w-8 h-8 flex items-center justify-center rounded-md transition-colors ${
@@ -473,16 +483,6 @@ export default function HostPage() {
                                   <Play className="h-4 w-4" />
                                 </button>
                               )}
-                              <button
-                                className="w-8 h-8 flex items-center justify-center rounded-md border border-[#e5e5e5] dark:border-slate-700 text-[#737373] dark:text-slate-400 hover:bg-[#fafafa] dark:hover:bg-slate-800 hover:border-[#d4d4d4] dark:hover:border-slate-600 hover:text-[#0a0a0a] dark:hover:text-white transition-colors"
-                                onClick={(e) => {
-                                  e.stopPropagation()
-                                  handleEditGame(game)
-                                }}
-                                title="Edit game"
-                              >
-                                <Info className="h-4 w-4" />
-                              </button>
                             </div>
 
                             {/* STATUS Column */}
