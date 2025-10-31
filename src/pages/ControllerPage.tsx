@@ -718,7 +718,7 @@ export default function ControllerPage() {
                     <Button
                       className="bg-blue-600 hover:bg-blue-700 dark:bg-blue-700 dark:hover:bg-blue-600 text-white"
                       onClick={handleNextState}
-                      disabled={gameData.state === 'return-to-lobby'}
+                      disabled={gameData.state === 'return-to-lobby' || gameData.state === 'thanks'}
                     >
                       {(() => {
                         const isAnswerRevealed = !!gameData.question?.correct_answer
@@ -728,8 +728,6 @@ export default function ControllerPage() {
                           ? `Next Question →`
                           : gameData.state === 'game-end'
                           ? 'Thanks →'
-                          : gameData.state === 'thanks'
-                          ? 'Return to Lobby →'
                           : 'Next →'
                       })()}
                     </Button>
