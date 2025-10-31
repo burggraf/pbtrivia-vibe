@@ -58,8 +58,13 @@ export default function GameEditModal({ game, isOpen, onClose, onSave, onDelete,
       // Set time to 6:00 PM (18:00)
       defaultDate.setHours(18, 0, 0, 0)
 
-      // Format as datetime-local string (YYYY-MM-DDTHH:MM)
-      const defaultStartDate = defaultDate.toISOString().slice(0, 16)
+      // Format as datetime-local string (YYYY-MM-DDTHH:MM) in local time
+      const year = defaultDate.getFullYear()
+      const month = String(defaultDate.getMonth() + 1).padStart(2, '0')
+      const day = String(defaultDate.getDate()).padStart(2, '0')
+      const hours = String(defaultDate.getHours()).padStart(2, '0')
+      const minutes = String(defaultDate.getMinutes()).padStart(2, '0')
+      const defaultStartDate = `${year}-${month}-${day}T${hours}:${minutes}`
 
       // Reset form for create mode with defaults
       setFormData({
