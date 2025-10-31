@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useNavigate, useSearchParams } from 'react-router-dom'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
@@ -16,6 +16,8 @@ interface AuthFormData {
 
 export default function AuthPage() {
   const navigate = useNavigate()
+  const [searchParams] = useSearchParams()
+  const returnTo = searchParams.get('returnTo')
   const [mode, setMode] = useState<'login' | 'register' | 'forgot'>('login')
   const [userMode, setUserMode] = useState<'host' | 'player'>('player')
   const [loading, setLoading] = useState(false)
@@ -103,13 +105,18 @@ export default function AuthPage() {
     if (pb.authStore.isValid && success) {
       // Small delay to show success message
       const timer = setTimeout(() => {
-        const targetRoute = userMode === 'host' ? '/host' : '/lobby'
-        console.log('Redirect effect triggered, navigating to:', targetRoute)
-        navigate(targetRoute)
+        if (returnTo) {
+          console.log('Redirecting to returnTo:', returnTo)
+          navigate(returnTo)
+        } else {
+          const targetRoute = userMode === 'host' ? '/host' : '/lobby'
+          console.log('Redirect effect triggered, navigating to:', targetRoute)
+          navigate(targetRoute)
+        }
       }, 1500)
       return () => clearTimeout(timer)
     }
-  }, [success, userMode, navigate])
+  }, [success, userMode, returnTo, navigate])
 
   const handleSubmit = mode === 'login' ? handleLogin : mode === 'register' ? handleRegister : handleForgotPassword
 

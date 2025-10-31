@@ -4,6 +4,8 @@ import { Trophy, Clock, Users, Star, ChevronRight, PartyPopper } from 'lucide-re
 import { GameScoreboard, ScoreboardTeam } from '@/types/games'
 import RoundStartDisplay from './RoundStartDisplay'
 import RoundPlayDisplay from './RoundPlayDisplay'
+import QRCode from 'react-qr-code'
+import { getPublicUrl } from '@/lib/networkUrl'
 
 type GameState = 'game-start' | 'round-start' | 'round-play' | 'round-end' | 'game-end' | 'thanks' | 'return-to-lobby'
 
@@ -35,6 +37,7 @@ interface GameStateDisplayProps {
   gameData: GameData | null
   rounds: any[]
   game: {
+    id: string
     code: string
     scoreboard?: GameScoreboard
   }
@@ -58,9 +61,22 @@ export default function GameStateDisplay({ gameData, rounds, game }: GameStateDi
               <h1 className="text-4xl font-bold text-slate-800 dark:text-slate-100 mb-4">
                 Welcome to the Game!
               </h1>
-              <p className="text-lg text-slate-500 dark:text-slate-500 mt-2">
+              <p className="text-lg text-slate-500 dark:text-slate-500 mt-2 mb-6">
                 Game Code: <span className="font-mono font-bold">{game?.code}</span>
               </p>
+              <div className="flex justify-center">
+                <div className="p-4 bg-white dark:bg-slate-800 rounded-lg border border-slate-200 dark:border-slate-700 shadow-sm inline-block">
+                  <QRCode
+                    value={`${getPublicUrl()}/join?code=${game?.code}`}
+                    size={200}
+                    level="M"
+                    aria-label={`QR code to join game ${game?.code}`}
+                  />
+                  <p className="text-center text-sm text-slate-600 dark:text-slate-400 mt-3">
+                    Scan to join
+                  </p>
+                </div>
+              </div>
             </div>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-4xl mx-auto">
               <Card className="text-center">
@@ -110,7 +126,12 @@ export default function GameStateDisplay({ gameData, rounds, game }: GameStateDi
       case 'round-play':
         return (
           <div className="py-12">
-            <RoundPlayDisplay gameData={gameData as any} mode="controller" />
+            <RoundPlayDisplay
+              gameData={gameData as any}
+              mode="controller"
+              gameId={game.id}
+              scoreboard={game.scoreboard}
+            />
           </div>
         )
 

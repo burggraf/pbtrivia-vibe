@@ -1,9 +1,8 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { Button } from '@/components/ui/button'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
-import { Label } from '@/components/ui/label'
 import ThemeToggle from '@/components/ThemeToggle'
 import TeamSelectionModal from '@/components/games/TeamSelectionModal'
 import { gamesService, gameTeamsService, gamePlayersService } from '@/lib/games'
@@ -129,17 +128,15 @@ export default function LobbyPage() {
   }
 
   return (
-    <div className="min-h-screen bg-slate-50 dark:bg-slate-900 p-8">
-      <div className="max-w-4xl mx-auto">
-        <div className="flex justify-between items-center mb-8">
-          <div>
-            <h1 className="text-3xl font-bold text-slate-800 dark:text-slate-100">Game Lobby</h1>
-            <p className="text-slate-600 dark:text-slate-400 mt-2">Join or wait for trivia games</p>
-          </div>
-          <div className="flex gap-3">
+    <div className="min-h-screen bg-slate-50 dark:bg-slate-900 px-6 py-4 md:p-6 lg:p-8">
+      <div className="w-full max-w-4xl mx-auto">
+        <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-3 mb-4 md:mb-6">
+          <h1 className="text-lg md:text-2xl font-semibold text-slate-800 dark:text-slate-100 text-center sm:text-left">Lobby</h1>
+          <div className="flex gap-2 justify-center sm:justify-end">
             <ThemeToggle />
             <Button
               variant="outline"
+              size="sm"
               onClick={handleLogout}
               className="border-slate-300 dark:border-slate-600 text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800"
             >
@@ -148,46 +145,41 @@ export default function LobbyPage() {
           </div>
         </div>
 
-        <div className="max-w-md mx-auto">
-          {/* Join Game Section */}
-          <Card className="bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700">
-            <CardHeader>
-              <CardTitle className="text-xl text-slate-800 dark:text-slate-100">Join a Game</CardTitle>
-              <CardDescription className="text-slate-600 dark:text-slate-400">
-                Enter a game code to join an existing game
-              </CardDescription>
+        {/* Join Game Section */}
+        <Card className="mx-4 sm:mx-auto max-w-sm bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700">
+            <CardHeader className="text-center pb-4">
+              <CardTitle className="text-xl md:text-2xl font-bold text-slate-800 dark:text-slate-100">Join a Game</CardTitle>
+              <p className="text-sm text-slate-600 dark:text-slate-400 mt-2">Enter your game code</p>
             </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="space-y-2">
-                <Label htmlFor="gameCode" className="text-slate-700 dark:text-slate-300">Game Code</Label>
+            <CardContent className="px-6 pb-6 space-y-4">
+              <div className="flex flex-col items-center space-y-3">
                 <Input
                   id="gameCode"
-                  placeholder="Enter 6-digit code"
+                  placeholder="ABC123"
                   value={gameCode}
                   onChange={(e) => setGameCode(e.target.value.toUpperCase())}
                   onKeyPress={(e) => e.key === 'Enter' && handleJoinGame()}
-                  className="border-slate-200 dark:border-slate-600 dark:bg-slate-700 dark:text-slate-100 focus:border-slate-400 dark:focus:border-slate-500 focus:ring-slate-200 dark:focus:ring-slate-700"
+                  className="text-center text-2xl md:text-3xl font-bold tracking-widest w-full max-w-[200px] h-14 border-2 border-slate-300 dark:border-slate-600 dark:bg-slate-700 dark:text-slate-100 focus:border-blue-500 dark:focus:border-blue-400 focus:ring-2 focus:ring-blue-200 dark:focus:ring-blue-900"
                   maxLength={6}
                   disabled={isLoading}
                 />
+                <Button
+                  onClick={handleJoinGame}
+                  disabled={isLoading || !gameCode.trim()}
+                  size="lg"
+                  className="w-full bg-blue-600 hover:bg-blue-700 dark:bg-blue-500 dark:hover:bg-blue-600 text-white font-semibold"
+                >
+                  {isLoading ? 'Joining...' : 'Join Game'}
+                </Button>
               </div>
 
               {error && (
-                <div className="bg-red-50 dark:bg-red-900/30 border border-red-200 dark:border-red-800 rounded-lg p-3">
+                <div className="bg-red-50 dark:bg-red-900/30 border border-red-200 dark:border-red-800 rounded-lg p-3 text-center">
                   <p className="text-sm text-red-700 dark:text-red-300">{error}</p>
                 </div>
               )}
-
-              <Button
-                onClick={handleJoinGame}
-                disabled={isLoading || !gameCode.trim()}
-                className="w-full bg-slate-700 hover:bg-slate-800 dark:bg-slate-600 dark:hover:bg-slate-700 text-white"
-              >
-                {isLoading ? 'Joining...' : 'Join Game'}
-              </Button>
             </CardContent>
-          </Card>
-        </div>
+        </Card>
       </div>
 
       {/* Team Selection Modal */}

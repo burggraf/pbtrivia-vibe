@@ -5,6 +5,7 @@ import pb from './lib/pocketbase'
 import AuthPage from './pages/AuthPage'
 import HostPage from './pages/HostPage'
 import LobbyPage from './pages/LobbyPage'
+import JoinPage from './pages/JoinPage'
 import GamePage from './pages/GamePage'
 import ControllerPage from './pages/ControllerPage'
 import AuthGuard from './components/AuthGuard'
@@ -82,6 +83,10 @@ function App() {
 								<Route
 					path='/lobby'
 					element={isAuthenticated ? <LobbyPage /> : <Navigate to='/' replace />}
+				/>
+				<Route
+					path='/join'
+					element={<JoinPage />}
 				/>
 				<Route
 					path='/game/:id'

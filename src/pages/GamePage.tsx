@@ -309,32 +309,27 @@ export default function GamePage() {
   }, [id])
 
   return (
-    <div className="min-h-screen bg-slate-50 dark:bg-slate-900 p-8">
+    <div className="min-h-screen bg-slate-50 dark:bg-slate-900 p-4 md:p-6 lg:p-8">
       <div className="max-w-6xl mx-auto">
-        <div className="flex justify-between items-center mb-8">
-          <div>
-            <h1 className="text-3xl font-bold text-slate-800 dark:text-slate-100">Game Room</h1>
-            <p className="text-slate-600 dark:text-slate-400 mt-2">
-              Game ID: {id} {game && `- ${game.name}`}
-            </p>
-            {game && (
-              <div className="flex items-center gap-2 mt-1">
-                <span className="text-sm text-slate-500">Status:</span>
-                <span className={`text-sm font-medium px-2 py-1 rounded-full ${
-                  game.status === 'ready' ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200' :
-                  game.status === 'in-progress' ? 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200' :
-                  game.status === 'completed' ? 'bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-200' :
-                  'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200'
-                }`}>
-                  {game.status.replace('-', ' ')}
-                </span>
-              </div>
-            )}
-          </div>
-          <div className="flex gap-3">
+        <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-3 mb-4 md:mb-6">
+          {game?.name && (
+            <h1 className="text-lg md:text-2xl font-semibold text-slate-800 dark:text-slate-100 text-center sm:text-left">
+              {game.name}
+            </h1>
+          )}
+          <div className="flex gap-2 justify-center sm:justify-end">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => navigate('/lobby')}
+              className="border-slate-300 dark:border-slate-600 text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800"
+            >
+              ← Lobby
+            </Button>
             <ThemeToggle />
             <Button
               variant="outline"
+              size="sm"
               onClick={handleLogout}
               className="border-slate-300 dark:border-slate-600 text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800"
             >
@@ -369,25 +364,6 @@ export default function GamePage() {
             </Button>
           </div>
         )}
-
-        {/* Start Game Button - Only show when game is ready and not started */}
-        {game?.status === 'ready' && game?.scoreboard && Object.keys(game.scoreboard.teams).length > 0 && (
-          <div className="text-center">
-            <Button className="bg-slate-700 hover:bg-slate-800 dark:bg-slate-600 dark:hover:bg-slate-700 text-white">
-              Start Game
-            </Button>
-          </div>
-        )}
-
-        {/* Debug State Display */}
-        <div className="mt-8 p-4 bg-slate-100 dark:bg-slate-800 rounded-lg">
-          <h3 className="text-sm font-semibold text-slate-700 dark:text-slate-300 mb-2">
-            Debug: Player Game State
-          </h3>
-          <pre className="text-xs text-slate-600 dark:text-slate-400 overflow-auto">
-            {JSON.stringify(gameData, null, 2)}
-          </pre>
-        </div>
       </div>
     </div>
   )

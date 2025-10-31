@@ -10,7 +10,7 @@ interface TeamDisplayProps {
 export default function TeamDisplay({ scoreboard, isLoading = false, className = "" }: TeamDisplayProps) {
   if (isLoading) {
     return (
-      <div className={`text-center py-12 ${className}`}>
+      <div className={`text-center py-8 md:py-12 ${className}`}>
         <div className="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-slate-600"></div>
         <p className="mt-2 text-slate-600 dark:text-slate-400">Loading team data...</p>
       </div>
@@ -20,8 +20,8 @@ export default function TeamDisplay({ scoreboard, isLoading = false, className =
   if (!scoreboard || Object.keys(scoreboard.teams).length === 0) {
     return (
       <div className={`text-center py-12 ${className}`}>
-        <div className="bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700 rounded-xl shadow-lg p-8">
-          <p className="text-slate-600 dark:text-slate-400">
+        <div className="bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700 rounded-xl shadow-lg p-4 md:p-6 lg:p-8">
+          <p className="text-sm md:text-base text-slate-600 dark:text-slate-400">
             No teams have been created yet. Check back soon!
           </p>
         </div>
@@ -35,8 +35,8 @@ export default function TeamDisplay({ scoreboard, isLoading = false, className =
   if (teamsWithPlayers.length === 0) {
     return (
       <div className={`text-center py-12 ${className}`}>
-        <div className="bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700 rounded-xl shadow-lg p-8">
-          <p className="text-slate-600 dark:text-slate-400">
+        <div className="bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700 rounded-xl shadow-lg p-4 md:p-6 lg:p-8">
+          <p className="text-sm md:text-base text-slate-600 dark:text-slate-400">
             No players have joined teams yet. Check back soon!
           </p>
         </div>
@@ -45,11 +45,11 @@ export default function TeamDisplay({ scoreboard, isLoading = false, className =
   }
 
   return (
-    <div className={`grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 ${className}`}>
+    <div className={`grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 md:gap-4 lg:gap-6 ${className}`}>
       {teamsWithPlayers.map(([teamId, teamData]) => (
         <Card key={teamId} className="bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700 shadow-lg">
-          <CardHeader className="pb-3">
-            <CardTitle className="text-lg font-semibold text-slate-800 dark:text-slate-100">
+          <CardHeader className="pb-2 md:pb-3">
+            <CardTitle className="text-base md:text-lg font-semibold text-slate-800 dark:text-slate-100">
               {teamData.name}
             </CardTitle>
             <CardDescription>
@@ -57,11 +57,11 @@ export default function TeamDisplay({ scoreboard, isLoading = false, className =
             </CardDescription>
           </CardHeader>
           <CardContent className="pt-0">
-            <div className="space-y-2">
+            <div className="space-y-1.5 md:space-y-2">
               {teamData.players.map((player) => (
                 <div
                   key={player.id}
-                  className="flex items-center gap-2 p-2 rounded bg-slate-50 dark:bg-slate-700"
+                  className="flex items-center gap-2 p-1.5 md:p-2 rounded bg-slate-50 dark:bg-slate-700"
                 >
                   <div className="w-2 h-2 rounded-full bg-green-500"></div>
                   <div className="flex-1 min-w-0">

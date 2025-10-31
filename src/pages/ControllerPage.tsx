@@ -672,22 +672,24 @@ export default function ControllerPage() {
       <div className="max-w-6xl mx-auto">
         <div className="flex justify-between items-center mb-8">
           <div>
-            <p className="text-slate-600 dark:text-slate-400 mt-2">
-              Game ID: {id} {game && `- ${game.name}`}
-            </p>
-            {game && (
-              <div className="flex items-center gap-2 mt-1">
-                <span className="text-sm text-slate-500">Status:</span>
-                <span className={`text-sm font-medium px-2 py-1 rounded-full ${
-                  game.status === 'ready' ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200' :
-                  game.status === 'in-progress' ? 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200' :
-                  game.status === 'completed' ? 'bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-200' :
-                  'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200'
-                }`}>
-                  {game.status.replace('-', ' ')}
-                </span>
-              </div>
-            )}
+            <div className="flex flex-col gap-2">
+              <p className="text-slate-600 dark:text-slate-400">
+                Game ID: {id} {game && `- ${game.name}`}
+              </p>
+              {game && (
+                <div className="flex items-center gap-2">
+                  <span className="text-sm text-slate-500">Status:</span>
+                  <span className={`text-sm font-medium px-2 py-1 rounded-full ${
+                    game.status === 'ready' ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200' :
+                    game.status === 'in-progress' ? 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200' :
+                    game.status === 'completed' ? 'bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-200' :
+                    'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200'
+                  }`}>
+                    {game.status.replace('-', ' ')}
+                  </span>
+                </div>
+              )}
+            </div>
           </div>
           <div className="flex gap-3 items-center">
             {/* Navigation Controls */}
@@ -718,7 +720,7 @@ export default function ControllerPage() {
                     <Button
                       className="bg-blue-600 hover:bg-blue-700 dark:bg-blue-700 dark:hover:bg-blue-600 text-white"
                       onClick={handleNextState}
-                      disabled={gameData.state === 'return-to-lobby'}
+                      disabled={gameData.state === 'return-to-lobby' || gameData.state === 'thanks'}
                     >
                       {(() => {
                         const isAnswerRevealed = !!gameData.question?.correct_answer
@@ -728,8 +730,6 @@ export default function ControllerPage() {
                           ? `Next Question →`
                           : gameData.state === 'game-end'
                           ? 'Thanks →'
-                          : gameData.state === 'thanks'
-                          ? 'Return to Lobby →'
                           : 'Next →'
                       })()}
                     </Button>
@@ -775,17 +775,6 @@ export default function ControllerPage() {
             className="mb-8"
           />
         )}
-
-  
-        {/* Debug State Display */}
-        <div className="mt-8 p-4 bg-slate-100 dark:bg-slate-800 rounded-lg">
-          <h3 className="text-sm font-semibold text-slate-700 dark:text-slate-300 mb-2">
-            Debug: Current Game State
-          </h3>
-          <pre className="text-xs text-slate-600 dark:text-slate-400 overflow-auto">
-            {JSON.stringify(gameData, null, 2)}
-          </pre>
-        </div>
       </div>
     </div>
   )

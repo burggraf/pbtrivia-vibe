@@ -45,10 +45,31 @@ export default function GameEditModal({ game, isOpen, onClose, onSave, onDelete,
         categories: []
       })
     } else {
+      // Calculate smart default start date/time
+      const now = new Date()
+      const currentHour = now.getHours()
+
+      // If before 6 PM, use today at 6 PM, otherwise use tomorrow at 6 PM
+      const defaultDate = new Date()
+      if (currentHour >= 18) {
+        // After 6 PM - set to tomorrow
+        defaultDate.setDate(defaultDate.getDate() + 1)
+      }
+      // Set time to 6:00 PM (18:00)
+      defaultDate.setHours(18, 0, 0, 0)
+
+      // Format as datetime-local string (YYYY-MM-DDTHH:MM) in local time
+      const year = defaultDate.getFullYear()
+      const month = String(defaultDate.getMonth() + 1).padStart(2, '0')
+      const day = String(defaultDate.getDate()).padStart(2, '0')
+      const hours = String(defaultDate.getHours()).padStart(2, '0')
+      const minutes = String(defaultDate.getMinutes()).padStart(2, '0')
+      const defaultStartDate = `${year}-${month}-${day}T${hours}:${minutes}`
+
       // Reset form for create mode with defaults
       setFormData({
         name: '',
-        startdate: '',
+        startdate: defaultStartDate,
         duration: 120,
         location: '',
         rounds: 3,
