@@ -197,27 +197,6 @@ export default function RoundEnd({ gameData, scoreboard }: RoundEndProps) {
           </Card>
         </div>
       )}
-
-      {/* Round Summary */}
-      <div className="max-w-2xl mx-auto">
-        <Card>
-          <CardContent className="pt-6">
-            <div className="text-center">
-              <p className="text-lg text-slate-600 dark:text-slate-400">
-                Great job everyone! Get ready for the next round.
-              </p>
-              {firstPlace && (
-                <p className="text-lg text-slate-600 dark:text-slate-400 mt-2">
-                  <span className="font-medium text-slate-800 dark:text-slate-100">
-                    {firstPlace.name}
-                  </span>
-                  {' '}is currently in the lead!
-                </p>
-              )}
-            </div>
-          </CardContent>
-        </Card>
-      </div>
     </div>
   )
 }
