@@ -129,17 +129,18 @@ export default function LobbyPage() {
   }
 
   return (
-    <div className="min-h-screen bg-slate-50 dark:bg-slate-900 p-8">
+    <div className="min-h-screen bg-slate-50 dark:bg-slate-900 p-4 md:p-6 lg:p-8">
       <div className="max-w-4xl mx-auto">
-        <div className="flex justify-between items-center mb-8">
+        <div className="flex justify-between items-center mb-4 md:mb-6">
           <div>
-            <h1 className="text-3xl font-bold text-slate-800 dark:text-slate-100">Game Lobby</h1>
-            <p className="text-slate-600 dark:text-slate-400 mt-2">Join or wait for trivia games</p>
+            <h1 className="text-lg md:text-2xl font-semibold text-slate-800 dark:text-slate-100">Game Lobby</h1>
+            <p className="text-sm md:text-base text-slate-600 dark:text-slate-400 mt-1 md:mt-2">Join or wait for trivia games</p>
           </div>
-          <div className="flex gap-3">
+          <div className="flex gap-2">
             <ThemeToggle />
             <Button
               variant="outline"
+              size="sm"
               onClick={handleLogout}
               className="border-slate-300 dark:border-slate-600 text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800"
             >
@@ -150,16 +151,16 @@ export default function LobbyPage() {
 
         <div className="max-w-md mx-auto">
           {/* Join Game Section */}
-          <Card className="bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700">
-            <CardHeader>
-              <CardTitle className="text-xl text-slate-800 dark:text-slate-100">Join a Game</CardTitle>
-              <CardDescription className="text-slate-600 dark:text-slate-400">
+          <Card className="bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700 mb-4 md:mb-6">
+            <CardHeader className="pb-2 md:pb-3">
+              <CardTitle className="text-base md:text-lg text-slate-800 dark:text-slate-100">Join a Game</CardTitle>
+              <CardDescription className="text-sm md:text-base text-slate-600 dark:text-slate-400">
                 Enter a game code to join an existing game
               </CardDescription>
             </CardHeader>
-            <CardContent className="space-y-4">
+            <CardContent className="px-3 md:px-6 space-y-3 md:space-y-4">
               <div className="space-y-2">
-                <Label htmlFor="gameCode" className="text-slate-700 dark:text-slate-300">Game Code</Label>
+                <Label htmlFor="gameCode" className="text-sm md:text-base text-slate-700 dark:text-slate-300">Game Code</Label>
                 <Input
                   id="gameCode"
                   placeholder="Enter 6-digit code"
@@ -173,8 +174,8 @@ export default function LobbyPage() {
               </div>
 
               {error && (
-                <div className="bg-red-50 dark:bg-red-900/30 border border-red-200 dark:border-red-800 rounded-lg p-3">
-                  <p className="text-sm text-red-700 dark:text-red-300">{error}</p>
+                <div className="bg-red-50 dark:bg-red-900/30 border border-red-200 dark:border-red-800 rounded-lg p-2 md:p-3">
+                  <p className="text-xs md:text-sm text-red-700 dark:text-red-300">{error}</p>
                 </div>
               )}
 
