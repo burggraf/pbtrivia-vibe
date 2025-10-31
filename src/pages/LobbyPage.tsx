@@ -146,9 +146,8 @@ export default function LobbyPage() {
           </div>
         </div>
 
-        <div className="max-w-md mx-auto">
-          {/* Join Game Section */}
-          <Card className="bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700 mb-4 md:mb-6">
+        {/* Join Game Section */}
+        <Card className="max-w-md mx-auto bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700 mb-4 md:mb-6">
             <CardHeader className="pb-2 md:pb-3">
               <CardTitle className="text-base md:text-lg text-slate-800 dark:text-slate-100">Join a Game</CardTitle>
             </CardHeader>
@@ -181,8 +180,7 @@ export default function LobbyPage() {
                 {isLoading ? 'Joining...' : 'Join Game'}
               </Button>
             </CardContent>
-          </Card>
-        </div>
+        </Card>
       </div>
 
       {/* Team Selection Modal */}
