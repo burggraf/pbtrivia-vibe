@@ -88,45 +88,41 @@ export default function TeamSelectionModal({
                   <Label className="text-sm font-medium">Select Existing Team</Label>
                   <div className="space-y-2">
                     {teams.map((team) => (
-                      <div key={team.id} className="flex items-center space-x-2">
-                        <input
-                          type="radio"
-                          id={team.id}
-                          name="team"
-                          value={team.id}
-                          checked={selectedTeam === team.id && !createNewTeam}
-                          onChange={() => {
-                            setSelectedTeam(team.id)
-                            setCreateNewTeam(false)
-                          }}
-                          disabled={createNewTeam}
-                          className="h-4 w-4"
-                        />
-                        <Label htmlFor={team.id} className="text-sm font-normal">
-                          {team.name}
-                        </Label>
-                      </div>
+                      <Button
+                        key={team.id}
+                        variant={selectedTeam === team.id && !createNewTeam ? "default" : "outline"}
+                        onClick={() => {
+                          setSelectedTeam(team.id)
+                          setCreateNewTeam(false)
+                        }}
+                        className={`w-full justify-start ${
+                          selectedTeam === team.id && !createNewTeam
+                            ? "bg-slate-700 hover:bg-slate-800 dark:bg-slate-600 dark:hover:bg-slate-700 text-white"
+                            : "border-slate-300 dark:border-slate-600 text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800"
+                        }`}
+                      >
+                        {team.name}
+                      </Button>
                     ))}
                   </div>
                 </div>
               )}
 
               <div className="space-y-3">
-                <div className="flex items-center space-x-2">
-                  <input
-                    type="radio"
-                    id="createNew"
-                    checked={createNewTeam}
-                    onChange={(e) => {
-                      setCreateNewTeam(e.target.checked)
-                      setSelectedTeam('')
-                    }}
-                    className="h-4 w-4"
-                  />
-                  <Label htmlFor="createNew" className="text-sm font-medium">
-                    Create New Team
-                  </Label>
-                </div>
+                <Button
+                  variant={createNewTeam ? "default" : "outline"}
+                  onClick={() => {
+                    setCreateNewTeam(!createNewTeam)
+                    setSelectedTeam('')
+                  }}
+                  className={`w-full justify-start ${
+                    createNewTeam
+                      ? "bg-slate-700 hover:bg-slate-800 dark:bg-slate-600 dark:hover:bg-slate-700 text-white"
+                      : "border-slate-300 dark:border-slate-600 text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800"
+                  }`}
+                >
+                  Create New Team
+                </Button>
 
                 {createNewTeam && (
                   <div className="space-y-2">

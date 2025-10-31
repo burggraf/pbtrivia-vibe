@@ -332,6 +332,13 @@ export default function GamePage() {
             )}
           </div>
           <div className="flex gap-3">
+            <Button
+              variant="outline"
+              onClick={() => navigate('/lobby')}
+              className="border-slate-300 dark:border-slate-600 text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800"
+            >
+              Return to Lobby
+            </Button>
             <ThemeToggle />
             <Button
               variant="outline"
