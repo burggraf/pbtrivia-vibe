@@ -311,41 +311,27 @@ export default function GamePage() {
   return (
     <div className="min-h-screen bg-slate-50 dark:bg-slate-900 p-4 md:p-6 lg:p-8">
       <div className="max-w-6xl mx-auto">
-        <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4 mb-4 md:mb-8">
-          <div>
-            <h1 className="text-xl md:text-3xl font-bold text-slate-800 dark:text-slate-100">Game Room</h1>
-            <p className="text-sm md:text-base text-slate-600 dark:text-slate-400 mt-2">
-              Game ID: {id} {game && `- ${game.name}`}
-            </p>
-            {game && (
-              <div className="flex items-center gap-2 mt-1">
-                <span className="text-sm text-slate-500">Status:</span>
-                <span className={`text-sm font-medium px-2 py-1 rounded-full ${
-                  game.status === 'ready' ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200' :
-                  game.status === 'in-progress' ? 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200' :
-                  game.status === 'completed' ? 'bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-200' :
-                  'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200'
-                }`}>
-                  {game.status.replace('-', ' ')}
-                </span>
-              </div>
-            )}
-          </div>
-          <div className="flex flex-col sm:flex-row gap-2 sm:gap-3">
+        <div className="flex justify-between items-center mb-4 md:mb-6">
+          {game?.name && (
+            <h1 className="text-lg md:text-2xl font-semibold text-slate-800 dark:text-slate-100">
+              {game.name}
+            </h1>
+          )}
+          <div className="flex gap-2">
             <Button
               variant="outline"
+              size="sm"
               onClick={() => navigate('/lobby')}
-              className="w-full sm:w-auto border-slate-300 dark:border-slate-600 text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800"
+              className="border-slate-300 dark:border-slate-600 text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800"
             >
-              Return to Lobby
+              ← Lobby
             </Button>
-            <div className="w-full sm:w-auto">
-              <ThemeToggle />
-            </div>
+            <ThemeToggle />
             <Button
               variant="outline"
+              size="sm"
               onClick={handleLogout}
-              className="w-full sm:w-auto border-slate-300 dark:border-slate-600 text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800"
+              className="border-slate-300 dark:border-slate-600 text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800"
             >
               Logout
             </Button>
