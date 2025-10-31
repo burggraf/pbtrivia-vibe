@@ -3,7 +3,8 @@ import { useNavigate, useSearchParams } from 'react-router-dom'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import ThemeToggle from '@/components/ThemeToggle'
-import { gamesService } from '@/lib/games'
+import TeamSelectionModal from '@/components/games/TeamSelectionModal'
+import { gamesService, gameTeamsService, gamePlayersService } from '@/lib/games'
 import pb from '@/lib/pocketbase'
 
 export default function JoinPage() {
@@ -11,6 +12,8 @@ export default function JoinPage() {
   const [searchParams] = useSearchParams()
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState('')
+  const [showTeamModal, setShowTeamModal] = useState(false)
+  const [currentGame, setCurrentGame] = useState<any>(null)
 
   const code = searchParams.get('code')
 
@@ -47,8 +50,19 @@ export default function JoinPage() {
           return
         }
 
-        // Navigate to game page (team selection handled there)
-        navigate(`/game/${game.id}`)
+        // Check if player is already in this game
+        const existingPlayer = await gamePlayersService.findPlayerInGame(game.id, pb.authStore.model!.id)
+
+        if (existingPlayer && existingPlayer.team) {
+          // Player is already in game with team - go directly to game page
+          navigate(`/game/${game.id}`)
+          return
+        }
+
+        // Show team selection modal
+        setCurrentGame(game)
+        setShowTeamModal(true)
+        setIsLoading(false)
       } catch (err: any) {
         console.error('Failed to join game:', err)
         setError('Unable to connect. Please check your connection and try again.')
@@ -69,7 +83,56 @@ export default function JoinPage() {
     navigate('/lobby')
   }
 
-  if (isLoading) {
+  const handleTeamSelected = async (teamId: string | null, newTeamName?: string) => {
+    if (!currentGame || !pb.authStore.model?.id) return
+
+    try {
+      setIsLoading(true)
+      setShowTeamModal(false)
+
+      let finalTeamId = teamId
+
+      // Create new team if needed
+      if (!teamId && newTeamName) {
+        const newTeam = await gameTeamsService.createTeam({
+          game: currentGame.id,
+          name: newTeamName
+        }, currentGame.host)
+        finalTeamId = newTeam.id
+      }
+
+      // Check if player already exists in this game
+      const existingPlayer = await gamePlayersService.findPlayerInGame(currentGame.id, pb.authStore.model.id)
+
+      if (existingPlayer) {
+        // Update existing player record with team assignment
+        await gamePlayersService.updatePlayer(existingPlayer.id, {
+          team: finalTeamId || undefined,
+          name: pb.authStore.model?.name || '',
+          avatar: pb.authStore.model?.avatar || ''
+        })
+      } else {
+        // Create new player record
+        await gamePlayersService.createPlayer({
+          game: currentGame.id,
+          player: pb.authStore.model.id,
+          team: finalTeamId || undefined,
+          name: pb.authStore.model?.name || '',
+          avatar: pb.authStore.model?.avatar || ''
+        }, currentGame.host)
+      }
+
+      // Redirect to game page
+      navigate(`/game/${currentGame.id}`)
+    } catch (error) {
+      console.error('Failed to join team:', error)
+      setError('Failed to join team. Please try again.')
+      setShowTeamModal(true)
+      setIsLoading(false)
+    }
+  }
+
+  if (isLoading && !showTeamModal) {
     return (
       <div className="min-h-screen bg-slate-50 dark:bg-slate-900 px-6 py-4 md:p-6 lg:p-8 flex items-center justify-center">
         <Card className="w-full max-w-md bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700">
@@ -127,5 +190,15 @@ export default function JoinPage() {
     )
   }
 
-  return null
+  // Render team selection modal when ready
+  return (
+    <>
+      <TeamSelectionModal
+        isOpen={showTeamModal}
+        onClose={() => setShowTeamModal(false)}
+        gameId={currentGame?.id || ''}
+        onTeamSelected={handleTeamSelected}
+      />
+    </>
+  )
 }
