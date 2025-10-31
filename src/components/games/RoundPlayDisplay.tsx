@@ -161,17 +161,17 @@ export default function RoundPlayDisplay({ gameData, mode = 'controller', onAnsw
       </div>
 
       {/* Question Card */}
-      <Card className="max-w-3xl mx-auto mb-6">
+      <Card className="max-w-3xl mx-auto mb-4 md:mb-6">
         <CardHeader>
-          <CardTitle className="text-xl">
+          <CardTitle className="text-base md:text-xl">
             {gameData.question.question}
           </CardTitle>
         </CardHeader>
-        <CardContent>
+        <CardContent className="px-3 md:px-6">
 
           {/* Answer Options */}
           {answers.length > 0 && (
-            <div className="space-y-3">
+            <div className="space-y-2 md:space-y-3">
               {answers.map((answer) => {
                 // Determine all the states first
                 const isDisabled = mode === 'player' && (hasTeamSubmitted || shouldShowAnswer || gameData.isSubmittingAnswer)
@@ -180,7 +180,7 @@ export default function RoundPlayDisplay({ gameData, mode = 'controller', onAnsw
                 const isIncorrectSelectedAnswer = shouldShowAnswer && answer.label === teamAnswer && answer.label !== correctAnswerLabel
 
                 // Build classes based on final state (no conflicting classes)
-                const baseClasses = "p-4 rounded-lg border-2 transition-colors flex items-start"
+                const baseClasses = "p-3 md:p-4 rounded-lg border-2 transition-colors flex items-start"
                 let answerClasses = baseClasses
 
                 // Determine styling based on current state
