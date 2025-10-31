@@ -10,6 +10,7 @@ import { gameQuestionsService } from '@/lib/gameQuestions'
 import { questionsService } from '@/lib/questions'
 import pb from '@/lib/pocketbase'
 import { Game } from '@/types/games'
+import QRCode from 'react-qr-code'
 
 type GameState = 'game-start' | 'round-start' | 'round-play' | 'round-end' | 'game-end' | 'thanks' | 'return-to-lobby'
 
@@ -672,22 +673,48 @@ export default function ControllerPage() {
       <div className="max-w-6xl mx-auto">
         <div className="flex justify-between items-center mb-8">
           <div>
-            <p className="text-slate-600 dark:text-slate-400 mt-2">
-              Game ID: {id} {game && `- ${game.name}`}
-            </p>
-            {game && (
-              <div className="flex items-center gap-2 mt-1">
-                <span className="text-sm text-slate-500">Status:</span>
-                <span className={`text-sm font-medium px-2 py-1 rounded-full ${
-                  game.status === 'ready' ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200' :
-                  game.status === 'in-progress' ? 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200' :
-                  game.status === 'completed' ? 'bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-200' :
-                  'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200'
-                }`}>
-                  {game.status.replace('-', ' ')}
-                </span>
-              </div>
-            )}
+            <div className="flex flex-col gap-2">
+              <p className="text-slate-600 dark:text-slate-400">
+                Game ID: {id} {game && `- ${game.name}`}
+              </p>
+              {game && (
+                <>
+                  <div className="flex items-center gap-2">
+                    <span className="text-sm text-slate-500">Status:</span>
+                    <span className={`text-sm font-medium px-2 py-1 rounded-full ${
+                      game.status === 'ready' ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200' :
+                      game.status === 'in-progress' ? 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200' :
+                      game.status === 'completed' ? 'bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-200' :
+                      'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200'
+                    }`}>
+                      {game.status.replace('-', ' ')}
+                    </span>
+                  </div>
+                  {/* QR Code Section */}
+                  <div className="mt-4">
+                    <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4">
+                      <div>
+                        <p className="text-slate-600 dark:text-slate-400 text-sm mb-1">Game Code:</p>
+                        <p className="text-3xl font-bold text-slate-800 dark:text-slate-100 tracking-wider">
+                          {game.code}
+                        </p>
+                      </div>
+                      <div className="p-3 bg-white dark:bg-slate-800 rounded-lg border border-slate-200 dark:border-slate-700 shadow-sm">
+                        <QRCode
+                          value={`${window.location.origin}/join?code=${game.code}`}
+                          size={160}
+                          level="M"
+                          aria-label={`QR code to join game ${game.code}`}
+                        />
+                        <p className="text-center text-xs text-slate-600 dark:text-slate-400 mt-2">
+                          Scan to join
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                </>
+              )}
+            </div>
           </div>
           <div className="flex gap-3 items-center">
             {/* Navigation Controls */}
