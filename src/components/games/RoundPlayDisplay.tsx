@@ -146,15 +146,15 @@ export default function RoundPlayDisplay({ gameData, mode = 'controller', onAnsw
   return (
     <div className="text-center mb-8">
       {/* Round Progress - Consistent header showing round and question info */}
-      <div className="mb-6">
-        <h2 className="text-2xl font-bold text-slate-800 dark:text-slate-100 mb-2">
+      <div className="mb-4 md:mb-6">
+        <h2 className="text-lg md:text-2xl font-bold text-slate-800 dark:text-slate-100 mb-2">
           Round {roundNumber} of {totalRounds} - Question {questionNumber}
         </h2>
-        <div className="flex items-center justify-center gap-2">
-          <Badge variant="secondary">
+        <div className="flex flex-col sm:flex-row items-center justify-center gap-1 sm:gap-2">
+          <Badge variant="secondary" className="text-xs md:text-sm px-2 py-1 md:px-3 md:py-1">
             Category: {gameData.question.category}
           </Badge>
-          <Badge variant="outline">
+          <Badge variant="outline" className="text-xs md:text-sm px-2 py-1 md:px-3 md:py-1">
             Difficulty: {gameData.question.difficulty}
           </Badge>
         </div>
