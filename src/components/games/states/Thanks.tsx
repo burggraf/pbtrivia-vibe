@@ -14,7 +14,7 @@ export default function Thanks({ gameData }: ThanksProps) {
   const navigate = useNavigate()
 
   const handleReturnToLobby = () => {
-    navigate('/host')
+    navigate('/lobby')
   }
 
   return (
@@ -117,14 +117,6 @@ export default function Thanks({ gameData }: ThanksProps) {
                 className="w-full bg-purple-600 hover:bg-purple-700 dark:bg-purple-700 dark:hover:bg-purple-600 text-white"
               >
                 Return to Lobby
-              </Button>
-
-              <Button
-                variant="outline"
-                onClick={() => navigate('/')}
-                className="w-full border-slate-300 dark:border-slate-600 text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800"
-              >
-                Back to Home
               </Button>
             </div>
 
