@@ -201,7 +201,7 @@ export default function GameStateDisplay({ gameData, rounds, game }: GameStateDi
               {game?.scoreboard && Object.keys(game.scoreboard.teams).length > 0 ? (
                 <div className="space-y-4">
                   {Object.entries(game.scoreboard.teams)
-                    .filter(([teamId]) => teamId !== 'no-team')
+                    .filter(([teamId, teamData]) => teamId !== 'no-team' && teamData.players.length > 0)
                     .sort(([, a], [, b]) => (b.score || 0) - (a.score || 0))
                     .map(([teamId, teamData]: [string, ScoreboardTeam], index) => (
                     <div
