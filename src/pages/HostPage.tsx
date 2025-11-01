@@ -504,7 +504,7 @@ export default function HostPage() {
                                 .map((item, index, filtered) => (
                                   <span key={index} className="flex items-center gap-2">
                                     {item}
-                                    {index < filtered.length - 1 && <span className="text-[#d4d4d4] dark:text-slate-700">·</span>}
+                                    {index < filtered.length - 1 && <span className="text-[#d4d4d4] dark:text-slate-500">·</span>}
                                   </span>
                                 ))}
                             </div>

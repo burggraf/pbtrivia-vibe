@@ -199,14 +199,14 @@ export default function RoundPlayDisplay({ gameData, mode = 'controller', onAnsw
                     answerClasses += ' bg-red-100 border-red-500 text-red-800 dark:bg-red-900 dark:text-red-200'
                   } else {
                     // Other wrong answers (not selected)
-                    answerClasses += ' bg-slate-50 border-slate-300 text-slate-700 dark:bg-slate-800 dark:text-slate-300 opacity-40'
+                    answerClasses += ' bg-slate-50 border-slate-300 text-slate-700 dark:bg-slate-800 dark:border-slate-700 dark:text-slate-500'
                   }
                 } else if (isSelectedAnswer) {
                   // Answer was selected but not revealed yet
                   answerClasses += ' bg-blue-200 border-blue-500 text-blue-900 dark:bg-blue-800 dark:text-blue-100'
                 } else if (hasTeamSubmitted) {
                   // Other answers when team has submitted (de-emphasized but readable)
-                  answerClasses += ' bg-slate-100 border-slate-300 text-slate-600 dark:bg-slate-800 dark:border-slate-600 dark:text-slate-400 cursor-not-allowed'
+                  answerClasses += ' bg-slate-100 border-slate-300 text-slate-600 dark:bg-slate-800 dark:border-slate-600 dark:text-slate-300 cursor-not-allowed'
                 } else {
                   // Default state (clickable) - no hover effects to prevent mobile Safari focus issues
                   answerClasses += ' bg-blue-50 border-blue-300 text-blue-700 dark:bg-blue-900 dark:border-blue-600 dark:text-blue-200'

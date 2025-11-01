@@ -168,7 +168,7 @@ export default function QuestionsList({ roundId, roundTitle }: QuestionsListProp
       <div>
         <div className="px-4 py-3 border-b border-[#e5e5e5] dark:border-slate-700">
           <h4 className="text-[13px] font-semibold text-[#0a0a0a] dark:text-white">Questions for {roundTitle}</h4>
-          <p className="text-[12px] text-slate-600 dark:text-slate-400 mt-0.5">Round not specified for question display</p>
+          <p className="text-[12px] text-slate-600 dark:text-slate-300 mt-0.5">Round not specified for question display</p>
         </div>
       </div>
     )
@@ -178,7 +178,7 @@ export default function QuestionsList({ roundId, roundTitle }: QuestionsListProp
     <div>
       <div className="px-4 py-3 border-b border-[#e5e5e5] dark:border-slate-700">
         <h4 className="text-[13px] font-semibold text-[#0a0a0a] dark:text-white">Questions</h4>
-        <p className="text-[12px] text-slate-600 dark:text-slate-400 mt-0.5">
+        <p className="text-[12px] text-slate-600 dark:text-slate-300 mt-0.5">
           {loading
             ? 'Loading questions...'
             : questionsWithDetails.length > 0
@@ -190,13 +190,13 @@ export default function QuestionsList({ roundId, roundTitle }: QuestionsListProp
       <div className="p-4">
         {loading ? (
           <div className="flex items-center justify-center py-8">
-            <div className="text-[13px] text-slate-600 dark:text-slate-400">Loading questions...</div>
+            <div className="text-[13px] text-slate-600 dark:text-slate-300">Loading questions...</div>
           </div>
         ) : questionsWithDetails.length === 0 ? (
           <div className="flex items-center justify-center py-8">
             <div className="text-center">
-              <p className="text-[13px] text-slate-600 dark:text-slate-400 mb-1">No questions found</p>
-              <p className="text-[12px] text-slate-500 dark:text-slate-400">
+              <p className="text-[13px] text-slate-600 dark:text-slate-300 mb-1">No questions found</p>
+              <p className="text-[12px] text-slate-500 dark:text-slate-300">
                 Questions will be added when the round is created with categories selected
               </p>
             </div>
