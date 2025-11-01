@@ -147,17 +147,32 @@ export default function GameStateDisplay({ gameData, rounds, game }: GameStateDi
               </h3>
               {game?.scoreboard && Object.keys(game.scoreboard.teams).length > 0 ? (
                 <div className="space-y-3">
-                  {Object.entries(game.scoreboard.teams).map(([teamId, teamData]: [string, ScoreboardTeam]) => (
+                  {Object.entries(game.scoreboard.teams)
+                    .filter(([teamId]) => teamId !== 'no-team')
+                    .sort(([, a], [, b]) => (b.score || 0) - (a.score || 0))
+                    .map(([teamId, teamData]: [string, ScoreboardTeam]) => (
                     <div
                       key={teamId}
-                      className="flex items-center justify-between p-3 bg-slate-50 dark:bg-slate-700 rounded-lg"
+                      className="flex items-center justify-between p-4 bg-slate-50 dark:bg-slate-700 rounded-lg"
                     >
-                      <span className="font-medium text-slate-800 dark:text-slate-100">
-                        {teamData.name}
-                      </span>
-                      <Badge variant="secondary">
-                        {teamData.players.length} player{teamData.players.length !== 1 ? 's' : ''}
-                      </Badge>
+                      <div className="flex items-center gap-3">
+                        <div className="flex items-center justify-center w-12 h-12 bg-blue-500 text-white rounded-full text-xl font-bold">
+                          {teamData.score || 0}
+                        </div>
+                        <div className="text-left">
+                          <div className="font-medium text-slate-800 dark:text-slate-100">
+                            {teamData.name}
+                          </div>
+                          <div className="text-sm text-slate-600 dark:text-slate-400">
+                            {teamData.players.length} player{teamData.players.length !== 1 ? 's' : ''}
+                          </div>
+                        </div>
+                      </div>
+                      <div className="text-right">
+                        <div className="text-sm text-slate-600 dark:text-slate-400">
+                          This round: {teamData.roundScores?.[gameData.round?.round_number || 1] || 0}
+                        </div>
+                      </div>
                     </div>
                   ))}
                 </div>
@@ -185,18 +200,48 @@ export default function GameStateDisplay({ gameData, rounds, game }: GameStateDi
                 Final Results
               </h3>
               {game?.scoreboard && Object.keys(game.scoreboard.teams).length > 0 ? (
-                <div className="space-y-3">
-                  {Object.entries(game.scoreboard.teams).map(([teamId, teamData]: [string, ScoreboardTeam]) => (
+                <div className="space-y-4">
+                  {Object.entries(game.scoreboard.teams)
+                    .filter(([teamId]) => teamId !== 'no-team')
+                    .sort(([, a], [, b]) => (b.score || 0) - (a.score || 0))
+                    .map(([teamId, teamData]: [string, ScoreboardTeam], index) => (
                     <div
                       key={teamId}
-                      className="flex items-center justify-between p-3 bg-slate-50 dark:bg-slate-700 rounded-lg"
+                      className={`flex items-center justify-between p-4 rounded-lg ${
+                        index === 0
+                          ? 'bg-yellow-100 dark:bg-yellow-900/30 border-2 border-yellow-500'
+                          : 'bg-slate-50 dark:bg-slate-700'
+                      }`}
                     >
-                      <span className="font-medium text-slate-800 dark:text-slate-100">
-                        {teamData.name}
-                      </span>
-                      <Badge variant="secondary">
-                        {teamData.players.length} player{teamData.players.length !== 1 ? 's' : ''}
-                      </Badge>
+                      <div className="flex items-center gap-4">
+                        <div className={`flex items-center justify-center w-14 h-14 rounded-full text-2xl font-bold ${
+                          index === 0
+                            ? 'bg-yellow-500 text-white'
+                            : index === 1
+                            ? 'bg-slate-400 text-white'
+                            : index === 2
+                            ? 'bg-amber-600 text-white'
+                            : 'bg-blue-500 text-white'
+                        }`}>
+                          {teamData.score || 0}
+                        </div>
+                        <div className="text-left">
+                          <div className="flex items-center gap-2">
+                            <span className="font-medium text-slate-800 dark:text-slate-100">
+                              {teamData.name}
+                            </span>
+                            {index === 0 && <Trophy className="h-5 w-5 text-yellow-500" />}
+                          </div>
+                          <div className="text-sm text-slate-600 dark:text-slate-400">
+                            {teamData.players.length} player{teamData.players.length !== 1 ? 's' : ''}
+                          </div>
+                        </div>
+                      </div>
+                      <div className="text-right">
+                        <div className="text-lg font-semibold text-slate-800 dark:text-slate-100">
+                          #{index + 1}
+                        </div>
+                      </div>
                     </div>
                   ))}
                 </div>

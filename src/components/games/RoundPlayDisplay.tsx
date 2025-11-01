@@ -280,6 +280,7 @@ export default function RoundPlayDisplay({ gameData, mode = 'controller', onAnsw
             <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-2 md:gap-3">
               {Object.entries(scoreboard.teams)
                 .filter(([teamId]) => teamId !== 'no-team') // Exclude "No Team"
+                .sort(([, a], [, b]) => (b.score || 0) - (a.score || 0)) // Sort by score descending
                 .map(([teamId, teamData]) => {
                   const teamStatus = teamAnswerStatus.get(teamId)
                   const hasAnswered = teamStatus?.answered || false
@@ -313,15 +314,20 @@ export default function RoundPlayDisplay({ gameData, mode = 'controller', onAnsw
                       className={`p-2 md:p-3 rounded-lg border-2 transition-all ${bgColor}`}
                     >
                       <div className="flex items-center justify-between">
-                        <div>
+                        <div className="flex-1">
                           <div className="font-medium">
                             {teamData.name}
                           </div>
                           <div className="text-sm opacity-75">
                             ({teamData.players.length} player{teamData.players.length !== 1 ? 's' : ''})
                           </div>
+                          <div className="text-sm font-semibold mt-1">
+                            Score: {teamData.score || 0}
+                          </div>
                         </div>
-                        {icon}
+                        <div className="ml-2">
+                          {icon}
+                        </div>
                       </div>
                     </div>
                   )

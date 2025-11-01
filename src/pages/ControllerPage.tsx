@@ -357,10 +357,12 @@ export default function ControllerPage() {
             console.log(`🎯 All answers graded. Correct answer: ${correctAnswerLabel}`)
 
             // Update scoreboard with latest scores
+            console.log('🔴 BEFORE updateScoreboard call - Game ID:', id, 'Round:', gameData.round?.round_number)
             try {
               await scoreboardService.updateScoreboard(id, gameData.round?.round_number || 1)
+              console.log('🟢 AFTER updateScoreboard call - Success!')
             } catch (error) {
-              console.error('Failed to update scoreboard:', error)
+              console.error('🔴 AFTER updateScoreboard call - Failed:', error)
               // Don't block game flow if scoreboard update fails
             }
           }

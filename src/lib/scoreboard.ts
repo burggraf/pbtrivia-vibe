@@ -71,6 +71,7 @@ export const scoreboardService = {
    * Recalculates all scores from game_answers records
    */
   async updateScoreboard(gameId: string, currentRoundNumber: number): Promise<void> {
+    console.log('⚠️ updateScoreboard ENTERED - Game:', gameId, 'Round:', currentRoundNumber)
     try {
       console.log(`📊 Updating scoreboard for game ${gameId}, round ${currentRoundNumber}`)
 
