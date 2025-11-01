@@ -8,6 +8,7 @@ import { gamesService } from '@/lib/games'
 import { roundsService } from '@/lib/rounds'
 import { gameQuestionsService } from '@/lib/gameQuestions'
 import { questionsService } from '@/lib/questions'
+import { scoreboardService } from '@/lib/scoreboard'
 import pb from '@/lib/pocketbase'
 import { Game } from '@/types/games'
 
@@ -354,6 +355,14 @@ export default function ControllerPage() {
             })
 
             console.log(`🎯 All answers graded. Correct answer: ${correctAnswerLabel}`)
+
+            // Update scoreboard with latest scores
+            try {
+              await scoreboardService.updateScoreboard(id, gameData.round?.round_number || 1)
+            } catch (error) {
+              console.error('Failed to update scoreboard:', error)
+              // Don't block game flow if scoreboard update fails
+            }
           }
         }
         return
