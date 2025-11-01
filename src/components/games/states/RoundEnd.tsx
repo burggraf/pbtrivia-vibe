@@ -2,8 +2,6 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Trophy, Medal, Award } from 'lucide-react'
 import { GameScoreboard } from '@/types/games'
-import { scoreboardService } from '@/lib/scoreboard'
-import { useState, useEffect } from 'react'
 
 interface RoundEndProps {
   gameData: {
@@ -14,54 +12,32 @@ interface RoundEndProps {
       question_count: number
       title: string
     }
-    gameId?: string // Add gameId for score calculation (passed separately by renderer)
+    gameId?: string
   }
   scoreboard?: GameScoreboard
 }
 
 export default function RoundEnd({ gameData, scoreboard }: RoundEndProps) {
-  const [calculatedScores, setCalculatedScores] = useState<Record<string, number>>({})
-  const [isLoadingScores, setIsLoadingScores] = useState(true)
-
-  // Calculate scores from answers when component mounts
-  useEffect(() => {
-    const calculateScores = async () => {
-      if (!gameData.gameId || !scoreboard?.teams) {
-        setIsLoadingScores(false)
-        return
-      }
-
-      try {
-        setIsLoadingScores(true)
-        const scores = await scoreboardService.calculateTeamScores(gameData.gameId, scoreboard.teams)
-        setCalculatedScores(scores)
-      } catch (error) {
-        console.error('Failed to calculate scores:', error)
-      } finally {
-        setIsLoadingScores(false)
-      }
-    }
-
-    calculateScores()
-  }, [gameData.gameId, scoreboard?.teams])
+  const currentRound = gameData.round?.round_number || 1
 
   const getTopTeams = () => {
     if (!scoreboard?.teams) return []
 
     return Object.entries(scoreboard.teams)
       .map(([teamId, teamData]) => {
-        // Use calculated score if available, otherwise fall back to scoreboard score
-        const score = calculatedScores[teamId] ?? teamData.score ?? 0
+        const totalScore = teamData.score ?? 0
+        const roundScore = teamData.roundScores?.[currentRound] ?? 0
 
         return {
           id: teamId,
           name: teamData.name,
-          score: score,
+          totalScore: totalScore,
+          roundScore: roundScore,
           players: teamData.players.length
         }
       })
       .filter(team => team.players > 0) // Filter out teams with 0 players
-      .sort((a, b) => b.score - a.score)
+      .sort((a, b) => b.totalScore - a.totalScore)
   }
 
   const topTeams = getTopTeams()
@@ -96,11 +72,6 @@ export default function RoundEnd({ gameData, scoreboard }: RoundEndProps) {
       {/* Podium Display */}
       {topTeams.length > 0 && (
         <div className="max-w-4xl mx-auto mb-8">
-          {isLoadingScores && (
-            <div className="text-center mb-4">
-              <p className="text-slate-600 dark:text-slate-400">Calculating scores...</p>
-            </div>
-          )}
           <Card>
             <CardHeader>
               <CardTitle className="text-xl">Current Scoreboard</CardTitle>
@@ -116,8 +87,11 @@ export default function RoundEnd({ gameData, scoreboard }: RoundEndProps) {
                     <h3 className="text-lg font-semibold text-slate-800 dark:text-slate-100 mb-1">
                       {secondPlace.name}
                     </h3>
+                    <p className="text-sm text-slate-600 dark:text-slate-400">
+                      Round {currentRound}: +{secondPlace.roundScore}
+                    </p>
                     <p className="text-2xl font-bold text-slate-600 dark:text-slate-400">
-                      {secondPlace.score} points
+                      Total: {secondPlace.totalScore} points
                     </p>
                     <Badge variant="secondary" className="mt-2">
                       {secondPlace.players} player{secondPlace.players !== 1 ? 's' : ''}
@@ -134,8 +108,11 @@ export default function RoundEnd({ gameData, scoreboard }: RoundEndProps) {
                     <h3 className="text-xl font-bold text-slate-800 dark:text-slate-100 mb-1">
                       {firstPlace.name}
                     </h3>
+                    <p className="text-sm text-yellow-700 dark:text-yellow-400">
+                      Round {currentRound}: +{firstPlace.roundScore}
+                    </p>
                     <p className="text-3xl font-bold text-yellow-600 dark:text-yellow-400">
-                      {firstPlace.score} points
+                      Total: {firstPlace.totalScore} points
                     </p>
                     <Badge variant="default" className="mt-2 bg-yellow-600 hover:bg-yellow-700">
                       {firstPlace.players} player{firstPlace.players !== 1 ? 's' : ''}
@@ -152,8 +129,11 @@ export default function RoundEnd({ gameData, scoreboard }: RoundEndProps) {
                     <h3 className="text-lg font-semibold text-slate-800 dark:text-slate-100 mb-1">
                       {thirdPlace.name}
                     </h3>
+                    <p className="text-sm text-slate-600 dark:text-slate-400">
+                      Round {currentRound}: +{thirdPlace.roundScore}
+                    </p>
                     <p className="text-2xl font-bold text-slate-600 dark:text-slate-400">
-                      {thirdPlace.score} points
+                      Total: {thirdPlace.totalScore} points
                     </p>
                     <Badge variant="secondary" className="mt-2">
                       {thirdPlace.players} player{thirdPlace.players !== 1 ? 's' : ''}
@@ -185,9 +165,14 @@ export default function RoundEnd({ gameData, scoreboard }: RoundEndProps) {
                             {team.players} player{team.players !== 1 ? 's' : ''}
                           </Badge>
                         </div>
-                        <span className="text-lg font-bold text-slate-700 dark:text-slate-300">
-                          {team.score} points
-                        </span>
+                        <div className="text-right">
+                          <p className="text-sm text-slate-600 dark:text-slate-400">
+                            Round {currentRound}: +{team.roundScore}
+                          </p>
+                          <span className="text-lg font-bold text-slate-700 dark:text-slate-300">
+                            Total: {team.totalScore} points
+                          </span>
+                        </div>
                       </div>
                     ))}
                   </div>
