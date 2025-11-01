@@ -266,11 +266,14 @@ export default function ControllerPage() {
       let categories: string[] = []
       try {
         const gameQuestions = await gameQuestionsService.getGameQuestions(round.id)
+
+        // Use category_name from game_questions (already stored) instead of fetching each question
+        // This eliminates N API calls per round start
         const uniqueCategories = new Set<string>()
         for (const gameQuestion of gameQuestions) {
-          const question = await questionsService.getQuestionById(gameQuestion.question)
-          uniqueCategories.add(question.category)
+          uniqueCategories.add(gameQuestion.category_name)
         }
+
         categories = Array.from(uniqueCategories)
       } catch (error) {
         console.error('Failed to fetch categories for round:', error)
