@@ -89,6 +89,28 @@ export const scoreboardService = {
 
       console.log(`📊 Found ${allAnswers.length} graded answers`)
 
+      // Collect all unique round IDs to fetch in one query
+      const roundIds = new Set<string>()
+      for (const answer of allAnswers) {
+        const gameQuestion = (answer as any).expand?.game_questions_id
+        if (gameQuestion?.round) {
+          roundIds.add(gameQuestion.round)
+        }
+      }
+
+      // Fetch all rounds at once and build a map of round ID -> sequence number
+      const roundIdToSequenceNumber = new Map<string, number>()
+      if (roundIds.size > 0) {
+        const rounds = await pb.collection('rounds').getFullList({
+          filter: roundIds.size === 1
+            ? `id = "${Array.from(roundIds)[0]}"`
+            : `id = "${Array.from(roundIds).join('" || id = "')}"`
+        })
+        for (const round of rounds) {
+          roundIdToSequenceNumber.set(round.id, round.sequence_number)
+        }
+      }
+
       // Build score tracking structure
       // teamId -> roundNumber -> correctCount
       const teamRoundScores: Record<string, Record<number, number>> = {}
@@ -102,13 +124,10 @@ export const scoreboardService = {
         const gameQuestion = (answer as any).expand?.game_questions_id
         if (!gameQuestion?.round) continue
 
-        // Fetch the round to get sequence_number
-        let roundNumber: number
-        try {
-          const round = await pb.collection('rounds').getOne(gameQuestion.round)
-          roundNumber = round.sequence_number
-        } catch (error) {
-          console.error(`Failed to fetch round ${gameQuestion.round}:`, error)
+        // Lookup the round number from our pre-fetched map
+        const roundNumber = roundIdToSequenceNumber.get(gameQuestion.round)
+        if (roundNumber === undefined) {
+          console.error(`Round ${gameQuestion.round} not found in pre-fetched rounds`)
           continue
         }
 
