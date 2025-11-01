@@ -8,6 +8,7 @@ export interface ScoreboardTeam {
   name: string;
   players: ScoreboardPlayer[];
   score: number;
+  roundScores?: Record<number, number>;
 }
 
 export interface GameScoreboard {

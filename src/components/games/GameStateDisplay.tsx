@@ -1,9 +1,11 @@
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import { Badge } from '@/components/ui/badge'
-import { Trophy, Clock, Users, Star, ChevronRight, PartyPopper } from 'lucide-react'
-import { GameScoreboard, ScoreboardTeam } from '@/types/games'
+import { Clock, Users, Star, ChevronRight } from 'lucide-react'
+import { GameScoreboard } from '@/types/games'
 import RoundStartDisplay from './RoundStartDisplay'
 import RoundPlayDisplay from './RoundPlayDisplay'
+import RoundEnd from './states/RoundEnd'
+import GameEnd from './states/GameEnd'
+import Thanks from './states/Thanks'
 import QRCode from 'react-qr-code'
 import { getPublicUrl } from '@/lib/networkUrl'
 
@@ -61,7 +63,7 @@ export default function GameStateDisplay({ gameData, rounds, game }: GameStateDi
               <h1 className="text-4xl font-bold text-slate-800 dark:text-slate-100 mb-4">
                 Welcome to the Game!
               </h1>
-              <p className="text-lg text-slate-500 dark:text-slate-500 mt-2 mb-6">
+              <p className="text-lg text-slate-600 dark:text-slate-400 mt-2 mb-6">
                 Game Code: <span className="font-mono font-bold">{game?.code}</span>
               </p>
               <div className="flex justify-center">
@@ -136,96 +138,13 @@ export default function GameStateDisplay({ gameData, rounds, game }: GameStateDi
         )
 
       case 'round-end':
-        return (
-          <div className="text-center py-12">
-            <h2 className="text-3xl font-bold text-slate-800 dark:text-slate-100 mb-6">
-              End of Round {gameData.round?.round_number || 1}
-            </h2>
-            <div className="bg-white dark:bg-slate-800 rounded-xl shadow-lg p-8 max-w-2xl mx-auto">
-              <h3 className="text-xl font-semibold text-slate-700 dark:text-slate-200 mb-4">
-                Current Scoreboard
-              </h3>
-              {game?.scoreboard && Object.keys(game.scoreboard.teams).length > 0 ? (
-                <div className="space-y-3">
-                  {Object.entries(game.scoreboard.teams).map(([teamId, teamData]: [string, ScoreboardTeam]) => (
-                    <div
-                      key={teamId}
-                      className="flex items-center justify-between p-3 bg-slate-50 dark:bg-slate-700 rounded-lg"
-                    >
-                      <span className="font-medium text-slate-800 dark:text-slate-100">
-                        {teamData.name}
-                      </span>
-                      <Badge variant="secondary">
-                        {teamData.players.length} player{teamData.players.length !== 1 ? 's' : ''}
-                      </Badge>
-                    </div>
-                  ))}
-                </div>
-              ) : (
-                <p className="text-slate-600 dark:text-slate-400">No teams yet</p>
-              )}
-            </div>
-          </div>
-        )
+        return <RoundEnd gameData={gameData} scoreboard={game?.scoreboard} />
 
       case 'game-end':
-        return (
-          <div className="text-center py-12">
-            <div className="mb-8">
-              <Trophy className="h-16 w-16 mx-auto text-yellow-500 mb-4" />
-              <h2 className="text-4xl font-bold text-slate-800 dark:text-slate-100 mb-4">
-                Game Over!
-              </h2>
-              <p className="text-xl text-slate-600 dark:text-slate-400">
-                Congratulations to all players!
-              </p>
-            </div>
-            <div className="bg-white dark:bg-slate-800 rounded-xl shadow-lg p-8 max-w-2xl mx-auto">
-              <h3 className="text-xl font-semibold text-slate-700 dark:text-slate-200 mb-4">
-                Final Results
-              </h3>
-              {game?.scoreboard && Object.keys(game.scoreboard.teams).length > 0 ? (
-                <div className="space-y-3">
-                  {Object.entries(game.scoreboard.teams).map(([teamId, teamData]: [string, ScoreboardTeam]) => (
-                    <div
-                      key={teamId}
-                      className="flex items-center justify-between p-3 bg-slate-50 dark:bg-slate-700 rounded-lg"
-                    >
-                      <span className="font-medium text-slate-800 dark:text-slate-100">
-                        {teamData.name}
-                      </span>
-                      <Badge variant="secondary">
-                        {teamData.players.length} player{teamData.players.length !== 1 ? 's' : ''}
-                      </Badge>
-                    </div>
-                  ))}
-                </div>
-              ) : (
-                <p className="text-slate-600 dark:text-slate-400">No teams participated</p>
-              )}
-            </div>
-          </div>
-        )
+        return <GameEnd gameData={gameData} scoreboard={game?.scoreboard} />
 
       case 'thanks':
-        return (
-          <div className="text-center py-12">
-            <div className="mb-8">
-              <PartyPopper className="h-16 w-16 mx-auto text-purple-500 mb-4" />
-              <h2 className="text-3xl font-bold text-slate-800 dark:text-slate-100 mb-4">
-                Thanks for Playing!
-              </h2>
-              <p className="text-xl text-slate-600 dark:text-slate-400">
-                We hope you enjoyed the trivia game
-              </p>
-            </div>
-            <div className="bg-white dark:bg-slate-800 rounded-xl shadow-lg p-8 max-w-md mx-auto">
-              <p className="text-slate-700 dark:text-slate-200">
-                Your feedback helps us improve future games!
-              </p>
-            </div>
-          </div>
-        )
+        return <Thanks />
 
       case 'return-to-lobby':
         return (

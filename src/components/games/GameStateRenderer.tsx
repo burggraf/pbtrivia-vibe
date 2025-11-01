@@ -45,7 +45,7 @@ export default function GameStateRenderer({ gameData, gameId, scoreboard, isLoad
 
     // Handle thanks state
     if (gameData?.state === 'thanks') {
-      return <Thanks gameData={gameData} />
+      return <Thanks />
     }
 
     // Handle waiting state (no game data or not started)

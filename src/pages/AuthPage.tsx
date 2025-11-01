@@ -126,11 +126,11 @@ export default function AuthPage() {
         <ThemeToggle />
       </div>
       <Card className="w-full max-w-md bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700">
-        <CardHeader className="space-y-1">
-          <CardTitle className="text-2xl font-semibold text-slate-800 dark:text-slate-100">
+        <CardHeader className="space-y-1 pb-4 sm:pb-6">
+          <CardTitle className="text-xl sm:text-2xl font-semibold text-slate-800 dark:text-slate-100">
             {mode === 'login' ? 'Welcome Back' : mode === 'register' ? 'Create Account' : 'Reset Password'}
           </CardTitle>
-          <CardDescription className="text-slate-600 dark:text-slate-400">
+          <CardDescription className="text-sm text-slate-600 dark:text-slate-400 hidden sm:block">
             {mode === 'login'
               ? 'Enter your credentials to access your account'
               : mode === 'register'
@@ -141,37 +141,6 @@ export default function AuthPage() {
         </CardHeader>
         <CardContent>
           <form onSubmit={handleSubmit} className="space-y-4">
-            {/* Host/Player Mode Selector */}
-            <div className="space-y-3">
-              <Label className="text-slate-700 dark:text-slate-300 font-medium">Login as:</Label>
-              <div className="flex gap-2">
-                <Button
-                  type="button"
-                  variant={userMode === 'player' ? 'default' : 'outline'}
-                  onClick={() => setUserMode('player')}
-                  className={`flex-1 ${
-                    userMode === 'player'
-                      ? 'bg-slate-700 hover:bg-slate-800 dark:bg-slate-600 dark:hover:bg-slate-700 text-white'
-                      : 'border-slate-300 dark:border-slate-600 text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700'
-                  }`}
-                >
-                  Player
-                </Button>
-                <Button
-                  type="button"
-                  variant={userMode === 'host' ? 'default' : 'outline'}
-                  onClick={() => setUserMode('host')}
-                  className={`flex-1 ${
-                    userMode === 'host'
-                      ? 'bg-slate-700 hover:bg-slate-800 dark:bg-slate-600 dark:hover:bg-slate-700 text-white'
-                      : 'border-slate-300 dark:border-slate-600 text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700'
-                  }`}
-                >
-                  Host
-                </Button>
-              </div>
-            </div>
-
             <div className="space-y-2">
               <Label htmlFor="email" className="text-slate-700 dark:text-slate-300">Email</Label>
               <Input
@@ -250,11 +219,42 @@ export default function AuthPage() {
 
             <Button
               type="submit"
-              className="w-full bg-slate-700 hover:bg-slate-800 dark:bg-slate-600 dark:hover:bg-slate-700 text-white"
+              className="w-full min-h-11 bg-slate-700 hover:bg-slate-800 dark:bg-slate-600 dark:hover:bg-slate-700 text-white"
               disabled={loading}
             >
               {loading ? 'Loading...' : mode === 'login' ? 'Sign In' : mode === 'register' ? 'Create Account' : 'Send Reset Link'}
             </Button>
+
+            {/* Host/Player Mode Selector - Moved to bottom for better mobile keyboard UX */}
+            <div className="space-y-2 pt-2 border-t border-slate-200 dark:border-slate-700">
+              <Label className="text-slate-700 dark:text-slate-300 font-medium text-sm">Login as:</Label>
+              <div className="flex gap-2">
+                <Button
+                  type="button"
+                  variant={userMode === 'player' ? 'default' : 'outline'}
+                  onClick={() => setUserMode('player')}
+                  className={`flex-1 min-h-11 ${
+                    userMode === 'player'
+                      ? 'bg-slate-700 hover:bg-slate-800 dark:bg-slate-600 dark:hover:bg-slate-700 text-white'
+                      : 'border-slate-300 dark:border-slate-600 text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700'
+                  }`}
+                >
+                  Player
+                </Button>
+                <Button
+                  type="button"
+                  variant={userMode === 'host' ? 'default' : 'outline'}
+                  onClick={() => setUserMode('host')}
+                  className={`flex-1 min-h-11 ${
+                    userMode === 'host'
+                      ? 'bg-slate-700 hover:bg-slate-800 dark:bg-slate-600 dark:hover:bg-slate-700 text-white'
+                      : 'border-slate-300 dark:border-slate-600 text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700'
+                  }`}
+                >
+                  Host
+                </Button>
+              </div>
+            </div>
           </form>
 
           <div className="mt-6 text-center text-sm text-slate-600 dark:text-slate-400 space-y-2">

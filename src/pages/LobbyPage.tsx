@@ -136,9 +136,9 @@ export default function LobbyPage() {
             <ThemeToggle />
             <Button
               variant="outline"
-              size="sm"
+              size="default"
               onClick={handleLogout}
-              className="border-slate-300 dark:border-slate-600 text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800"
+              className="min-h-11 border-slate-300 dark:border-slate-600 text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800"
             >
               Logout
             </Button>

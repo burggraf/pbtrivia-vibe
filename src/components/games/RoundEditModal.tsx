@@ -180,7 +180,7 @@ export default function RoundEditModal({ round, isOpen, onClose, onSave, onDelet
                 <div className="flex items-center justify-between mb-4">
                   <Label className="text-base font-medium">Categories</Label>
                   <div className="flex items-center gap-2">
-                    <span className="text-xs text-slate-500 dark:text-slate-400">
+                    <span className="text-xs text-slate-500 dark:text-slate-300">
                       {formData.categories?.length || 0} of {getAvailableCategories().length} selected
                     </span>
                     <Button

@@ -225,7 +225,7 @@ export default function GameEditModal({ game, isOpen, onClose, onSave, onDelete,
                       className="w-16 text-center"
                       required
                     />
-                    <Label htmlFor="questionsPerRound" className="text-sm text-slate-600 dark:text-slate-400 whitespace-nowrap">
+                    <Label htmlFor="questionsPerRound" className="text-sm text-slate-600 dark:text-slate-300 whitespace-nowrap">
                       Questions
                     </Label>
                     <Input
@@ -251,7 +251,7 @@ export default function GameEditModal({ game, isOpen, onClose, onSave, onDelete,
                   <div className="flex items-center justify-between mb-4">
                     <Label className="text-base font-medium">Categories</Label>
                     <div className="flex items-center gap-2">
-                      <span className="text-xs text-slate-500 dark:text-slate-400">
+                      <span className="text-xs text-slate-500 dark:text-slate-300">
                         {formData.categories?.length || 0} of {getAvailableCategories().length} selected
                       </span>
                       <Button

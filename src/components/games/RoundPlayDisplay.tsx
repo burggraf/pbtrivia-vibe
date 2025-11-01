@@ -199,14 +199,14 @@ export default function RoundPlayDisplay({ gameData, mode = 'controller', onAnsw
                     answerClasses += ' bg-red-100 border-red-500 text-red-800 dark:bg-red-900 dark:text-red-200'
                   } else {
                     // Other wrong answers (not selected)
-                    answerClasses += ' bg-slate-50 border-slate-300 text-slate-700 dark:bg-slate-800 dark:text-slate-300 opacity-40'
+                    answerClasses += ' bg-slate-50 border-slate-300 text-slate-700 dark:bg-slate-800 dark:border-slate-700 dark:text-slate-500'
                   }
                 } else if (isSelectedAnswer) {
                   // Answer was selected but not revealed yet
                   answerClasses += ' bg-blue-200 border-blue-500 text-blue-900 dark:bg-blue-800 dark:text-blue-100'
                 } else if (hasTeamSubmitted) {
-                  // Other answers when team has submitted
-                  answerClasses += ' bg-blue-50 border-blue-300 text-blue-700 dark:bg-blue-900 opacity-40 cursor-not-allowed'
+                  // Other answers when team has submitted (de-emphasized but readable)
+                  answerClasses += ' bg-slate-100 border-slate-300 text-slate-600 dark:bg-slate-800 dark:border-slate-600 dark:text-slate-300 cursor-not-allowed'
                 } else {
                   // Default state (clickable) - no hover effects to prevent mobile Safari focus issues
                   answerClasses += ' bg-blue-50 border-blue-300 text-blue-700 dark:bg-blue-900 dark:border-blue-600 dark:text-blue-200'
@@ -280,6 +280,7 @@ export default function RoundPlayDisplay({ gameData, mode = 'controller', onAnsw
             <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-2 md:gap-3">
               {Object.entries(scoreboard.teams)
                 .filter(([teamId]) => teamId !== 'no-team') // Exclude "No Team"
+                .sort(([, a], [, b]) => (b.score || 0) - (a.score || 0)) // Sort by score descending
                 .map(([teamId, teamData]) => {
                   const teamStatus = teamAnswerStatus.get(teamId)
                   const hasAnswered = teamStatus?.answered || false
@@ -313,15 +314,20 @@ export default function RoundPlayDisplay({ gameData, mode = 'controller', onAnsw
                       className={`p-2 md:p-3 rounded-lg border-2 transition-all ${bgColor}`}
                     >
                       <div className="flex items-center justify-between">
-                        <div>
+                        <div className="flex-1">
                           <div className="font-medium">
                             {teamData.name}
                           </div>
                           <div className="text-sm opacity-75">
                             ({teamData.players.length} player{teamData.players.length !== 1 ? 's' : ''})
                           </div>
+                          <div className="text-sm font-semibold mt-1">
+                            Score: {teamData.score || 0}
+                          </div>
                         </div>
-                        {icon}
+                        <div className="ml-2">
+                          {icon}
+                        </div>
                       </div>
                     </div>
                   )

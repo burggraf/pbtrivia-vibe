@@ -8,6 +8,7 @@ import { gamesService } from '@/lib/games'
 import { roundsService } from '@/lib/rounds'
 import { gameQuestionsService } from '@/lib/gameQuestions'
 import { questionsService } from '@/lib/questions'
+import { scoreboardService } from '@/lib/scoreboard'
 import pb from '@/lib/pocketbase'
 import { Game } from '@/types/games'
 
@@ -246,6 +247,7 @@ export default function ControllerPage() {
   const handleNextState = async () => {
     if (!gameData) return
 
+    console.log('🎮 handleNextState called, current state:', gameData?.state)
     console.log(`🎮 State transition from: ${gameData.state}`)
 
     // Helper to get current round index from gameData
@@ -264,11 +266,14 @@ export default function ControllerPage() {
       let categories: string[] = []
       try {
         const gameQuestions = await gameQuestionsService.getGameQuestions(round.id)
+
+        // Use category_name from game_questions (already stored) instead of fetching each question
+        // This eliminates N API calls per round start
         const uniqueCategories = new Set<string>()
         for (const gameQuestion of gameQuestions) {
-          const question = await questionsService.getQuestionById(gameQuestion.question)
-          uniqueCategories.add(question.category)
+          uniqueCategories.add(gameQuestion.category_name)
         }
+
         categories = Array.from(uniqueCategories)
       } catch (error) {
         console.error('Failed to fetch categories for round:', error)
@@ -285,11 +290,13 @@ export default function ControllerPage() {
 
     // Handle question progression within round-play
     if (gameData.state === 'round-play') {
+      console.log('🎮 Processing round-play state')
       const currentRoundIndex = getCurrentRoundIndex()
       const currentRound = rounds[currentRoundIndex]
       if (!currentRound) return
 
       const isAnswerRevealed = !!gameData.question?.correct_answer
+      console.log('🎮 isAnswerRevealed:', isAnswerRevealed, 'correct_answer:', gameData.question?.correct_answer)
 
       console.log('🔍 DEBUG: round-play logic', {
         questionNumber: gameData.question?.question_number,
@@ -299,14 +306,17 @@ export default function ControllerPage() {
       })
 
       if (!isAnswerRevealed) {
+        console.log('🎮 ENTERING REVEAL AND GRADE BLOCK')
         // Reveal answer and grade all submissions
         console.log('🔍 DEBUG: Revealing answer and grading submissions')
         if (gameData.question && id) {
+          console.log('🎮 gameData.question exists, id:', id)
           // Get the game_questions record to access the secure key
           const gameQuestions = await gameQuestionsService.getGameQuestions(currentRound.id)
           const gameQuestion = gameQuestions.find(gq => gq.id === gameData.question!.id)
 
           if (gameQuestion) {
+            console.log('🎮 gameQuestion found:', gameQuestion.id)
             // Use the secure key to get the correct answer label
             const { getCorrectAnswerLabel, translateAnswerToOriginal, isTranslatedAnswerCorrect } = await import('@/lib/answerShuffler')
             const correctAnswerLabel = getCorrectAnswerLabel(gameQuestion.key)
@@ -354,6 +364,16 @@ export default function ControllerPage() {
             })
 
             console.log(`🎯 All answers graded. Correct answer: ${correctAnswerLabel}`)
+
+            // Update scoreboard with latest scores
+            console.log('🔴 BEFORE updateScoreboard call - Game ID:', id, 'Round:', gameData.round?.round_number)
+            try {
+              await scoreboardService.updateScoreboard(id, gameData.round?.round_number || 1)
+              console.log('🟢 AFTER updateScoreboard call - Success!')
+            } catch (error) {
+              console.error('🔴 AFTER updateScoreboard call - Failed:', error)
+              // Don't block game flow if scoreboard update fails
+            }
           }
         }
         return
