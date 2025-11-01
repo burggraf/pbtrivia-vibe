@@ -87,25 +87,55 @@ export const scoreboardService = {
         expand: 'game_questions_id'
       })
 
-      console.log(`📊 Found ${allAnswers.length} graded answers`)
+      console.log(`📊 Found ${allAnswers.length} graded answers for game ${gameId}`)
+      if (allAnswers.length > 0) {
+        console.log(`📊 Sample answer:`, {
+          id: allAnswers[0].id,
+          team: allAnswers[0].team,
+          is_correct: allAnswers[0].is_correct,
+          hasExpand: !!(allAnswers[0] as any).expand,
+          expandKeys: (allAnswers[0] as any).expand ? Object.keys((allAnswers[0] as any).expand) : []
+        })
+      }
 
       // Collect all unique round IDs to fetch in one query
       const roundIds = new Set<string>()
+      let answersWithoutRound = 0
       for (const answer of allAnswers) {
         const gameQuestion = (answer as any).expand?.game_questions_id
         if (gameQuestion?.round) {
           roundIds.add(gameQuestion.round)
+        } else {
+          answersWithoutRound++
+          console.warn(`⚠️ Answer ${answer.id} has no round in expanded game_questions_id`, {
+            hasExpand: !!(answer as any).expand,
+            gameQuestionId: answer.game_questions_id,
+            expandedGameQuestion: gameQuestion
+          })
         }
       }
+
+      if (answersWithoutRound > 0) {
+        console.warn(`⚠️ Found ${answersWithoutRound} answers without round information`)
+      }
+
+      console.log(`📊 Collected ${roundIds.size} unique round IDs:`, Array.from(roundIds))
 
       // Fetch all rounds at once and build a map of round ID -> sequence number
       const roundIdToSequenceNumber = new Map<string, number>()
       if (roundIds.size > 0) {
+        // Build proper PocketBase filter with OR conditions
+        const roundIdArray = Array.from(roundIds)
+        const filter = roundIdArray.map(id => `id = "${id}"`).join(' || ')
+
+        console.log(`📊 Fetching ${roundIdArray.length} rounds with filter:`, filter)
+
         const rounds = await pb.collection('rounds').getFullList({
-          filter: roundIds.size === 1
-            ? `id = "${Array.from(roundIds)[0]}"`
-            : `id = "${Array.from(roundIds).join('" || id = "')}"`
+          filter: filter
         })
+
+        console.log(`📊 Successfully fetched ${rounds.length} rounds`)
+
         for (const round of rounds) {
           roundIdToSequenceNumber.set(round.id, round.sequence_number)
         }
@@ -116,18 +146,27 @@ export const scoreboardService = {
       const teamRoundScores: Record<string, Record<number, number>> = {}
 
       // Process each answer
+      let processedAnswers = 0
+      let skippedAnswers = 0
       for (const answer of allAnswers) {
         const teamId = answer.team
-        if (!teamId) continue
+        if (!teamId) {
+          skippedAnswers++
+          continue
+        }
 
         // Get the round number from the game_questions record
         const gameQuestion = (answer as any).expand?.game_questions_id
-        if (!gameQuestion?.round) continue
+        if (!gameQuestion?.round) {
+          skippedAnswers++
+          continue
+        }
 
         // Lookup the round number from our pre-fetched map
         const roundNumber = roundIdToSequenceNumber.get(gameQuestion.round)
         if (roundNumber === undefined) {
-          console.error(`Round ${gameQuestion.round} not found in pre-fetched rounds`)
+          console.error(`❌ Round ${gameQuestion.round} not found in pre-fetched rounds. Available rounds:`, Array.from(roundIdToSequenceNumber.keys()))
+          skippedAnswers++
           continue
         }
 
@@ -143,7 +182,10 @@ export const scoreboardService = {
         if (answer.is_correct === true) {
           teamRoundScores[teamId][roundNumber]++
         }
+        processedAnswers++
       }
+
+      console.log(`📊 Processed ${processedAnswers} answers, skipped ${skippedAnswers} answers`)
 
       // Calculate total scores and update scoreboard structure
       const updatedTeams = { ...game.scoreboard.teams }
