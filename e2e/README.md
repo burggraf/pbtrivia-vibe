@@ -2,6 +2,20 @@
 
 This directory contains end-to-end tests specifically designed for mobile device testing, including keyboard overlay detection and visual regression testing.
 
+## 📱 Mobile Testing Scope
+
+**Pages Tested on Mobile** (player experience):
+- `/` - Auth page (login/register)
+- `/lobby` - Player lobby
+- `/game/:id` - Gameplay page
+- `/join` - QR code join flow
+
+**Pages NOT Tested on Mobile** (desktop only - host experience):
+- `/host` - Host control panel
+- `/controller` - Game controller with QR code
+
+This reflects the real-world usage where players use mobile devices and hosts use desktop/tablets.
+
 ## Quick Start
 
 ```bash
@@ -15,6 +29,7 @@ npm run test:e2e:mobile
 npm run test:e2e:keyboard   # Mobile keyboard overlay tests
 npm run test:e2e:visual     # Visual regression tests
 npm run test:e2e:smoke      # Quick smoke tests
+npm run test:e2e:player     # Player page tests (lobby, game) - requires auth setup
 
 # Run tests with UI (great for debugging)
 npm run test:e2e:ui
@@ -65,6 +80,20 @@ Quick smoke tests:
 - Tests page responsiveness
 - Validates text readability
 - Checks performance metrics
+
+### `mobile-game-workflows.spec.ts`
+Game workflow tests (player experience only):
+- Join flow via QR code
+- Team selection
+- Page responsiveness
+- NOTE: Host and controller pages are desktop-only and excluded
+
+### `mobile-player-pages.spec.ts`
+Focused tests for player-facing pages (requires authentication):
+- **Lobby page**: Game code input, join button, error handling, keyboard behavior
+- **Game page**: Question display, answer buttons, scoreboard, navigation
+- **Team selection modal**: Team list, team creation, modal usability
+- NOTE: All tests are skipped until test credentials are configured
 
 ## Common Use Cases
 
@@ -132,8 +161,72 @@ Screenshots and traces are saved in `test-results/` directory.
 - Device pixel ratios are correctly configured
 - Mobile-specific CSS is tested (@media queries)
 
+## Enabling Authentication-Required Tests
+
+Many tests in `mobile-player-pages.spec.ts` are currently skipped because they require authentication. To enable these tests:
+
+### 1. Create Test User Accounts
+
+Create test accounts in PocketBase (via admin panel at `http://localhost:8090/_/`):
+- `player1@test.com` / `TestPass123!`
+- `player2@test.com` / `TestPass123!`
+
+### 2. Create Test Games (Optional)
+
+For workflow tests, create a test game:
+- Game code: `TEST01`
+- Status: `ready`
+- This allows testing the full join flow
+
+### 3. Use Playwright Storage State (Recommended)
+
+Create an auth setup script to save authentication state:
+
+```typescript
+// e2e/auth.setup.ts
+import { test as setup } from '@playwright/test';
+
+setup('authenticate as player', async ({ page }) => {
+  await page.goto('/');
+  await page.getByRole('button', { name: 'Player' }).click();
+  await page.getByLabel('Email').fill('player1@test.com');
+  await page.getByLabel('Password').fill('TestPass123!');
+  await page.getByRole('button', { name: 'Sign In' }).click();
+  await page.waitForURL(/\/lobby/);
+  await page.context().storageState({ path: 'e2e/.auth/player.json' });
+});
+```
+
+Update `playwright.config.ts`:
+```typescript
+projects: [
+  { name: 'setup', testMatch: /.*\.setup\.ts/ },
+  {
+    name: 'iphone-13',
+    use: {
+      ...devices['iPhone 13'],
+      storageState: 'e2e/.auth/player.json'
+    },
+    dependencies: ['setup']
+  }
+]
+```
+
+### 4. Remove `.skip()` from Tests
+
+Once authentication is configured, remove `.skip()` from tests in:
+- `mobile-player-pages.spec.ts`
+- `mobile-game-workflows.spec.ts`
+
+### 5. Add `.auth/` to .gitignore
+
+```bash
+echo "e2e/.auth/" >> .gitignore
+```
+
 ## Next Steps
 
+- Enable authentication-required tests by setting up test accounts
 - Add tests for your specific mobile workflows
 - Configure additional device types as needed
 - Set up CI/CD pipeline integration

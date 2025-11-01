@@ -17,6 +17,7 @@
     "test:e2e:keyboard": "playwright test mobile-keyboard",
     "test:e2e:visual": "playwright test mobile-visual",
     "test:e2e:smoke": "playwright test mobile-smoke",
+    "test:e2e:player": "playwright test mobile-player-pages",
     "test:e2e:headed": "playwright test --headed",
     "test:e2e:debug": "playwright test --debug",
     "playwright:install": "playwright install --with-deps"

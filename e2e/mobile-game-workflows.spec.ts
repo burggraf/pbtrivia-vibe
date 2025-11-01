@@ -1,69 +1,33 @@
 import { test, expect } from '@playwright/test';
 
 /**
- * Mobile Game Workflow Tests
+ * Mobile Game Workflow Tests - PLAYER EXPERIENCE ONLY
  *
- * Tests for trivia game-specific mobile workflows:
- * - QR code joining
+ * Tests for trivia game-specific mobile workflows from the PLAYER perspective:
+ * - Join flow via QR code
  * - Team selection
- * - Game navigation
+ * - Lobby page
+ * - Gameplay page
  *
- * These tests ensure the core game functionality works well on mobile devices.
+ * NOTE: Host and Controller pages are desktop-only and NOT tested on mobile.
+ * These tests focus on the player experience which IS used on mobile devices.
  */
 
-test.describe('Mobile Game Workflows - QR Code Join', () => {
-  test.skip('QR code is visible and readable on mobile', async ({ page }) => {
-    // NOTE: Requires real test credentials to be set up
-    // Login as host
-    await page.goto('/');
-
-    await page.getByRole('button', { name: 'Host', exact: true }).click();
-    await page.getByLabel('Email').fill('host@example.com');
-    await page.getByLabel('Password', { exact: true }).fill('password123');
-    await page.getByRole('button', { name: 'Sign In' }).click();
-
-    // Wait for navigation to host page
-    await page.waitForURL(/\/host/);
-
-    // Create a new game
-    await page.getByRole('button', { name: /create new game/i }).click();
-
-    // Fill game details
-    await page.getByLabel(/game name/i).fill('Mobile Test Game');
-    await page.getByRole('button', { name: /create/i }).click();
-
-    // Navigate to controller page where QR code is displayed
-    await page.getByRole('button', { name: /controller/i }).click();
-
-    // Verify QR code is visible
-    const qrCode = page.locator('svg').first(); // QR codes are typically SVG
-    await expect(qrCode).toBeVisible();
-
-    // Verify join code is displayed
-    await expect(page.getByText(/join code/i)).toBeVisible();
-  });
-
-  test.skip('game code is large enough to read on mobile', async ({ page }) => {
-    // This test would require a real game setup
-    // Skipping for now as it requires authentication and game creation
-  });
-});
-
 test.describe('Mobile Game Workflows - Join Flow', () => {
+  test('join page loads and redirects correctly', async ({ page }) => {
+    // Test that join page with a code parameter works
+    await page.goto('/join?code=ABC123');
+
+    // Should redirect to auth if not logged in
+    await expect(page).toHaveURL(/\/\?returnTo/);
+  });
+
   test.skip('can scan QR code to join game', async ({ page, context }) => {
     // This would require:
     // 1. A host to create a game
     // 2. QR code scanning simulation
     // 3. Team selection
     // Skipping as it requires complex setup
-  });
-
-  test('join page loads correctly on mobile', async ({ page }) => {
-    // Test that join page with a code parameter works
-    await page.goto('/join?code=ABC123');
-
-    // Should redirect to auth if not logged in
-    await expect(page).toHaveURL(/\/\?returnTo/);
   });
 
   test.skip('join flow works with valid code after login', async ({ page }) => {
@@ -121,22 +85,13 @@ test.describe('Mobile Game Workflows - Player Experience', () => {
   });
 });
 
-test.describe('Mobile Game Workflows - Host Experience', () => {
-  test.skip('host page game list is usable on mobile', async ({ page }) => {
-    // Test host page with game list on mobile
-  });
-
-  test.skip('can edit game details on mobile', async ({ page }) => {
-    // Test game edit modal on mobile
-  });
-
-  test.skip('can delete game on mobile', async ({ page }) => {
-    // Test game deletion flow
-  });
-});
+// NOTE: Host page is desktop-only and not tested on mobile
+// Players use mobile devices, hosts use desktop/tablets
 
 test.describe('Mobile Game Workflows - Responsive Behavior', () => {
-  test('controller page QR code scales on small screens', async ({ page }) => {
+  // NOTE: Controller page is desktop-only and not tested on mobile
+  // This test focuses on the auth page which IS mobile-supported
+  test('auth page has no horizontal scroll on mobile', async ({ page }) => {
     await page.goto('/');
 
     // Check that page loads
