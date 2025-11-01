@@ -2,50 +2,22 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Trophy, Medal, Award, Crown, Star } from 'lucide-react'
 import { GameScoreboard } from '@/types/games'
-import { scoreboardService } from '@/lib/scoreboard'
-import { useState, useEffect } from 'react'
 
 interface GameEndProps {
   gameData: {
     state: 'game-end'
-    gameId?: string // Add gameId for score calculation (passed separately by renderer)
+    gameId?: string
   }
   scoreboard?: GameScoreboard
 }
 
-export default function GameEnd({ gameData, scoreboard }: GameEndProps) {
-  const [calculatedScores, setCalculatedScores] = useState<Record<string, number>>({})
-  const [isLoadingScores, setIsLoadingScores] = useState(true)
-
-  // Calculate scores from answers when component mounts
-  useEffect(() => {
-    const calculateScores = async () => {
-      if (!gameData.gameId || !scoreboard?.teams) {
-        setIsLoadingScores(false)
-        return
-      }
-
-      try {
-        setIsLoadingScores(true)
-        const scores = await scoreboardService.calculateTeamScores(gameData.gameId, scoreboard.teams)
-        setCalculatedScores(scores)
-      } catch (error) {
-        console.error('Failed to calculate scores:', error)
-      } finally {
-        setIsLoadingScores(false)
-      }
-    }
-
-    calculateScores()
-  }, [gameData.gameId, scoreboard?.teams])
-
+export default function GameEnd({ scoreboard }: GameEndProps) {
   const getTopTeams = () => {
     if (!scoreboard?.teams) return []
 
     return Object.entries(scoreboard.teams)
       .map(([teamId, teamData]) => {
-        // Use calculated score if available, otherwise fall back to scoreboard score
-        const score = calculatedScores[teamId] ?? teamData.score ?? 0
+        const score = teamData.score ?? 0
 
         return {
           id: teamId,
@@ -76,13 +48,6 @@ export default function GameEnd({ gameData, scoreboard }: GameEndProps) {
 
   return (
     <div className="text-center mb-8">
-      {/* Loading State */}
-      {isLoadingScores && (
-        <div className="text-center mb-4">
-          <p className="text-slate-600 dark:text-slate-400">Calculating final scores...</p>
-        </div>
-      )}
-
       {/* Winner Announcement */}
       <div className="mb-8">
         <div className="flex justify-center items-center gap-4 mb-4">
