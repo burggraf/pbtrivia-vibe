@@ -61,7 +61,7 @@ export default function GameStateDisplay({ gameData, rounds, game }: GameStateDi
               <h1 className="text-4xl font-bold text-slate-800 dark:text-slate-100 mb-4">
                 Welcome to the Game!
               </h1>
-              <p className="text-lg text-slate-500 dark:text-slate-500 mt-2 mb-6">
+              <p className="text-lg text-slate-600 dark:text-slate-400 mt-2 mb-6">
                 Game Code: <span className="font-mono font-bold">{game?.code}</span>
               </p>
               <div className="flex justify-center">

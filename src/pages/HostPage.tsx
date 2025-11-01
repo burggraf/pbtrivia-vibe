@@ -413,13 +413,13 @@ export default function HostPage() {
             <div>
               {loading ? (
                 <div className="flex items-center justify-center py-20">
-                  <div className="text-[14px] text-[#737373] dark:text-slate-500">Loading games...</div>
+                  <div className="text-[14px] text-slate-600 dark:text-slate-400">Loading games...</div>
                 </div>
               ) : games.length === 0 ? (
                 <div className="flex items-center justify-center py-20">
                   <div className="text-center">
                     <p className="text-[15px] font-medium text-[#0a0a0a] dark:text-white mb-1">No games found</p>
-                    <p className="text-[13px] text-[#737373] dark:text-slate-500">Create your first game to get started</p>
+                    <p className="text-[13px] text-slate-600 dark:text-slate-400">Create your first game to get started</p>
                   </div>
                 </div>
               ) : (
@@ -427,11 +427,11 @@ export default function HostPage() {
                   {/* Table Headers */}
                   <div className="grid grid-cols-[auto,2fr,1.5fr,1.2fr,3fr,1fr] gap-4 px-5 py-3 bg-[#fafafa] dark:bg-slate-800 border-b border-[#e5e5e5] dark:border-slate-800">
                     <div></div>
-                    <div className="text-[12px] font-medium text-[#737373] dark:text-slate-500 uppercase tracking-wider">Name</div>
-                    <div className="text-[12px] font-medium text-[#737373] dark:text-slate-500 uppercase tracking-wider">Actions</div>
-                    <div className="text-[12px] font-medium text-[#737373] dark:text-slate-500 uppercase tracking-wider">Status</div>
-                    <div className="text-[12px] font-medium text-[#737373] dark:text-slate-500 uppercase tracking-wider">Details</div>
-                    <div className="text-[12px] font-medium text-[#737373] dark:text-slate-500 uppercase tracking-wider">Rounds</div>
+                    <div className="text-[12px] font-medium text-slate-600 dark:text-slate-400 uppercase tracking-wider">Name</div>
+                    <div className="text-[12px] font-medium text-slate-600 dark:text-slate-400 uppercase tracking-wider">Actions</div>
+                    <div className="text-[12px] font-medium text-slate-600 dark:text-slate-400 uppercase tracking-wider">Status</div>
+                    <div className="text-[12px] font-medium text-slate-600 dark:text-slate-400 uppercase tracking-wider">Details</div>
+                    <div className="text-[12px] font-medium text-slate-600 dark:text-slate-400 uppercase tracking-wider">Rounds</div>
                   </div>
 
                   {/* Table Rows with Accordion */}
@@ -464,7 +464,7 @@ export default function HostPage() {
                                 <button
                                   className={`w-8 h-8 flex items-center justify-center rounded-md transition-colors ${
                                     game.status === 'setup' && (!rounds[game.id] || rounds[game.id].length === 0)
-                                      ? 'bg-[#f5f5f5] dark:bg-slate-700 text-[#d4d4d4] dark:text-slate-600 cursor-not-allowed'
+                                      ? 'bg-[#f5f5f5] dark:bg-slate-700 text-[#d4d4d4] dark:text-slate-500 cursor-not-allowed'
                                       : 'bg-[#0a0a0a] dark:bg-white text-white dark:text-slate-900 hover:bg-[#262626] dark:hover:bg-slate-200'
                                   }`}
                                   onClick={(e) => {
@@ -494,7 +494,7 @@ export default function HostPage() {
                             </div>
 
                             {/* DETAILS Column */}
-                            <div className="flex items-center gap-2 text-[13px] text-[#737373] dark:text-slate-500">
+                            <div className="flex items-center gap-2 text-[13px] text-slate-600 dark:text-slate-400">
                               {[
                                 game.startdate ? formatDateTime(new Date(game.startdate)) : null,
                                 formatDuration(game.duration),
@@ -562,7 +562,7 @@ export default function HostPage() {
                                                   size={14}
                                                   className={`${isUsed
                                                     ? 'text-[#525252] dark:text-slate-300'
-                                                    : 'text-[#d4d4d4] dark:text-slate-600'
+                                                    : 'text-[#d4d4d4] dark:text-slate-500'
                                                   }`}
                                                 />
                                               </div>
@@ -582,7 +582,7 @@ export default function HostPage() {
                             </Accordion>
                           ) : (
                             <div className="px-4 py-8 text-center">
-                              <p className="text-[13px] text-[#737373] dark:text-slate-500">No rounds yet</p>
+                              <p className="text-[13px] text-slate-600 dark:text-slate-400">No rounds yet</p>
                             </div>
                           )}
                         </div>

@@ -10,7 +10,7 @@ export default function GameStart({ gameData: _gameData }: GameStartProps) {
       <h2 className="text-2xl md:text-3xl font-bold text-slate-800 dark:text-slate-100 mb-4">
         Welcome to Trivia!
       </h2>
-      <p className="text-lg text-slate-500 dark:text-slate-500 font-medium">
+      <p className="text-lg text-slate-600 dark:text-slate-400 font-medium">
         Get ready to play!
       </p>
     </div>

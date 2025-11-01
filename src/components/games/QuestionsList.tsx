@@ -168,7 +168,7 @@ export default function QuestionsList({ roundId, roundTitle }: QuestionsListProp
       <div>
         <div className="px-4 py-3 border-b border-[#e5e5e5] dark:border-slate-700">
           <h4 className="text-[13px] font-semibold text-[#0a0a0a] dark:text-white">Questions for {roundTitle}</h4>
-          <p className="text-[12px] text-[#737373] dark:text-slate-500 mt-0.5">Round not specified for question display</p>
+          <p className="text-[12px] text-slate-600 dark:text-slate-400 mt-0.5">Round not specified for question display</p>
         </div>
       </div>
     )
@@ -178,7 +178,7 @@ export default function QuestionsList({ roundId, roundTitle }: QuestionsListProp
     <div>
       <div className="px-4 py-3 border-b border-[#e5e5e5] dark:border-slate-700">
         <h4 className="text-[13px] font-semibold text-[#0a0a0a] dark:text-white">Questions</h4>
-        <p className="text-[12px] text-[#737373] dark:text-slate-500 mt-0.5">
+        <p className="text-[12px] text-slate-600 dark:text-slate-400 mt-0.5">
           {loading
             ? 'Loading questions...'
             : questionsWithDetails.length > 0
@@ -190,13 +190,13 @@ export default function QuestionsList({ roundId, roundTitle }: QuestionsListProp
       <div className="p-4">
         {loading ? (
           <div className="flex items-center justify-center py-8">
-            <div className="text-[13px] text-[#737373] dark:text-slate-500">Loading questions...</div>
+            <div className="text-[13px] text-slate-600 dark:text-slate-400">Loading questions...</div>
           </div>
         ) : questionsWithDetails.length === 0 ? (
           <div className="flex items-center justify-center py-8">
             <div className="text-center">
-              <p className="text-[13px] text-[#737373] dark:text-slate-500 mb-1">No questions found</p>
-              <p className="text-[12px] text-[#a3a3a3] dark:text-slate-600">
+              <p className="text-[13px] text-slate-600 dark:text-slate-400 mb-1">No questions found</p>
+              <p className="text-[12px] text-slate-500 dark:text-slate-400">
                 Questions will be added when the round is created with categories selected
               </p>
             </div>
@@ -210,7 +210,7 @@ export default function QuestionsList({ roundId, roundTitle }: QuestionsListProp
               >
                 <div className="flex-1">
                   <div className="flex items-center gap-2 mb-1.5">
-                    <span className="text-[11px] font-semibold text-[#a3a3a3] dark:text-slate-600 uppercase tracking-wide">
+                    <span className="text-[11px] font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wide">
                       Q{roundQuestion.sequence}
                     </span>
                     <span className="text-[11px] px-2 py-0.5 rounded bg-[#f5f5f5] dark:bg-slate-900 text-[#525252] dark:text-slate-400 border border-[#e5e5e5] dark:border-slate-700">
@@ -247,7 +247,7 @@ export default function QuestionsList({ roundId, roundTitle }: QuestionsListProp
                             className={`text-[12px] ${
                               answer.originalIndex === 0
                                 ? 'font-medium text-[#065f46] dark:text-emerald-400'
-                                : 'text-[#737373] dark:text-slate-500'
+                                : 'text-slate-600 dark:text-slate-400'
                             }`}
                           >
                             {answer.label}) {answer.text}

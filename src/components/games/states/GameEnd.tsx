@@ -93,7 +93,7 @@ export default function GameEnd({ gameData, scoreboard }: GameEndProps) {
           <Crown className="h-12 w-12 text-yellow-500" />
         </div>
 
-        <p className="text-lg text-slate-500 dark:text-slate-500">
+        <p className="text-lg text-slate-600 dark:text-slate-400">
           Congratulations to all teams!
         </p>
       </div>

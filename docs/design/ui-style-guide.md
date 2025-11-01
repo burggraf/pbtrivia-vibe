@@ -194,8 +194,14 @@ className="gap-4 md:gap-6"
 **Dark mode**:
 - Primary text: `dark:text-slate-100`
 - Secondary text: `dark:text-slate-400`
-- Tertiary text: `dark:text-slate-500`
+- Muted/disabled text: `dark:text-slate-500` (use sparingly, only for disabled states)
 - Interactive text: `dark:text-blue-200`
+
+**IMPORTANT - Contrast Requirements**:
+- NEVER use `dark:text-slate-500` or darker on `dark:bg-slate-900` for active content
+- Minimum contrast ratio for normal text: 4.5:1 (WCAG AA)
+- Use `dark:text-slate-400` or lighter for readable secondary text
+- For disabled states, `dark:text-slate-500` is acceptable
 
 ### Border Colors
 
