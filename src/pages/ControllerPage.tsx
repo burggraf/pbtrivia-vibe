@@ -247,6 +247,7 @@ export default function ControllerPage() {
   const handleNextState = async () => {
     if (!gameData) return
 
+    console.log('🎮 handleNextState called, current state:', gameData?.state)
     console.log(`🎮 State transition from: ${gameData.state}`)
 
     // Helper to get current round index from gameData
@@ -286,11 +287,13 @@ export default function ControllerPage() {
 
     // Handle question progression within round-play
     if (gameData.state === 'round-play') {
+      console.log('🎮 Processing round-play state')
       const currentRoundIndex = getCurrentRoundIndex()
       const currentRound = rounds[currentRoundIndex]
       if (!currentRound) return
 
       const isAnswerRevealed = !!gameData.question?.correct_answer
+      console.log('🎮 isAnswerRevealed:', isAnswerRevealed, 'correct_answer:', gameData.question?.correct_answer)
 
       console.log('🔍 DEBUG: round-play logic', {
         questionNumber: gameData.question?.question_number,
@@ -300,14 +303,17 @@ export default function ControllerPage() {
       })
 
       if (!isAnswerRevealed) {
+        console.log('🎮 ENTERING REVEAL AND GRADE BLOCK')
         // Reveal answer and grade all submissions
         console.log('🔍 DEBUG: Revealing answer and grading submissions')
         if (gameData.question && id) {
+          console.log('🎮 gameData.question exists, id:', id)
           // Get the game_questions record to access the secure key
           const gameQuestions = await gameQuestionsService.getGameQuestions(currentRound.id)
           const gameQuestion = gameQuestions.find(gq => gq.id === gameData.question!.id)
 
           if (gameQuestion) {
+            console.log('🎮 gameQuestion found:', gameQuestion.id)
             // Use the secure key to get the correct answer label
             const { getCorrectAnswerLabel, translateAnswerToOriginal, isTranslatedAnswerCorrect } = await import('@/lib/answerShuffler')
             const correctAnswerLabel = getCorrectAnswerLabel(gameQuestion.key)

@@ -1,5 +1,4 @@
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import { Badge } from '@/components/ui/badge'
 import { Trophy, Clock, Users, Star, ChevronRight, PartyPopper } from 'lucide-react'
 import { GameScoreboard, ScoreboardTeam } from '@/types/games'
 import RoundStartDisplay from './RoundStartDisplay'
