@@ -53,3 +53,8 @@ lerna-debug.log*
 # Data files
 *.tsv
 *.csv
+
+# Playwright
+test-results/
+playwright-report/
+/playwright/.cache/
