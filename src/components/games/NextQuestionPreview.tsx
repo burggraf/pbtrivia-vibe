@@ -122,5 +122,85 @@ export default function NextQuestionPreview({ gameId, gameData, rounds }: NextQu
     return null
   }
 
+  useEffect(() => {
+    const fetchNextQuestion = async () => {
+      try {
+        setIsLoading(true)
+        setError(null)
+
+        // Determine which question to preview
+        const coordinates = getNextQuestionCoordinates()
+        if (!coordinates) {
+          setNextQuestion(null)
+          setIsLoading(false)
+          return
+        }
+
+        const { roundIndex, questionNumber } = coordinates
+        const round = rounds[roundIndex]
+
+        // Fetch game_questions for this round
+        const gameQuestions = await gameQuestionsService.getGameQuestions(round.id)
+
+        if (gameQuestions.length === 0) {
+          setError('No questions found for this round')
+          setIsLoading(false)
+          return
+        }
+
+        // Get the specific question
+        const questionIndex = questionNumber - 1
+        if (questionIndex >= gameQuestions.length) {
+          setError('Question index out of range')
+          setIsLoading(false)
+          return
+        }
+
+        const gameQuestion = gameQuestions[questionIndex]
+
+        // Fetch the full question details
+        const questionDetails = await questionsService.getQuestionById(gameQuestion.question)
+
+        // Shuffle answers using the secure key
+        const shuffled = getShuffledAnswers(
+          gameQuestion.key,
+          questionDetails.answer_a,
+          questionDetails.answer_b,
+          questionDetails.answer_c,
+          questionDetails.answer_d
+        )
+
+        // Get the correct answer label after shuffling
+        const correctAnswerLabel = getCorrectAnswerLabel(gameQuestion.key)
+
+        // Build the answer array
+        const answers = [
+          { label: 'A', text: shuffled.shuffledAnswers[0].text },
+          { label: 'B', text: shuffled.shuffledAnswers[1].text },
+          { label: 'C', text: shuffled.shuffledAnswers[2].text },
+          { label: 'D', text: shuffled.shuffledAnswers[3].text }
+        ]
+
+        setNextQuestion({
+          roundNumber: round.sequence_number,
+          totalRounds: rounds.length,
+          questionNumber: questionNumber,
+          category: questionDetails.category,
+          question: questionDetails.question,
+          difficulty: questionDetails.difficulty,
+          answers,
+          correctAnswerLabel
+        })
+        setIsLoading(false)
+      } catch (err) {
+        console.error('Failed to fetch next question:', err)
+        setError('Unable to load next question')
+        setIsLoading(false)
+      }
+    }
+
+    fetchNextQuestion()
+  }, [gameData, rounds, gameId])
+
   return null // Temporary
 }
