@@ -208,26 +208,30 @@ export default function NextQuestionPreview({ gameId, gameData, rounds }: NextQu
   }
 
   return (
-    <div className="max-w-3xl mx-auto mt-4 md:mt-6">
-      {/* Question Metadata - Badges above the card */}
+    <div className="text-center mb-8">
+      {/* Round Progress - outside card */}
       {nextQuestion && (
-        <div className="flex flex-col sm:flex-row items-center justify-center gap-1 sm:gap-2 mb-4">
-          <Badge variant="secondary" className="text-xs md:text-sm px-2 py-1 md:px-3 md:py-1">
-            Category: {nextQuestion.category}
-          </Badge>
-          <Badge variant="outline" className="text-xs md:text-sm px-2 py-1 md:px-3 md:py-1">
-            Difficulty: {nextQuestion.difficulty}
-          </Badge>
+        <div className="mb-4 md:mb-6">
+          <h2 className="text-lg md:text-2xl font-bold text-slate-800 dark:text-slate-100 mb-2">
+            Next Question - Round {nextQuestion.roundNumber} of {nextQuestion.totalRounds} - Question {nextQuestion.questionNumber}
+          </h2>
+          <div className="flex flex-col sm:flex-row items-center justify-center gap-1 sm:gap-2">
+            <Badge variant="secondary" className="text-xs md:text-sm px-2 py-1 md:px-3 md:py-1">
+              Category: {nextQuestion.category}
+            </Badge>
+            <Badge variant="outline" className="text-xs md:text-sm px-2 py-1 md:px-3 md:py-1">
+              Difficulty: {nextQuestion.difficulty}
+            </Badge>
+          </div>
         </div>
       )}
 
-      <Card>
+      {/* Question Card */}
+      <Card className="max-w-3xl mx-auto">
         <CardHeader>
-          {nextQuestion && (
-            <CardTitle className="text-base md:text-xl text-center">
-              Next Question: Round {nextQuestion.roundNumber} of {nextQuestion.totalRounds} - Question {nextQuestion.questionNumber}
-            </CardTitle>
-          )}
+          <CardTitle className="text-base md:text-xl">
+            Question
+          </CardTitle>
         </CardHeader>
         <CardContent className="px-3 md:px-6">
           {isLoading && (
@@ -277,8 +281,8 @@ export default function NextQuestionPreview({ gameId, gameData, rounds }: NextQu
             </div>
           </div>
         )}
-      </CardContent>
-    </Card>
+        </CardContent>
+      </Card>
     </div>
   )
 }
