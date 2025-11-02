@@ -65,10 +65,10 @@ test.describe('Mobile Visual - Dark Mode', () => {
     await page.waitForLoadState('networkidle');
 
     // Toggle to dark mode
-    const themeToggle = page.locator('button').filter({ hasText: /theme/i }).or(
+    // Find the theme toggle button by looking for common theme toggle patterns
+    page.locator('button').filter({ hasText: /theme/i }).or(
       page.locator('button[aria-label*="theme"]')
     ).or(
-      // Find the theme toggle button by looking for common theme toggle patterns
       page.locator('button svg').locator('..').first()
     );
 

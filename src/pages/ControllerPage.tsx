@@ -77,7 +77,7 @@ export default function ControllerPage() {
 
     try {
       // Start with empty teams structure
-      let teams: Record<string, { name: string; players: Array<{ id: string; name: string; avatar: string }> }> = {
+      const teams: Record<string, { name: string; players: Array<{ id: string; name: string; avatar: string }> }> = {
         'no-team': {
           name: 'No Team',
           players: []
@@ -439,7 +439,7 @@ export default function ControllerPage() {
 
     // Handle state transitions
     switch (gameData.state) {
-      case 'game-start':
+      case 'game-start': {
         // Move to first round
         const firstRound = await createRoundObject(0)
         if (firstRound) {
@@ -454,8 +454,9 @@ export default function ControllerPage() {
           }
         }
         break
+      }
 
-      case 'round-start':
+      case 'round-start': {
         // Load first question
         const currentRoundIndex = getCurrentRoundIndex()
         const currentRound = rounds[currentRoundIndex]
@@ -493,8 +494,9 @@ export default function ControllerPage() {
           }
         }
         break
+      }
 
-      case 'round-end':
+      case 'round-end': {
         // Check if there are more rounds
         const nextRoundIndex = getCurrentRoundIndex() + 1
         if (nextRoundIndex < rounds.length) {
@@ -518,6 +520,7 @@ export default function ControllerPage() {
           }
         }
         break
+      }
 
       case 'game-end':
         await updateGameDataClean({
