@@ -62,6 +62,12 @@ export default function LobbyPage() {
             return
           }
         }
+
+        // Block unregistered players from joining in-progress games
+        if (game.status === 'in-progress') {
+          setError('This game is already in progress. Only registered players can rejoin.')
+          return
+        }
       }
 
       // New player - show team selection
