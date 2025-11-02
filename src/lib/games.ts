@@ -102,9 +102,9 @@ export const gamesService = {
 
   async findGameByCode(code: string): Promise<Game | null> {
     try {
-      // Get the first page of games and filter by code and status
+      // Get games with status "ready" OR "in-progress"
       const result = await pb.collection('games').getList<Game>(1, 50, {
-        filter: `code = "${code}" && status = "ready"`
+        filter: `code = "${code}" && (status = "ready" || status = "in-progress")`
       });
 
       if (result.items.length > 0) {
