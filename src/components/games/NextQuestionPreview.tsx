@@ -208,11 +208,11 @@ export default function NextQuestionPreview({ gameId, gameData, rounds }: NextQu
   }
 
   return (
-    <Card className="max-w-3xl mx-auto mt-8">
-      <CardHeader>
+    <Card className="max-w-3xl mx-auto mt-4 md:mt-6">
+      <CardHeader className="pb-2 md:pb-3">
         <CardTitle className="text-lg">Next Question</CardTitle>
       </CardHeader>
-      <CardContent>
+      <CardContent className="px-3 md:px-6">
         {isLoading && (
           <div className="text-center py-8">
             <p className="text-slate-600 dark:text-slate-400">Loading next question...</p>
@@ -243,7 +243,7 @@ export default function NextQuestionPreview({ gameId, gameData, rounds }: NextQu
             </div>
 
             {/* Question Text */}
-            <div className="mb-4 p-4 bg-slate-50 dark:bg-slate-800 rounded-lg">
+            <div className="mb-4 p-3 md:p-4 bg-slate-50 dark:bg-slate-800 rounded-lg">
               <p className="text-base md:text-lg text-slate-900 dark:text-slate-100">
                 {nextQuestion.question}
               </p>
