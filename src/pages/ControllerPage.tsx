@@ -4,6 +4,7 @@ import { Button } from '@/components/ui/button'
 import ThemeToggle from '@/components/ThemeToggle'
 import TeamDisplay from '@/components/games/TeamDisplay'
 import GameStateDisplay from '@/components/games/GameStateDisplay'
+import NextQuestionPreview from '@/components/games/NextQuestionPreview'
 import { gamesService } from '@/lib/games'
 import { roundsService } from '@/lib/rounds'
 import { gameQuestionsService } from '@/lib/gameQuestions'
@@ -804,6 +805,15 @@ export default function ControllerPage() {
             scoreboard={game?.scoreboard}
             isLoading={isLoading}
             className="mb-8"
+          />
+        )}
+
+        {/* Next Question Preview - Show during gameplay */}
+        {gameData && game && id && (
+          <NextQuestionPreview
+            gameId={id}
+            gameData={gameData}
+            rounds={rounds}
           />
         )}
       </div>
