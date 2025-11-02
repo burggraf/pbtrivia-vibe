@@ -44,8 +44,6 @@ export default function AuthPage() {
 
     try {
       await pb.collection('users').authWithPassword(formData.email, formData.password)
-      console.log('Login successful, auth state:', pb.authStore.isValid)
-      console.log('User mode:', userMode)
       setSuccess('Login successful!')
     } catch (err: any) {
       console.error('Login error:', err)
@@ -103,18 +101,12 @@ export default function AuthPage() {
   // Redirect effect - if user is authenticated, redirect to appropriate page
   useEffect(() => {
     if (pb.authStore.isValid && success) {
-      // Small delay to show success message
-      const timer = setTimeout(() => {
-        if (returnTo) {
-          console.log('Redirecting to returnTo:', returnTo)
-          navigate(returnTo)
-        } else {
-          const targetRoute = userMode === 'host' ? '/host' : '/lobby'
-          console.log('Redirect effect triggered, navigating to:', targetRoute)
-          navigate(targetRoute)
-        }
-      }, 1500)
-      return () => clearTimeout(timer)
+      if (returnTo) {
+        navigate(returnTo)
+      } else {
+        const targetRoute = userMode === 'host' ? '/host' : '/lobby'
+        navigate(targetRoute)
+      }
     }
   }, [success, userMode, returnTo, navigate])
 
