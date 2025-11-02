@@ -35,7 +35,7 @@ export default function LobbyPage() {
       setIsLoading(true)
       setError('')
 
-      // Find game by code with status "ready"
+      // Find game by code with status "ready" or "in-progress"
       const game = await gamesService.findGameByCode(gameCode.trim().toUpperCase())
 
       if (!game) {
