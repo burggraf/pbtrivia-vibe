@@ -153,14 +153,14 @@ export default function NextQuestionPreview({ gameId, gameData, rounds }: NextQu
         return
       }
 
-      // Get a new random question from the round's categories
+      // Get a new random question from the same category as the question being replaced
       const newQuestion = await questionsService.getRandomQuestionsFromCategories(
-        roundData.categories,
+        [nextQuestion.category],
         1
       )
 
       if (newQuestion.length === 0) {
-        console.warn('No new questions available from categories:', roundData.categories)
+        console.warn('No new questions available from category:', nextQuestion.category)
         return
       }
 
