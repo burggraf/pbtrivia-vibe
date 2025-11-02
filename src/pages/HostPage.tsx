@@ -37,23 +37,24 @@ export default function HostPage() {
       const gamesData = await gamesService.getGames()
       setGames(gamesData)
 
-      // Fetch rounds for each game with throttling to respect rate limits
-      const roundsData: { [key: string]: Round[] } = {}
-      for (let i = 0; i < gamesData.length; i++) {
-        const game = gamesData[i]
-        try {
-          const gameRounds = await roundsService.getRounds(game.id)
-          roundsData[game.id] = gameRounds.sort((a, b) => a.sequence_number - b.sequence_number)
-        } catch (error) {
-          console.error('Failed to load rounds for game:', game.id)
-          roundsData[game.id] = []
-        }
+      // Fetch rounds for all games in parallel (no delays needed with server-side filtering)
+      const roundsPromises = gamesData.map(game =>
+        roundsService.getRounds(game.id)
+          .then(gameRounds => ({ gameId: game.id, rounds: gameRounds }))
+          .catch(error => {
+            console.error('Failed to load rounds for game:', game.id, error)
+            return { gameId: game.id, rounds: [] }
+          })
+      )
 
-        // Add delay between fetching rounds for each game (except last)
-        if (i < gamesData.length - 1) {
-          await new Promise(resolve => setTimeout(resolve, 300))
-        }
-      }
+      const roundsResults = await Promise.all(roundsPromises)
+
+      // Convert array to object keyed by game ID
+      const roundsData: { [key: string]: Round[] } = {}
+      roundsResults.forEach(result => {
+        roundsData[result.gameId] = result.rounds
+      })
+
       setRounds(roundsData)
     } catch (error) {
       console.error('Failed to fetch games:', error)
