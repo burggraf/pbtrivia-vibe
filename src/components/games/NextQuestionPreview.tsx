@@ -1,8 +1,11 @@
 import { useEffect, useState } from 'react'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
+import { Button } from '@/components/ui/button'
+import { RotateCcw } from 'lucide-react'
 import { gameQuestionsService } from '@/lib/gameQuestions'
 import { questionsService } from '@/lib/questions'
+import { roundsService } from '@/lib/rounds'
 import { getShuffledAnswers, getCorrectAnswerLabel } from '@/lib/answerShuffler'
 
 type GameState = 'game-start' | 'round-start' | 'round-play' | 'round-end' | 'game-end' | 'thanks' | 'return-to-lobby'
@@ -59,6 +62,8 @@ export default function NextQuestionPreview({ gameId, gameData, rounds }: NextQu
   const [nextQuestion, setNextQuestion] = useState<NextQuestionData | null>(null)
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const [isReplacing, setIsReplacing] = useState(false)
+  const [refetchTrigger, setRefetchTrigger] = useState(0)
 
   // Determine which question to preview based on current game state
   const getNextQuestionCoordinates = (): { roundIndex: number; questionNumber: number } | null => {
@@ -120,6 +125,70 @@ export default function NextQuestionPreview({ gameId, gameData, rounds }: NextQu
     }
 
     return null
+  }
+
+  const handleReplaceQuestion = async () => {
+    if (!nextQuestion) return
+
+    try {
+      setIsReplacing(true)
+
+      // Get the coordinates of the next question
+      const coordinates = getNextQuestionCoordinates()
+      if (!coordinates) return
+
+      const { roundIndex, questionNumber } = coordinates
+      const round = rounds[roundIndex]
+
+      // Fetch round details to get categories
+      const roundData = await roundsService.getRound(round.id)
+
+      // Fetch game_questions for this round
+      const gameQuestions = await gameQuestionsService.getGameQuestions(round.id)
+      const questionIndex = questionNumber - 1
+      const currentGameQuestion = gameQuestions[questionIndex]
+
+      if (!currentGameQuestion) {
+        console.error('Could not find game question to replace')
+        return
+      }
+
+      // Get a new random question from the round's categories
+      const newQuestion = await questionsService.getRandomQuestionsFromCategories(
+        roundData.categories,
+        1
+      )
+
+      if (newQuestion.length === 0) {
+        console.warn('No new questions available from categories:', roundData.categories)
+        return
+      }
+
+      // Update the existing game_questions record to "deactivate" it
+      await gameQuestionsService.updateGameQuestion(currentGameQuestion.id, {
+        game: null,
+        round: null,
+        sequence: 0
+      })
+
+      // Create a new game_questions record with the new question
+      await gameQuestionsService.createGameQuestion({
+        host: currentGameQuestion.host,
+        game: currentGameQuestion.game,
+        round: currentGameQuestion.round,
+        question: newQuestion[0].id,
+        sequence: currentGameQuestion.sequence,
+        category_name: newQuestion[0].category
+      })
+
+      // Trigger a re-fetch of the next question
+      setRefetchTrigger(prev => prev + 1)
+    } catch (error) {
+      console.error('Failed to replace question:', error)
+      setError('Failed to replace question')
+    } finally {
+      setIsReplacing(false)
+    }
   }
 
   useEffect(() => {
@@ -200,7 +269,7 @@ export default function NextQuestionPreview({ gameId, gameData, rounds }: NextQu
     }
 
     fetchNextQuestion()
-  }, [gameData, rounds, gameId])
+  }, [gameData, rounds, gameId, refetchTrigger])
 
   // Don't render if no next question
   if (!nextQuestion && !isLoading && !error) {
@@ -222,6 +291,22 @@ export default function NextQuestionPreview({ gameId, gameData, rounds }: NextQu
             <Badge variant="outline" className="text-xs md:text-sm px-2 py-1 md:px-3 md:py-1">
               Difficulty: {nextQuestion.difficulty}
             </Badge>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={handleReplaceQuestion}
+              disabled={isReplacing}
+              className="gap-1 text-xs"
+            >
+              {isReplacing ? (
+                <div className="animate-spin">
+                  <RotateCcw className="h-3 w-3" />
+                </div>
+              ) : (
+                <RotateCcw className="h-3 w-3" />
+              )}
+              Replace
+            </Button>
           </div>
         </div>
       )}
