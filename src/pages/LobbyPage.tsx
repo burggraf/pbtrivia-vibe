@@ -46,7 +46,7 @@ export default function LobbyPage() {
       setIsLoading(true)
       setError('')
 
-      // Find game by code with status "ready"
+      // Find game by code with status "ready" or "in-progress"
       const game = await gamesService.findGameByCode(gameCode.trim().toUpperCase())
 
       if (!game) {
@@ -72,6 +72,12 @@ export default function LobbyPage() {
             setShowTeamModal(true)
             return
           }
+        }
+
+        // Block unregistered players from joining in-progress games
+        if (game.status === 'in-progress') {
+          setError('This game is already in progress. Only registered players can rejoin.')
+          return
         }
       }
 

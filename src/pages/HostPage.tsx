@@ -37,23 +37,24 @@ export default function HostPage() {
       const gamesData = await gamesService.getGames()
       setGames(gamesData)
 
-      // Fetch rounds for each game with throttling to respect rate limits
-      const roundsData: { [key: string]: Round[] } = {}
-      for (let i = 0; i < gamesData.length; i++) {
-        const game = gamesData[i]
-        try {
-          const gameRounds = await roundsService.getRounds(game.id)
-          roundsData[game.id] = gameRounds.sort((a, b) => a.sequence_number - b.sequence_number)
-        } catch (error) {
-          console.error('Failed to load rounds for game:', game.id)
-          roundsData[game.id] = []
-        }
+      // Fetch rounds for all games in parallel (no delays needed with server-side filtering)
+      const roundsPromises = gamesData.map(game =>
+        roundsService.getRounds(game.id)
+          .then(gameRounds => ({ gameId: game.id, rounds: gameRounds }))
+          .catch(error => {
+            console.error('Failed to load rounds for game:', game.id, error)
+            return { gameId: game.id, rounds: [] }
+          })
+      )
 
-        // Add delay between fetching rounds for each game (except last)
-        if (i < gamesData.length - 1) {
-          await new Promise(resolve => setTimeout(resolve, 300))
-        }
-      }
+      const roundsResults = await Promise.all(roundsPromises)
+
+      // Convert array to object keyed by game ID
+      const roundsData: { [key: string]: Round[] } = {}
+      roundsResults.forEach(result => {
+        roundsData[result.gameId] = result.rounds
+      })
+
       setRounds(roundsData)
     } catch (error) {
       console.error('Failed to fetch games:', error)
@@ -329,24 +330,31 @@ export default function HostPage() {
 
   const handlePlayGame = async (gameId: string) => {
     try {
-      console.log('🎮 Starting game:', gameId)
+      console.log('🎮 Starting/Resuming game:', gameId)
 
       const game = games.find(g => g.id === gameId)
 
-      // If game is in setup, change status to ready first
+      // Update status to 'ready' if in 'setup'
       if (game?.status === 'setup') {
         await gamesService.updateGame(gameId, { status: 'ready' })
-        console.log('✅ Game status updated to ready')
       }
 
-      // Initialize game data with starting state
-      await pb.collection('games').update(gameId, {
-        data: {
-          state: 'game-start'
-        }
-      })
+      // Only initialize data if it doesn't exist
+      const shouldInitialize = !game?.data ||
+                               (typeof game.data === 'string' && game.data === '') ||
+                               (typeof game.data === 'object' && Object.keys(game.data).length === 0)
 
-      console.log('✅ Game initialized with starting state')
+      if (shouldInitialize) {
+        console.log('🆕 Initializing new game state')
+        await pb.collection('games').update(gameId, {
+          data: { state: 'game-start' }
+        })
+      } else {
+        console.log('▶️  Resuming existing game state')
+        // Don't touch games.data - let ControllerPage load it
+      }
+
+      // Navigate to controller
       navigate(`/controller/${gameId}`)
     } catch (error) {
       console.error('❌ Failed to start game:', error)

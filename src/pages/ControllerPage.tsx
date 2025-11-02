@@ -4,6 +4,7 @@ import { Button } from '@/components/ui/button'
 import ThemeToggle from '@/components/ThemeToggle'
 import TeamDisplay from '@/components/games/TeamDisplay'
 import GameStateDisplay from '@/components/games/GameStateDisplay'
+import NextQuestionPreview from '@/components/games/NextQuestionPreview'
 import { gamesService } from '@/lib/games'
 import { roundsService } from '@/lib/rounds'
 import { gameQuestionsService } from '@/lib/gameQuestions'
@@ -77,7 +78,7 @@ export default function ControllerPage() {
 
     try {
       // Start with empty teams structure
-      let teams: Record<string, { name: string; players: Array<{ id: string; name: string; avatar: string }> }> = {
+      const teams: Record<string, { name: string; players: Array<{ id: string; name: string; avatar: string }> }> = {
         'no-team': {
           name: 'No Team',
           players: []
@@ -186,6 +187,11 @@ export default function ControllerPage() {
         try {
           const parsedData = typeof gameData.data === 'string' ? JSON.parse(gameData.data) : gameData.data
           setGameData(parsedData)
+
+          // Update status to 'in-progress' only if resuming actual gameplay (not at game-start)
+          if (gameData.status === 'ready' && parsedData.state && parsedData.state !== 'game-start') {
+            await gamesService.updateGame(id, { status: 'in-progress' })
+          }
         } catch (error) {
           console.error('Failed to parse game data:', error)
           setGameData(null)
@@ -439,7 +445,7 @@ export default function ControllerPage() {
 
     // Handle state transitions
     switch (gameData.state) {
-      case 'game-start':
+      case 'game-start': {
         // Move to first round
         const firstRound = await createRoundObject(0)
         if (firstRound) {
@@ -454,8 +460,9 @@ export default function ControllerPage() {
           }
         }
         break
+      }
 
-      case 'round-start':
+      case 'round-start': {
         // Load first question
         const currentRoundIndex = getCurrentRoundIndex()
         const currentRound = rounds[currentRoundIndex]
@@ -493,8 +500,9 @@ export default function ControllerPage() {
           }
         }
         break
+      }
 
-      case 'round-end':
+      case 'round-end': {
         // Check if there are more rounds
         const nextRoundIndex = getCurrentRoundIndex() + 1
         if (nextRoundIndex < rounds.length) {
@@ -518,6 +526,7 @@ export default function ControllerPage() {
           }
         }
         break
+      }
 
       case 'game-end':
         await updateGameDataClean({
@@ -531,9 +540,12 @@ export default function ControllerPage() {
         })
         break
 
-      case 'return-to-lobby':
+      case 'return-to-lobby': {
+        // Mark game as completed before returning to lobby
+        await gamesService.updateGame(id!, { status: 'completed' })
         navigate('/host')
-        break
+        return
+      }
 
       default:
         console.error(`Unknown game state: ${gameData.state}`)
@@ -793,6 +805,15 @@ export default function ControllerPage() {
             scoreboard={game?.scoreboard}
             isLoading={isLoading}
             className="mb-8"
+          />
+        )}
+
+        {/* Next Question Preview - Show during gameplay */}
+        {gameData && game && id && (
+          <NextQuestionPreview
+            gameId={id}
+            gameData={gameData}
+            rounds={rounds}
           />
         )}
       </div>

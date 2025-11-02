@@ -277,7 +277,7 @@ export default function RoundPlayDisplay({ gameData, mode = 'controller', onAnsw
             <CardTitle className="text-lg">Team Answer Status</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-2 md:gap-3">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2">
               {Object.entries(scoreboard.teams)
                 .filter(([teamId]) => teamId !== 'no-team') // Exclude "No Team"
                 .sort(([, a], [, b]) => (b.score || 0) - (a.score || 0)) // Sort by score descending
@@ -287,47 +287,49 @@ export default function RoundPlayDisplay({ gameData, mode = 'controller', onAnsw
                   const isCorrect = teamStatus?.isCorrect
                   const isAnswerRevealed = shouldShowAnswer
 
-                  // Determine styling based on state
-                  let bgColor = 'bg-slate-50 border-slate-300 text-slate-700 dark:bg-slate-800 dark:border-slate-600 dark:text-slate-300'
-                  let icon = null
+                  // Determine styling and icon based on state (matching question answer styling)
+                  let bgColor = 'bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700'
+                  let badgeColor = 'bg-slate-100 text-slate-700 dark:bg-slate-700 dark:text-slate-300' // Default badge color
+                  let statusIcon = null
 
                   if (hasAnswered) {
                     if (isAnswerRevealed) {
-                      // Answer revealed - show correct/incorrect
+                      // Answer revealed - show correct/incorrect with same colors as question answers
                       if (isCorrect) {
-                        bgColor = 'bg-green-100 border-green-500 text-green-800 dark:bg-green-900 dark:border-green-600 dark:text-green-200'
-                        icon = <span className="text-2xl">✓</span>
+                        bgColor = 'bg-green-100 border-green-500 dark:bg-green-900 dark:border-green-600'
+                        badgeColor = 'bg-green-600 text-white dark:bg-green-700 dark:text-green-100'
+                        statusIcon = <span className="text-green-600 dark:text-green-400">✓</span>
                       } else {
-                        bgColor = 'bg-red-100 border-red-500 text-red-800 dark:bg-red-900 dark:border-red-600 dark:text-red-200'
-                        icon = <span className="text-2xl">✗</span>
+                        bgColor = 'bg-red-100 border-red-500 dark:bg-red-900 dark:border-red-600'
+                        badgeColor = 'bg-red-600 text-white dark:bg-red-700 dark:text-red-100'
+                        statusIcon = <span className="text-red-600 dark:text-red-400 text-xl">✗</span>
                       }
                     } else {
-                      // Answer not revealed yet - show blue dot
-                      bgColor = 'bg-blue-100 border-blue-500 text-blue-800 dark:bg-blue-900 dark:border-blue-600 dark:text-blue-200'
-                      icon = <span className="text-3xl leading-none">•</span>
+                      // Answer not revealed yet - show blue box and dot (matching selected answer styling)
+                      bgColor = 'bg-blue-100 border-blue-500 dark:bg-blue-900 dark:border-blue-600'
+                      badgeColor = 'bg-blue-600 text-white dark:bg-blue-700 dark:text-blue-100'
+                      statusIcon = <span className="text-blue-600 dark:text-blue-400 text-2xl leading-none">•</span>
                     }
                   }
 
                   return (
                     <div
                       key={teamId}
-                      className={`p-2 md:p-3 rounded-lg border-2 transition-all ${bgColor}`}
+                      className={`flex items-center gap-2 p-2 rounded-lg border-2 ${bgColor}`}
                     >
-                      <div className="flex items-center justify-between">
-                        <div className="flex-1">
-                          <div className="font-medium">
-                            {teamData.name}
-                          </div>
-                          <div className="text-sm opacity-75">
-                            ({teamData.players.length} player{teamData.players.length !== 1 ? 's' : ''})
-                          </div>
-                          <div className="text-sm font-semibold mt-1">
-                            Score: {teamData.score || 0}
-                          </div>
-                        </div>
-                        <div className="ml-2">
-                          {icon}
-                        </div>
+                      {/* Score Badge */}
+                      <div className={`text-sm font-semibold px-2 py-1 shrink-0 rounded ${badgeColor}`}>
+                        {teamData.score || 0}
+                      </div>
+
+                      {/* Team Name and Player Count (inline) */}
+                      <div className="flex-1 font-medium text-slate-900 dark:text-slate-100 truncate">
+                        {teamData.name} <span className="text-sm text-slate-600 dark:text-slate-400">({teamData.players.length})</span>
+                      </div>
+
+                      {/* Status Icon */}
+                      <div className="w-6 flex items-center justify-center shrink-0">
+                        {statusIcon}
                       </div>
                     </div>
                   )

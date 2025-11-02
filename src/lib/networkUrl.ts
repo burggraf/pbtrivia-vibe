@@ -5,20 +5,25 @@
 export function getPublicUrl(): string {
   const { protocol, hostname, port } = window.location
 
-  // If we're on localhost, try to use network address from env var
+  // If we're on localhost, try to use network IP from environment
   if (hostname === 'localhost' || hostname === '127.0.0.1') {
-    // Check for environment variable (set in .env or .env.local)
+    // Check for network IP injected by Vite plugin (dev mode only)
+    const networkIp = import.meta.env.VITE_NETWORK_IP
+    if (networkIp) {
+      // Use the network IP with the actual current port
+      return `${protocol}//${networkIp}${port ? `:${port}` : ''}`
+    }
+
+    // Fallback: check for full URL in .env.local (manual override)
     const networkUrl = import.meta.env.VITE_NETWORK_URL
     if (networkUrl) {
       return networkUrl
     }
 
-    // Try to auto-detect from Vite's network address
-    // In development, Vite exposes network address in console
-    // For production, fallback to localhost
-    console.warn('Using localhost for QR code. Set VITE_NETWORK_URL in .env.local for network access')
+    // Last resort: warn and use localhost
+    console.warn('Using localhost for QR code. In dev mode, ensure Vite config has network detection enabled.')
   }
 
-  // Use current origin (hostname:port)
+  // Use current origin (hostname:port) - for production or when already on network IP
   return `${protocol}//${hostname}${port ? `:${port}` : ''}`
 }

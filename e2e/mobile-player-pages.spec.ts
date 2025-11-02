@@ -18,6 +18,7 @@ import { test, expect } from '@playwright/test';
  * Helper to authenticate a test user
  * Using actual test credentials: player1@test.com / TestPass123!
  */
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 async function loginTestUser(page: any, email = 'player1@test.com', password = 'TestPass123!') {
   await page.goto('/');
   await page.getByRole('button', { name: 'Player', exact: true }).click();
@@ -187,7 +188,7 @@ test.describe('Mobile Game Page', () => {
     expect(scrollWidth).toBeLessThanOrEqual(clientWidth + 1);
   });
 
-  test.skip('question text is readable on mobile', async ({ page }) => {
+  test.skip('question text is readable on mobile', async ({ page: _page }) => {
     // This test would verify:
     // - Question text has adequate font size (14px minimum)
     // - Text wraps properly on small screens
@@ -195,7 +196,7 @@ test.describe('Mobile Game Page', () => {
     // Requires active game with question
   });
 
-  test.skip('answer buttons are large enough for touch', async ({ page }) => {
+  test.skip('answer buttons are large enough for touch', async ({ page: _page }) => {
     // This test would verify:
     // - Each answer button is at least 44px height
     // - Buttons have adequate spacing between them
@@ -203,7 +204,7 @@ test.describe('Mobile Game Page', () => {
     // Requires active game with question
   });
 
-  test.skip('answer button states are visible on mobile', async ({ page }) => {
+  test.skip('answer button states are visible on mobile', async ({ page: _page }) => {
     // This test would verify:
     // - Unselected state is clear
     // - Selected state is clearly indicated
@@ -212,7 +213,7 @@ test.describe('Mobile Game Page', () => {
     // Requires active game with question
   });
 
-  test.skip('scoreboard is readable on mobile', async ({ page }) => {
+  test.skip('scoreboard is readable on mobile', async ({ page: _page }) => {
     // This test would verify:
     // - Team names are readable
     // - Scores are clearly displayed
@@ -221,7 +222,7 @@ test.describe('Mobile Game Page', () => {
     // Requires active game
   });
 
-  test.skip('navigation buttons work on mobile game page', async ({ page }) => {
+  test.skip('navigation buttons work on mobile game page', async ({ page: _page }) => {
     // This test would verify:
     // - "← Lobby" button is visible and accessible
     // - Logout button is visible and accessible
@@ -230,7 +231,7 @@ test.describe('Mobile Game Page', () => {
     // Requires active game
   });
 
-  test.skip('game page layout adapts to small screens', async ({ page }) => {
+  test.skip('game page layout adapts to small screens', async ({ page: _page }) => {
     // This test would verify:
     // - Header elements stack properly on mobile
     // - Question card is properly sized
@@ -239,7 +240,7 @@ test.describe('Mobile Game Page', () => {
     // Requires active game
   });
 
-  test.skip('answer submission works on mobile', async ({ page }) => {
+  test.skip('answer submission works on mobile', async ({ page: _page }) => {
     // This test would verify:
     // - Can tap answer button
     // - Button shows loading state
@@ -248,7 +249,7 @@ test.describe('Mobile Game Page', () => {
     // Requires active game with question
   });
 
-  test.skip('game transitions work smoothly on mobile', async ({ page }) => {
+  test.skip('game transitions work smoothly on mobile', async ({ page: _page }) => {
     // This test would verify:
     // - Transition from lobby to question works
     // - Transition between questions works
@@ -261,7 +262,7 @@ test.describe('Mobile Game Page', () => {
 
 test.describe('Mobile Team Selection Modal', () => {
 
-  test.skip('team selection modal is usable on mobile', async ({ page }) => {
+  test.skip('team selection modal is usable on mobile', async ({ page: _page }) => {
     // This test would verify:
     // - Modal appears when joining game
     // - Modal fits within mobile viewport
@@ -270,7 +271,7 @@ test.describe('Mobile Team Selection Modal', () => {
     // Requires joining an active game
   });
 
-  test.skip('can select existing team on mobile', async ({ page }) => {
+  test.skip('can select existing team on mobile', async ({ page: _page }) => {
     // This test would verify:
     // - Can tap team from list
     // - Selection is visually clear
@@ -278,7 +279,7 @@ test.describe('Mobile Team Selection Modal', () => {
     // Requires joining an active game with existing teams
   });
 
-  test.skip('can create new team on mobile', async ({ page }) => {
+  test.skip('can create new team on mobile', async ({ page: _page }) => {
     // This test would verify:
     // - "Create New Team" option is accessible
     // - Team name input works with mobile keyboard
@@ -287,7 +288,7 @@ test.describe('Mobile Team Selection Modal', () => {
     // Requires joining an active game
   });
 
-  test.skip('team modal can be dismissed on mobile', async ({ page }) => {
+  test.skip('team modal can be dismissed on mobile', async ({ page: _page }) => {
     // This test would verify:
     // - Can close modal with close button
     // - Close button is easily tappable

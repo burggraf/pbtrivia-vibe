@@ -4,18 +4,21 @@ import { Round, CreateRoundData, UpdateRoundData, RoundReorderData } from '@/typ
 export const roundsService = {
   async getRounds(gameId?: string): Promise<Round[]> {
     try {
-      // Use getList with simple parameters that work with PocketBase
-      const result = await pb.collection('rounds').getList<Round>(1, 200);
-
-      // Filter client-side by host ID and optionally by game ID for security
-      let userRounds = result.items.filter(round => round.host === pb.authStore.model?.id);
+      // Build server-side filter for efficiency
+      const hostId = pb.authStore.model?.id;
+      let filter = `host = "${hostId}"`;
 
       if (gameId) {
-        userRounds = userRounds.filter(round => round.game === gameId);
+        filter += ` && game = "${gameId}"`;
       }
 
-      // Sort by sequence number
-      return userRounds.sort((a, b) => a.sequence_number - b.sequence_number);
+      // Use server-side filtering and sorting
+      const result = await pb.collection('rounds').getList<Round>(1, 200, {
+        filter,
+        sort: 'sequence_number'
+      });
+
+      return result.items;
     } catch (error) {
       console.error('Failed to fetch rounds:', error);
       throw error;

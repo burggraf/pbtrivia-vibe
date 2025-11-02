@@ -22,7 +22,7 @@ test.describe('Mobile Game Workflows - Join Flow', () => {
     await expect(page).toHaveURL(/\/\?returnTo/);
   });
 
-  test.skip('can scan QR code to join game', async ({ page, context }) => {
+  test.skip('can scan QR code to join game', async ({ page: _page, context: _context }) => {
     // This would require:
     // 1. A host to create a game
     // 2. QR code scanning simulation
@@ -50,7 +50,7 @@ test.describe('Mobile Game Workflows - Join Flow', () => {
 });
 
 test.describe('Mobile Game Workflows - Team Selection', () => {
-  test.skip('team selection modal is usable on mobile', async ({ page }) => {
+  test.skip('team selection modal is usable on mobile', async ({ page: _page }) => {
     // Would require:
     // 1. Join game flow
     // 2. Team selection modal appearance
@@ -58,17 +58,17 @@ test.describe('Mobile Game Workflows - Team Selection', () => {
     // Skipping for now
   });
 
-  test.skip('can create new team on mobile', async ({ page }) => {
+  test.skip('can create new team on mobile', async ({ page: _page }) => {
     // Would test the "Create New Team" flow in the modal
   });
 
-  test.skip('can select existing team on mobile', async ({ page }) => {
+  test.skip('can select existing team on mobile', async ({ page: _page }) => {
     // Would test selecting from existing teams
   });
 });
 
 test.describe('Mobile Game Workflows - Player Experience', () => {
-  test.skip('game page is mobile-friendly', async ({ page }) => {
+  test.skip('game page is mobile-friendly', async ({ page: _page }) => {
     // Would verify:
     // - Question text is readable
     // - Answer buttons are touch-friendly
@@ -76,11 +76,11 @@ test.describe('Mobile Game Workflows - Player Experience', () => {
     // - Navigation works
   });
 
-  test.skip('answer buttons are large enough for touch', async ({ page }) => {
+  test.skip('answer buttons are large enough for touch', async ({ page: _page }) => {
     // Verify minimum 44px touch targets for answer buttons
   });
 
-  test.skip('can navigate between rounds on mobile', async ({ page }) => {
+  test.skip('can navigate between rounds on mobile', async ({ page: _page }) => {
     // Test round navigation
   });
 });
