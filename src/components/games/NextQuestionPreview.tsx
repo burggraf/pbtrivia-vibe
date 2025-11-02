@@ -65,7 +65,7 @@ export default function NextQuestionPreview({ gameId, gameData, rounds }: NextQu
   const [isReplacing, setIsReplacing] = useState(false)
   const [refetchTrigger, setRefetchTrigger] = useState(0)
   const [isExpanded, setIsExpanded] = useState(false)
-  const [showCorrectAnswer, setShowCorrectAnswer] = useState(true)
+  const [showCorrectAnswer, setShowCorrectAnswer] = useState(false)
 
   // Determine which question to preview based on current game state
   const getNextQuestionCoordinates = (): { roundIndex: number; questionNumber: number } | null => {
