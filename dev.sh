@@ -44,7 +44,7 @@ fi
 
 # Start the frontend development server
 echo "🎨 Starting frontend development server..."
-echo "🌐 Your app will be available at: http://localhost:5176"
+echo "🌐 Your app will be available at: http://localhost:5173 (and network IP)"
 echo "🔧 PocketBase admin: http://localhost:8090/_/"
 echo "📧 PocketBase admin login: admin@example.com / Password123"
 echo ""
