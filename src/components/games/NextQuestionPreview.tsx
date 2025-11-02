@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { Card, CardContent } from '@/components/ui/card'
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { gameQuestionsService } from '@/lib/gameQuestions'
 import { questionsService } from '@/lib/questions'
@@ -228,30 +228,32 @@ export default function NextQuestionPreview({ gameId, gameData, rounds }: NextQu
 
       {/* Question Card */}
       <Card className="max-w-3xl mx-auto">
-        <CardContent className="px-3 md:px-6">
-          {isLoading && (
+        {isLoading && (
+          <CardContent className="px-3 md:px-6">
             <div className="text-center py-8">
               <p className="text-slate-600 dark:text-slate-400">Loading next question...</p>
             </div>
-          )}
+          </CardContent>
+        )}
 
-          {error && (
+        {error && (
+          <CardContent className="px-3 md:px-6">
             <div className="text-center py-8">
               <p className="text-red-600 dark:text-red-400">{error}</p>
             </div>
-          )}
+          </CardContent>
+        )}
 
-          {nextQuestion && (
-            <div>
-              {/* Question Text */}
-              <div className="mb-4 text-center">
-                <p className="text-base md:text-lg text-slate-900 dark:text-slate-100">
-                  {nextQuestion.question}
-                </p>
-              </div>
-
-            {/* Answer Options */}
-            <div className="space-y-2 md:space-y-3">
+        {nextQuestion && (
+          <>
+            <CardHeader>
+              <CardTitle className="text-base md:text-xl">
+                {nextQuestion.question}
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="px-3 md:px-6">
+              {/* Answer Options */}
+              <div className="space-y-2 md:space-y-3">
               {nextQuestion.answers.map((answer) => {
                 const isCorrect = answer.label === nextQuestion.correctAnswerLabel
 
@@ -273,10 +275,10 @@ export default function NextQuestionPreview({ gameId, gameData, rounds }: NextQu
                   </div>
                 )
               })}
-            </div>
-          </div>
+              </div>
+            </CardContent>
+          </>
         )}
-        </CardContent>
       </Card>
     </div>
   )
