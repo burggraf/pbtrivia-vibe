@@ -181,16 +181,16 @@ export default function ControllerPage() {
       const roundsData = await roundsService.getRounds(id)
       setRounds(roundsData.sort((a, b) => a.sequence_number - b.sequence_number))
 
-      // Update status to 'in-progress' when host enters ControllerPage
-      if (gameData.status === 'ready') {
-        await gamesService.updateGame(id, { status: 'in-progress' })
-      }
-
       // Parse game data if exists
       if (gameData.data) {
         try {
           const parsedData = typeof gameData.data === 'string' ? JSON.parse(gameData.data) : gameData.data
           setGameData(parsedData)
+
+          // Update status to 'in-progress' only if resuming actual gameplay (not at game-start)
+          if (gameData.status === 'ready' && parsedData.state && parsedData.state !== 'game-start') {
+            await gamesService.updateGame(id, { status: 'in-progress' })
+          }
         } catch (error) {
           console.error('Failed to parse game data:', error)
           setGameData(null)
