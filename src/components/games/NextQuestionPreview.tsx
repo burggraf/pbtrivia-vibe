@@ -208,46 +208,48 @@ export default function NextQuestionPreview({ gameId, gameData, rounds }: NextQu
   }
 
   return (
-    <Card className="max-w-3xl mx-auto mt-4 md:mt-6">
-      <CardHeader className="pb-2 md:pb-3">
-        <CardTitle className="text-lg">Next Question</CardTitle>
-      </CardHeader>
-      <CardContent className="px-3 md:px-6">
-        {isLoading && (
-          <div className="text-center py-8">
-            <p className="text-slate-600 dark:text-slate-400">Loading next question...</p>
-          </div>
-        )}
+    <div className="max-w-3xl mx-auto mt-4 md:mt-6">
+      {/* Question Metadata - Badges above the card */}
+      {nextQuestion && (
+        <div className="flex flex-col sm:flex-row items-center justify-center gap-1 sm:gap-2 mb-4">
+          <Badge variant="secondary" className="text-xs md:text-sm px-2 py-1 md:px-3 md:py-1">
+            Category: {nextQuestion.category}
+          </Badge>
+          <Badge variant="outline" className="text-xs md:text-sm px-2 py-1 md:px-3 md:py-1">
+            Difficulty: {nextQuestion.difficulty}
+          </Badge>
+        </div>
+      )}
 
-        {error && (
-          <div className="text-center py-8">
-            <p className="text-red-600 dark:text-red-400">{error}</p>
-          </div>
-        )}
+      <Card>
+        <CardHeader>
+          {nextQuestion && (
+            <CardTitle className="text-base md:text-xl text-center">
+              Next Question: Round {nextQuestion.roundNumber} of {nextQuestion.totalRounds} - Question {nextQuestion.questionNumber}
+            </CardTitle>
+          )}
+        </CardHeader>
+        <CardContent className="px-3 md:px-6">
+          {isLoading && (
+            <div className="text-center py-8">
+              <p className="text-slate-600 dark:text-slate-400">Loading next question...</p>
+            </div>
+          )}
 
-        {nextQuestion && (
-          <div>
-            {/* Question Metadata */}
-            <div className="mb-4">
-              <h3 className="text-base md:text-lg font-bold text-slate-800 dark:text-slate-100 mb-2">
-                Round {nextQuestion.roundNumber} of {nextQuestion.totalRounds} - Question {nextQuestion.questionNumber}
-              </h3>
-              <div className="flex flex-col sm:flex-row items-center justify-center gap-1 sm:gap-2">
-                <Badge variant="secondary" className="text-xs md:text-sm px-2 py-1 md:px-3 md:py-1">
-                  Category: {nextQuestion.category}
-                </Badge>
-                <Badge variant="outline" className="text-xs md:text-sm px-2 py-1 md:px-3 md:py-1">
-                  Difficulty: {nextQuestion.difficulty}
-                </Badge>
+          {error && (
+            <div className="text-center py-8">
+              <p className="text-red-600 dark:text-red-400">{error}</p>
+            </div>
+          )}
+
+          {nextQuestion && (
+            <div>
+              {/* Question Text */}
+              <div className="mb-4 text-center">
+                <p className="text-base md:text-lg text-slate-900 dark:text-slate-100">
+                  {nextQuestion.question}
+                </p>
               </div>
-            </div>
-
-            {/* Question Text */}
-            <div className="mb-4 p-3 md:p-4 bg-slate-50 dark:bg-slate-800 rounded-lg">
-              <p className="text-base md:text-lg text-slate-900 dark:text-slate-100">
-                {nextQuestion.question}
-              </p>
-            </div>
 
             {/* Answer Options */}
             <div className="space-y-2 md:space-y-3">
@@ -277,5 +279,6 @@ export default function NextQuestionPreview({ gameId, gameData, rounds }: NextQu
         )}
       </CardContent>
     </Card>
+    </div>
   )
 }
