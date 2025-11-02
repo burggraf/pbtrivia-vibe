@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { Card, CardContent } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { gameQuestionsService } from '@/lib/gameQuestions'
 import { questionsService } from '@/lib/questions'
@@ -213,7 +213,7 @@ export default function NextQuestionPreview({ gameId, gameData, rounds }: NextQu
       {nextQuestion && (
         <div className="mb-4 md:mb-6">
           <h2 className="text-lg md:text-2xl font-bold text-slate-800 dark:text-slate-100 mb-2">
-            Next Question - Round {nextQuestion.roundNumber} of {nextQuestion.totalRounds} - Question {nextQuestion.questionNumber}
+            Next Question:  Round {nextQuestion.roundNumber} of {nextQuestion.totalRounds} - Question {nextQuestion.questionNumber}
           </h2>
           <div className="flex flex-col sm:flex-row items-center justify-center gap-1 sm:gap-2">
             <Badge variant="secondary" className="text-xs md:text-sm px-2 py-1 md:px-3 md:py-1">
@@ -228,11 +228,6 @@ export default function NextQuestionPreview({ gameId, gameData, rounds }: NextQu
 
       {/* Question Card */}
       <Card className="max-w-3xl mx-auto">
-        <CardHeader>
-          <CardTitle className="text-base md:text-xl">
-            Question
-          </CardTitle>
-        </CardHeader>
         <CardContent className="px-3 md:px-6">
           {isLoading && (
             <div className="text-center py-8">
