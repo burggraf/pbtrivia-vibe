@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useRef, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
@@ -15,6 +15,11 @@ export default function LobbyPage() {
   const [showTeamModal, setShowTeamModal] = useState(false)
   const [currentGame, setCurrentGame] = useState<any>(null)
   const [error, setError] = useState('')
+  const inputRef = useRef<HTMLInputElement>(null)
+
+  useEffect(() => {
+    inputRef.current?.focus()
+  }, [])
 
   const handleLogout = async () => {
     try {
@@ -23,6 +28,12 @@ export default function LobbyPage() {
     } catch (error) {
       console.error('Logout failed:', error)
     }
+  }
+
+  const handleClearCode = () => {
+    setGameCode('')
+    setError('')
+    inputRef.current?.focus()
   }
 
   const handleJoinGame = async () => {
@@ -159,19 +170,31 @@ export default function LobbyPage() {
             </CardHeader>
             <CardContent className="px-6 pb-6 space-y-4">
               <div className="flex flex-col items-center space-y-3">
-                <Input
-                  id="gameCode"
-                  placeholder="ABC123"
-                  value={gameCode}
-                  onChange={(e) => setGameCode(e.target.value.toUpperCase())}
-                  onKeyPress={(e) => e.key === 'Enter' && handleJoinGame()}
-                  className="text-center text-2xl md:text-3xl font-bold tracking-widest w-full max-w-[200px] h-14 border-2 border-slate-300 dark:border-slate-600 dark:bg-slate-700 dark:text-slate-100 focus:border-blue-500 dark:focus:border-blue-400 focus:ring-2 focus:ring-blue-200 dark:focus:ring-blue-900"
-                  maxLength={6}
-                  disabled={isLoading}
-                />
+                <div className="flex items-center gap-2 w-full justify-center">
+                  <Input
+                    ref={inputRef}
+                    id="gameCode"
+                    placeholder="ABC123"
+                    value={gameCode}
+                    onChange={(e) => setGameCode(e.target.value.toUpperCase())}
+                    onKeyPress={(e) => e.key === 'Enter' && gameCode.length === 6 && handleJoinGame()}
+                    className="text-center text-2xl md:text-3xl font-bold tracking-widest w-full max-w-[200px] h-14 border-2 border-slate-300 dark:border-slate-600 dark:bg-slate-700 dark:text-slate-100 focus:border-blue-500 dark:focus:border-blue-400 focus:ring-2 focus:ring-blue-200 dark:focus:ring-blue-900"
+                    maxLength={6}
+                    disabled={isLoading}
+                  />
+                  <Button
+                    onClick={handleClearCode}
+                    disabled={isLoading || !gameCode}
+                    variant="outline"
+                    size="icon"
+                    className="h-14 w-14 border-2 border-slate-300 dark:border-slate-600 hover:bg-slate-100 dark:hover:bg-slate-700 text-slate-600 dark:text-slate-400"
+                  >
+                    <span className="text-xl font-bold">✕</span>
+                  </Button>
+                </div>
                 <Button
                   onClick={handleJoinGame}
-                  disabled={isLoading || !gameCode.trim()}
+                  disabled={isLoading || gameCode.length !== 6}
                   size="lg"
                   className="w-full bg-blue-600 hover:bg-blue-700 dark:bg-blue-500 dark:hover:bg-blue-600 text-white font-semibold"
                 >
