@@ -5,7 +5,6 @@ import { Button } from '@/components/ui/button'
 import { RotateCcw, ChevronDown, ChevronUp, Eye, EyeOff } from 'lucide-react'
 import { gameQuestionsService } from '@/lib/gameQuestions'
 import { questionsService } from '@/lib/questions'
-import { roundsService } from '@/lib/rounds'
 import { getShuffledAnswers, getCorrectAnswerLabel } from '@/lib/answerShuffler'
 
 type GameState = 'game-start' | 'round-start' | 'round-play' | 'round-end' | 'game-end' | 'thanks' | 'return-to-lobby'
@@ -142,9 +141,6 @@ export default function NextQuestionPreview({ gameId, gameData, rounds }: NextQu
       const { roundIndex, questionNumber } = coordinates
       const round = rounds[roundIndex]
 
-      // Fetch round details to get categories
-      const roundData = await roundsService.getRound(round.id)
-
       // Fetch game_questions for this round
       const gameQuestions = await gameQuestionsService.getGameQuestions(round.id)
       const questionIndex = questionNumber - 1
@@ -176,8 +172,8 @@ export default function NextQuestionPreview({ gameId, gameData, rounds }: NextQu
       // Create a new game_questions record with the new question
       await gameQuestionsService.createGameQuestion({
         host: currentGameQuestion.host,
-        game: currentGameQuestion.game,
-        round: currentGameQuestion.round,
+        game: currentGameQuestion.game!,
+        round: currentGameQuestion.round!,
         question: newQuestion[0].id,
         sequence: currentGameQuestion.sequence,
         category_name: newQuestion[0].category
