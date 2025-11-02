@@ -329,24 +329,31 @@ export default function HostPage() {
 
   const handlePlayGame = async (gameId: string) => {
     try {
-      console.log('🎮 Starting game:', gameId)
+      console.log('🎮 Starting/Resuming game:', gameId)
 
       const game = games.find(g => g.id === gameId)
 
-      // If game is in setup, change status to ready first
+      // Update status to 'ready' if in 'setup'
       if (game?.status === 'setup') {
         await gamesService.updateGame(gameId, { status: 'ready' })
-        console.log('✅ Game status updated to ready')
       }
 
-      // Initialize game data with starting state
-      await pb.collection('games').update(gameId, {
-        data: {
-          state: 'game-start'
-        }
-      })
+      // Only initialize data if it doesn't exist
+      const shouldInitialize = !game?.data ||
+                               (typeof game.data === 'string' && game.data === '') ||
+                               (typeof game.data === 'object' && Object.keys(game.data).length === 0)
 
-      console.log('✅ Game initialized with starting state')
+      if (shouldInitialize) {
+        console.log('🆕 Initializing new game state')
+        await pb.collection('games').update(gameId, {
+          data: { state: 'game-start' }
+        })
+      } else {
+        console.log('▶️  Resuming existing game state')
+        // Don't touch games.data - let ControllerPage load it
+      }
+
+      // Navigate to controller
       navigate(`/controller/${gameId}`)
     } catch (error) {
       console.error('❌ Failed to start game:', error)
