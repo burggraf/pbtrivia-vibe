@@ -181,6 +181,11 @@ export default function ControllerPage() {
       const roundsData = await roundsService.getRounds(id)
       setRounds(roundsData.sort((a, b) => a.sequence_number - b.sequence_number))
 
+      // Update status to 'in-progress' when host enters ControllerPage
+      if (gameData.status === 'ready') {
+        await gamesService.updateGame(id, { status: 'in-progress' })
+      }
+
       // Parse game data if exists
       if (gameData.data) {
         try {
@@ -534,9 +539,12 @@ export default function ControllerPage() {
         })
         break
 
-      case 'return-to-lobby':
+      case 'return-to-lobby': {
+        // Mark game as completed before returning to lobby
+        await gamesService.updateGame(id!, { status: 'completed' })
         navigate('/host')
-        break
+        return
+      }
 
       default:
         console.error(`Unknown game state: ${gameData.state}`)
