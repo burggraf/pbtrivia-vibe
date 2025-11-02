@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
-import { RotateCcw } from 'lucide-react'
+import { RotateCcw, ChevronDown, ChevronUp, Eye, EyeOff } from 'lucide-react'
 import { gameQuestionsService } from '@/lib/gameQuestions'
 import { questionsService } from '@/lib/questions'
 import { roundsService } from '@/lib/rounds'
@@ -64,6 +64,8 @@ export default function NextQuestionPreview({ gameId, gameData, rounds }: NextQu
   const [error, setError] = useState<string | null>(null)
   const [isReplacing, setIsReplacing] = useState(false)
   const [refetchTrigger, setRefetchTrigger] = useState(0)
+  const [isExpanded, setIsExpanded] = useState(false)
+  const [showCorrectAnswer, setShowCorrectAnswer] = useState(true)
 
   // Determine which question to preview based on current game state
   const getNextQuestionCoordinates = (): { roundIndex: number; questionNumber: number } | null => {
@@ -277,94 +279,135 @@ export default function NextQuestionPreview({ gameId, gameData, rounds }: NextQu
   }
 
   return (
-    <div className="text-center mb-8">
-      {/* Round Progress - outside card */}
-      {nextQuestion && (
-        <div className="mb-4 md:mb-6">
-          <h2 className="text-lg md:text-2xl font-bold text-slate-800 dark:text-slate-100 mb-2">
-            Next Question:  Round {nextQuestion.roundNumber} of {nextQuestion.totalRounds} - Question {nextQuestion.questionNumber}
-          </h2>
-          <div className="flex flex-col sm:flex-row items-center justify-center gap-1 sm:gap-2">
-            <Badge variant="secondary" className="text-xs md:text-sm px-2 py-1 md:px-3 md:py-1">
-              Category: {nextQuestion.category}
-            </Badge>
-            <Badge variant="outline" className="text-xs md:text-sm px-2 py-1 md:px-3 md:py-1">
-              Difficulty: {nextQuestion.difficulty}
-            </Badge>
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={handleReplaceQuestion}
-              disabled={isReplacing}
-              className="gap-1 text-xs"
-            >
-              {isReplacing ? (
-                <div className="animate-spin">
-                  <RotateCcw className="h-3 w-3" />
+    <div className="max-w-3xl mx-auto mt-4 md:mt-6">
+      {/* Header Bar */}
+      <div className="flex items-center justify-between px-4 py-3 bg-slate-100 dark:bg-slate-800 border-b border-slate-200 dark:border-slate-700 rounded-t-lg">
+        {/* Left: Collapse/Expand Toggle */}
+        <Button
+          variant="ghost"
+          size="sm"
+          onClick={() => setIsExpanded(!isExpanded)}
+          className="gap-1"
+        >
+          {isExpanded ? (
+            <ChevronUp className="h-4 w-4" />
+          ) : (
+            <ChevronDown className="h-4 w-4" />
+          )}
+        </Button>
+
+        {/* Middle: Title */}
+        <h3 className="text-base font-semibold text-slate-800 dark:text-slate-100">
+          Next Question
+        </h3>
+
+        {/* Right: Show/Hide Answer Toggle */}
+        <Button
+          variant="ghost"
+          size="sm"
+          onClick={() => setShowCorrectAnswer(!showCorrectAnswer)}
+          className="gap-1"
+        >
+          {showCorrectAnswer ? (
+            <Eye className="h-4 w-4" />
+          ) : (
+            <EyeOff className="h-4 w-4" />
+          )}
+        </Button>
+      </div>
+
+      {/* Content */}
+      {isExpanded && (
+        <div className="text-center mb-8">
+          {/* Round Progress - outside card */}
+          {nextQuestion && (
+            <div className="mb-4 md:mb-6">
+              <h2 className="text-lg md:text-2xl font-bold text-slate-800 dark:text-slate-100 mb-2">
+                Next Question:  Round {nextQuestion.roundNumber} of {nextQuestion.totalRounds} - Question {nextQuestion.questionNumber}
+              </h2>
+              <div className="flex flex-col sm:flex-row items-center justify-center gap-1 sm:gap-2">
+                <Badge variant="secondary" className="text-xs md:text-sm px-2 py-1 md:px-3 md:py-1">
+                  Category: {nextQuestion.category}
+                </Badge>
+                <Badge variant="outline" className="text-xs md:text-sm px-2 py-1 md:px-3 md:py-1">
+                  Difficulty: {nextQuestion.difficulty}
+                </Badge>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={handleReplaceQuestion}
+                  disabled={isReplacing}
+                  className="gap-1 text-xs"
+                >
+                  {isReplacing ? (
+                    <div className="animate-spin">
+                      <RotateCcw className="h-3 w-3" />
+                    </div>
+                  ) : (
+                    <RotateCcw className="h-3 w-3" />
+                  )}
+                  Replace
+                </Button>
+              </div>
+            </div>
+          )}
+
+          {/* Question Card */}
+          <Card className="max-w-3xl mx-auto">
+            {isLoading && (
+              <CardContent className="px-3 md:px-6">
+                <div className="text-center py-8">
+                  <p className="text-slate-600 dark:text-slate-400">Loading next question...</p>
                 </div>
-              ) : (
-                <RotateCcw className="h-3 w-3" />
-              )}
-              Replace
-            </Button>
-          </div>
+              </CardContent>
+            )}
+
+            {error && (
+              <CardContent className="px-3 md:px-6">
+                <div className="text-center py-8">
+                  <p className="text-red-600 dark:text-red-400">{error}</p>
+                </div>
+              </CardContent>
+            )}
+
+            {nextQuestion && (
+              <>
+                <CardHeader>
+                  <CardTitle className="text-base md:text-xl">
+                    {nextQuestion.question}
+                  </CardTitle>
+                </CardHeader>
+                <CardContent className="px-3 md:px-6">
+                  {/* Answer Options */}
+                  <div className="space-y-2 md:space-y-3">
+                  {nextQuestion.answers.map((answer) => {
+                    const isCorrect = showCorrectAnswer && answer.label === nextQuestion.correctAnswerLabel
+
+                    // Correct answer styling (green)
+                    const answerClasses = isCorrect
+                      ? 'p-3 md:p-4 rounded-lg border-2 bg-green-100 border-green-500 text-green-800 dark:bg-green-900 dark:text-green-200 flex justify-between items-start'
+                      : 'p-3 md:p-4 rounded-lg border-2 bg-slate-50 border-slate-300 text-slate-700 dark:bg-slate-800 dark:border-slate-700 dark:text-slate-400 flex justify-between items-start'
+
+                    return (
+                      <div key={answer.label} className={answerClasses}>
+                        <div>
+                          <span className="font-medium">{answer.label}.</span> {answer.text}
+                        </div>
+                        {isCorrect && (
+                          <div className="flex-shrink-0 ml-2">
+                            <span className="text-green-600 dark:text-green-400">✓</span>
+                          </div>
+                        )}
+                      </div>
+                    )
+                  })}
+                  </div>
+                </CardContent>
+              </>
+            )}
+          </Card>
         </div>
       )}
-
-      {/* Question Card */}
-      <Card className="max-w-3xl mx-auto">
-        {isLoading && (
-          <CardContent className="px-3 md:px-6">
-            <div className="text-center py-8">
-              <p className="text-slate-600 dark:text-slate-400">Loading next question...</p>
-            </div>
-          </CardContent>
-        )}
-
-        {error && (
-          <CardContent className="px-3 md:px-6">
-            <div className="text-center py-8">
-              <p className="text-red-600 dark:text-red-400">{error}</p>
-            </div>
-          </CardContent>
-        )}
-
-        {nextQuestion && (
-          <>
-            <CardHeader>
-              <CardTitle className="text-base md:text-xl">
-                {nextQuestion.question}
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="px-3 md:px-6">
-              {/* Answer Options */}
-              <div className="space-y-2 md:space-y-3">
-              {nextQuestion.answers.map((answer) => {
-                const isCorrect = answer.label === nextQuestion.correctAnswerLabel
-
-                // Correct answer styling (green)
-                const answerClasses = isCorrect
-                  ? 'p-3 md:p-4 rounded-lg border-2 bg-green-100 border-green-500 text-green-800 dark:bg-green-900 dark:text-green-200 flex justify-between items-start'
-                  : 'p-3 md:p-4 rounded-lg border-2 bg-slate-50 border-slate-300 text-slate-700 dark:bg-slate-800 dark:border-slate-700 dark:text-slate-400 flex justify-between items-start'
-
-                return (
-                  <div key={answer.label} className={answerClasses}>
-                    <div>
-                      <span className="font-medium">{answer.label}.</span> {answer.text}
-                    </div>
-                    {isCorrect && (
-                      <div className="flex-shrink-0 ml-2">
-                        <span className="text-green-600 dark:text-green-400">✓</span>
-                      </div>
-                    )}
-                  </div>
-                )
-              })}
-              </div>
-            </CardContent>
-          </>
-        )}
-      </Card>
     </div>
   )
 }
