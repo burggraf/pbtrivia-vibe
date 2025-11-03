@@ -627,16 +627,27 @@ def test_game_flow():
                                             else:
                                                 print("⚠️  Player 3 couldn't find Create New Team button")
 
-                                            # Wait for teams to propagate
+                                            # Wait for teams to be created before user2 and user4 try to join
+                                            print("\n⏳ Waiting for teams to propagate to other players...")
                                             time.sleep(3)
 
-                                            # Player 2: Join Team A
-                                            print("👤 Player 2: Joining Team A...")
-                                            player_pages[1].screenshot(path='./tmp/player2_05_team_modal.png', full_page=True)
+                                            # Player 2: Join Team A (wait for it to exist first)
+                                            print("👤 Player 2: Waiting for Team A to appear, then joining...")
+                                            player_pages[1].screenshot(path='./tmp/player2_05_team_modal_initial.png', full_page=True)
 
-                                            # Look for Team A in the available teams list
-                                            team_a_option = player_pages[1].locator('text="Team A"').first
-                                            if team_a_option.is_visible(timeout=5000):
+                                            # Wait up to 10 seconds for Team A to appear
+                                            team_a_found = False
+                                            for attempt in range(10):
+                                                team_a_option = player_pages[1].locator('text="Team A"').first
+                                                if team_a_option.is_visible(timeout=1000):
+                                                    team_a_found = True
+                                                    print("  ✅ Team A appeared!")
+                                                    break
+                                                print(f"  Waiting for Team A... ({attempt + 1}/10)")
+                                                time.sleep(1)
+
+                                            if team_a_found:
+                                                player_pages[1].screenshot(path='./tmp/player2_05_team_a_visible.png', full_page=True)
                                                 team_a_option.click()
                                                 time.sleep(1)
 
@@ -649,15 +660,26 @@ def test_game_flow():
                                                     print("✅ Player 2 joined Team A")
                                                     player_pages[1].screenshot(path='./tmp/player2_08_joined_team.png', full_page=True)
                                             else:
-                                                print("⚠️  Player 2 couldn't find Team A")
+                                                print("⚠️  Player 2 couldn't find Team A after waiting")
                                                 player_pages[1].screenshot(path='./tmp/player2_05_no_team_a.png', full_page=True)
 
-                                            # Player 4: Join Team B
-                                            print("👤 Player 4: Joining Team B...")
-                                            player_pages[3].screenshot(path='./tmp/player4_05_team_modal.png', full_page=True)
+                                            # Player 4: Join Team B (wait for it to exist first)
+                                            print("👤 Player 4: Waiting for Team B to appear, then joining...")
+                                            player_pages[3].screenshot(path='./tmp/player4_05_team_modal_initial.png', full_page=True)
 
-                                            team_b_option = player_pages[3].locator('text="Team B"').first
-                                            if team_b_option.is_visible(timeout=5000):
+                                            # Wait up to 10 seconds for Team B to appear
+                                            team_b_found = False
+                                            for attempt in range(10):
+                                                team_b_option = player_pages[3].locator('text="Team B"').first
+                                                if team_b_option.is_visible(timeout=1000):
+                                                    team_b_found = True
+                                                    print("  ✅ Team B appeared!")
+                                                    break
+                                                print(f"  Waiting for Team B... ({attempt + 1}/10)")
+                                                time.sleep(1)
+
+                                            if team_b_found:
+                                                player_pages[3].screenshot(path='./tmp/player4_05_team_b_visible.png', full_page=True)
                                                 team_b_option.click()
                                                 time.sleep(1)
 
@@ -669,12 +691,53 @@ def test_game_flow():
                                                     print("✅ Player 4 joined Team B")
                                                     player_pages[3].screenshot(path='./tmp/player4_08_joined_team.png', full_page=True)
                                             else:
-                                                print("⚠️  Player 4 couldn't find Team B")
+                                                print("⚠️  Player 4 couldn't find Team B after waiting")
                                                 player_pages[3].screenshot(path='./tmp/player4_05_no_team_b.png', full_page=True)
 
                                             # Give time for all team joins to propagate
                                             time.sleep(2)
                                             print("✅ All teams created and players assigned!")
+
+                                            # Host waits for teams to be ready
+                                            print("\n" + "="*50)
+                                            print("⏳ Host waiting for teams to be ready...")
+                                            print("="*50 + "\n")
+
+                                            # Poll the host page for team readiness
+                                            teams_ready = False
+                                            max_wait_time = 30  # 30 seconds max
+                                            start_wait = time.time()
+
+                                            while not teams_ready and (time.time() - start_wait) < max_wait_time:
+                                                page.screenshot(path='./tmp/host_waiting_for_teams.png', full_page=True)
+
+                                                # Check page content for team information
+                                                content = page.content()
+
+                                                # Look for "Teams Ready: 2" or similar indicator
+                                                if 'Teams Ready' in content:
+                                                    # Try to find the teams count
+                                                    teams_element = page.locator('text=/Teams Ready.*2/').first
+                                                    if teams_element.is_visible(timeout=1000):
+                                                        print("✅ Both teams are ready!")
+                                                        teams_ready = True
+                                                        break
+
+                                                # Alternative: check if both Team A and Team B are visible with 2 players
+                                                if 'Team A' in content and 'Team B' in content:
+                                                    print("✅ Both teams exist, checking player counts...")
+                                                    # Give a moment for all players to join
+                                                    time.sleep(2)
+                                                    teams_ready = True
+                                                    break
+
+                                                print(f"  Waiting for teams... ({int(time.time() - start_wait)}s)")
+                                                time.sleep(2)
+
+                                            if not teams_ready:
+                                                print("⚠️  Timeout waiting for teams to be ready")
+
+                                            page.screenshot(path='./tmp/host_teams_ready.png', full_page=True)
 
                                             # Game Play Loop
                                             print("\n" + "="*50)
