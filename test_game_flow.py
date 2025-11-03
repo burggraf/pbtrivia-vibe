@@ -4,11 +4,166 @@ Test the trivia app game flow:
 1. Try to login as host (host1@example.com), register if needed
 2. Create a new game
 3. Navigate to game welcome screen
+4. Create 4 player browsers (user1-user4@example.com)
+5. Players join teams (Team A and Team B)
+6. Play through the complete game
 """
 
-from playwright.sync_api import sync_playwright
+from playwright.sync_api import sync_playwright, Page, BrowserContext
 import time
 import os
+import random
+import re
+
+def login_or_register_user(page: Page, email: str, password: str, role: str = "Player", name: str = None):
+    """
+    Helper function to login or register a user.
+    Args:
+        page: Playwright page object
+        email: User email
+        password: User password
+        role: "Player" or "Host"
+        name: Display name (defaults to email prefix)
+    Returns:
+        bool: True if successful, False otherwise
+    """
+    if name is None:
+        name = email.split('@')[0].title()
+
+    print(f"📝 Attempting login for {email} as {role}...")
+
+    try:
+        # Wait for page to be ready
+        page.wait_for_load_state('domcontentloaded')
+
+        # Try to find email input field
+        email_input = page.locator('input[type="email"], input[name="email"]').first
+        if not email_input.is_visible(timeout=3000):
+            print(f"❌ Could not find email input for {email}")
+            return False
+
+        email_input.fill(email)
+
+        # Find password field
+        password_input = page.locator('input[type="password"]').first
+        password_input.fill(password)
+
+        # Click role button if present
+        role_button = page.locator(f'button:has-text("{role}")').first
+        if role_button.is_visible(timeout=1000):
+            role_button.click()
+            time.sleep(0.5)
+
+        # Find and click login button
+        login_button = page.locator('button:has-text("Sign In"), button:has-text("Login"), button:has-text("Log in")').first
+        if not login_button.is_visible(timeout=2000):
+            print(f"❌ Could not find login button for {email}")
+            return False
+
+        login_button.click()
+
+        page.wait_for_load_state('networkidle')
+        time.sleep(2)
+
+        # Check if login was successful - check URL changed
+        current_url = page.url
+        print(f"  After login attempt, URL: {current_url}")
+
+        if '/lobby' in current_url or '/host' in current_url:
+            print(f"✅ Login successful for {email}")
+            return True
+
+        # Login failed, try registration
+        print(f"⚠️  Login failed for {email}, attempting registration...")
+
+        # Look for registration link
+        register_link = page.locator('a:has-text("Sign up"), button:has-text("Sign up"), a:has-text("Don\'t have an account")').first
+        if not register_link.is_visible(timeout=3000):
+            print(f"❌ Could not find registration link for {email}")
+            return False
+
+        register_link.click()
+        page.wait_for_load_state('networkidle')
+        time.sleep(1.5)
+
+        print(f"  Registration form loaded, URL: {page.url}")
+
+        # Fill registration form
+        reg_email_input = page.locator('input[type="email"]').first
+        if not reg_email_input.is_visible(timeout=2000):
+            print(f"❌ Could not find registration email input for {email}")
+            return False
+
+        reg_email_input.fill(email)
+
+        name_input = page.locator('input[name="name"], input[placeholder*="name" i]').first
+        if name_input.is_visible(timeout=1000):
+            name_input.fill(name)
+            print(f"  Filled name: {name}")
+
+        # Fill passwords
+        password_inputs = page.locator('input[type="password"]').all()
+        filled_passwords = 0
+        for pwd_input in password_inputs:
+            if pwd_input.is_visible():
+                pwd_input.fill(password)
+                filled_passwords += 1
+        print(f"  Filled {filled_passwords} password fields")
+
+        # Select role
+        role_btn = page.locator(f'button:has-text("{role}")').first
+        if role_btn.is_visible(timeout=1000):
+            role_btn.click()
+            time.sleep(0.5)
+            print(f"  Selected role: {role}")
+
+        # Click create account
+        create_button = page.locator('button:has-text("Create Account"), button:has-text("Register")').first
+        if not create_button.is_visible(timeout=2000):
+            print(f"❌ Could not find Create Account button for {email}")
+            return False
+
+        create_button.click()
+
+        page.wait_for_load_state('networkidle')
+        time.sleep(2)
+
+        print(f"  After registration, URL: {page.url}")
+
+        # Check if we need to login after registration
+        if page.url == 'http://localhost:5173/':
+            print(f"📝 Logging in after registration for {email}...")
+
+            email_input = page.locator('input[type="email"]').first
+            if email_input.is_visible(timeout=3000):
+                email_input.fill(email)
+                password_input = page.locator('input[type="password"]').first
+                password_input.fill(password)
+
+                role_btn = page.locator(f'button:has-text("{role}")').first
+                if role_btn.is_visible(timeout=1000):
+                    role_btn.click()
+                    time.sleep(0.5)
+
+                signin_button = page.locator('button:has-text("Sign In"), button:has-text("Login")').first
+                signin_button.click()
+
+                page.wait_for_load_state('networkidle')
+                time.sleep(2)
+
+                print(f"  After post-reg login, URL: {page.url}")
+
+        # Final check
+        if '/lobby' in page.url or '/host' in page.url:
+            print(f"✅ Registration and login successful for {email}")
+            return True
+        else:
+            print(f"❌ Registration completed but not on lobby/host page for {email}")
+            return False
+
+    except Exception as e:
+        print(f"❌ Error during login/register for {email}: {e}")
+        return False
 
 def test_game_flow():
     # Create ./tmp directory if it doesn't exist
@@ -320,6 +475,291 @@ def test_game_flow():
                                     # Check for "Welcome to the Game!" message
                                     if 'Welcome to the Game!' in page.content():
                                         print("✅ Successfully reached 'Welcome to the Game!' screen!")
+
+                                        # Extract game code from the page
+                                        game_code = None
+
+                                        # Try to find the game code text element
+                                        game_code_element = page.locator('text=/Game Code:.*[A-Z0-9]{6}/').first
+                                        if game_code_element.is_visible(timeout=2000):
+                                            game_code_text = game_code_element.text_content()
+                                            game_code_match = re.search(r'([A-Z0-9]{6})', game_code_text)
+                                            if game_code_match:
+                                                game_code = game_code_match.group(1)
+
+                                        if game_code:
+                                            print(f"🎮 Game Code: {game_code}")
+
+                                            # Now create 4 player browser contexts
+                                            print("\n" + "="*50)
+                                            print("🎭 Creating 4 player browsers...")
+                                            print("="*50 + "\n")
+
+                                            player_contexts = []
+                                            player_pages = []
+                                            player_emails = ['user1@example.com', 'user2@example.com', 'user3@example.com', 'user4@example.com']
+
+                                            # Create separate browser contexts for each player
+                                            for i, email in enumerate(player_emails, 1):
+                                                context = browser.new_context()
+                                                player_page = context.new_page()
+                                                player_contexts.append(context)
+                                                player_pages.append(player_page)
+
+                                                print(f"\n👤 Setting up Player {i} ({email})...")
+                                                player_page.goto('http://localhost:5173')
+                                                player_page.wait_for_load_state('networkidle')
+                                                time.sleep(1)
+
+                                                # Login or register
+                                                if login_or_register_user(player_page, email, 'Password123!', 'Player'):
+                                                    player_page.screenshot(path=f'./tmp/player{i}_01_logged_in.png', full_page=True)
+
+                                            print("\n✅ All players logged in!")
+
+                                            # Enter game code for all players
+                                            print(f"\n🎮 All players entering game code: {game_code}")
+                                            for i, player_page in enumerate(player_pages, 1):
+                                                # Make sure we're on the lobby page
+                                                time.sleep(1)
+                                                print(f"📍 Player {i} URL: {player_page.url}")
+
+                                                # Save screenshot before entering code
+                                                player_page.screenshot(path=f'./tmp/player{i}_02_before_code.png', full_page=True)
+
+                                                # Find game code input on lobby page - try multiple selectors
+                                                code_input = None
+                                                try:
+                                                    # Try to find the game code input with various selectors
+                                                    code_input = player_page.locator('input[placeholder*="ABC123" i], input[placeholder*="code" i], input[type="text"]').first
+                                                    if code_input.is_visible(timeout=3000):
+                                                        # Clear existing text and enter game code
+                                                        print(f"  Found game code input for Player {i}")
+                                                        code_input.click()
+                                                        code_input.fill('')  # Clear first
+                                                        code_input.type(game_code, delay=50)  # Type with delay
+                                                        time.sleep(0.5)
+
+                                                        player_page.screenshot(path=f'./tmp/player{i}_03_code_entered.png', full_page=True)
+
+                                                        # Click join button
+                                                        join_button = player_page.locator('button:has-text("Join Game"), button:has-text("Join")').first
+                                                        if join_button.is_visible(timeout=2000):
+                                                            join_button.click()
+                                                            print(f"🔘 Player {i} clicked Join button")
+                                                            player_page.wait_for_load_state('networkidle')
+                                                            time.sleep(2)
+
+                                                            player_page.screenshot(path=f'./tmp/player{i}_04_after_join.png', full_page=True)
+                                                            print(f"✅ Player {i} joined game, URL: {player_page.url}")
+                                                        else:
+                                                            print(f"⚠️  Player {i} couldn't find Join button")
+                                                            player_page.screenshot(path=f'./tmp/player{i}_03_no_join_button.png', full_page=True)
+                                                    else:
+                                                        print(f"⚠️  Player {i} game code input not visible")
+                                                        player_page.screenshot(path=f'./tmp/player{i}_02_no_input.png', full_page=True)
+                                                except Exception as e:
+                                                    print(f"⚠️  Player {i} couldn't find game code input: {e}")
+                                                    player_page.screenshot(path=f'./tmp/player{i}_02_error.png', full_page=True)
+
+                                            # Team creation and joining
+                                            print("\n" + "="*50)
+                                            print("👥 Team Creation and Joining...")
+                                            print("="*50 + "\n")
+
+                                            # Wait for all players to have the team selection modal
+                                            time.sleep(2)
+
+                                            # Player 1: Create Team A
+                                            print("👤 Player 1: Creating Team A...")
+                                            player_pages[0].screenshot(path='./tmp/player1_05_team_modal.png', full_page=True)
+
+                                            # Click "+ Create New Team" button
+                                            create_new_team_btn = player_pages[0].locator('button:has-text("Create New Team"), div:has-text("Create New Team")').first
+                                            if create_new_team_btn.is_visible(timeout=3000):
+                                                create_new_team_btn.click()
+                                                time.sleep(1)
+                                                player_pages[0].screenshot(path='./tmp/player1_06_create_team_clicked.png', full_page=True)
+
+                                                # Now find the team name input and fill it
+                                                team_name_input = player_pages[0].locator('input[type="text"], input[placeholder*="team" i]').first
+                                                if team_name_input.is_visible(timeout=2000):
+                                                    team_name_input.fill('Team A')
+                                                    time.sleep(0.5)
+                                                    player_pages[0].screenshot(path='./tmp/player1_07_team_name_filled.png', full_page=True)
+
+                                                    # Click the Join Game button to confirm
+                                                    join_btn = player_pages[0].locator('button:has-text("Join Game")').first
+                                                    if join_btn.is_visible(timeout=2000):
+                                                        join_btn.click()
+                                                        player_pages[0].wait_for_load_state('networkidle')
+                                                        time.sleep(2)
+                                                        print("✅ Player 1 created Team A")
+                                                        player_pages[0].screenshot(path='./tmp/player1_08_team_created.png', full_page=True)
+                                                    else:
+                                                        print("⚠️  Player 1 couldn't find Join Game button")
+                                                else:
+                                                    print("⚠️  Player 1 couldn't find team name input")
+                                            else:
+                                                print("⚠️  Player 1 couldn't find Create New Team button")
+
+                                            # Player 3: Create Team B
+                                            print("👤 Player 3: Creating Team B...")
+                                            player_pages[2].screenshot(path='./tmp/player3_05_team_modal.png', full_page=True)
+
+                                            create_new_team_btn = player_pages[2].locator('button:has-text("Create New Team"), div:has-text("Create New Team")').first
+                                            if create_new_team_btn.is_visible(timeout=3000):
+                                                create_new_team_btn.click()
+                                                time.sleep(1)
+
+                                                team_name_input = player_pages[2].locator('input[type="text"], input[placeholder*="team" i]').first
+                                                if team_name_input.is_visible(timeout=2000):
+                                                    team_name_input.fill('Team B')
+                                                    time.sleep(0.5)
+
+                                                    join_btn = player_pages[2].locator('button:has-text("Join Game")').first
+                                                    if join_btn.is_visible(timeout=2000):
+                                                        join_btn.click()
+                                                        player_pages[2].wait_for_load_state('networkidle')
+                                                        time.sleep(2)
+                                                        print("✅ Player 3 created Team B")
+                                                        player_pages[2].screenshot(path='./tmp/player3_08_team_created.png', full_page=True)
+                                            else:
+                                                print("⚠️  Player 3 couldn't find Create New Team button")
+
+                                            # Wait for teams to propagate
+                                            time.sleep(3)
+
+                                            # Player 2: Join Team A
+                                            print("👤 Player 2: Joining Team A...")
+                                            player_pages[1].screenshot(path='./tmp/player2_05_team_modal.png', full_page=True)
+
+                                            # Look for Team A in the available teams list
+                                            team_a_option = player_pages[1].locator('text="Team A"').first
+                                            if team_a_option.is_visible(timeout=5000):
+                                                team_a_option.click()
+                                                time.sleep(1)
+
+                                                # Click Join Game to join the selected team
+                                                join_btn = player_pages[1].locator('button:has-text("Join Game")').first
+                                                if join_btn.is_visible(timeout=2000):
+                                                    join_btn.click()
+                                                    player_pages[1].wait_for_load_state('networkidle')
+                                                    time.sleep(2)
+                                                    print("✅ Player 2 joined Team A")
+                                                    player_pages[1].screenshot(path='./tmp/player2_08_joined_team.png', full_page=True)
+                                            else:
+                                                print("⚠️  Player 2 couldn't find Team A")
+                                                player_pages[1].screenshot(path='./tmp/player2_05_no_team_a.png', full_page=True)
+
+                                            # Player 4: Join Team B
+                                            print("👤 Player 4: Joining Team B...")
+                                            player_pages[3].screenshot(path='./tmp/player4_05_team_modal.png', full_page=True)
+
+                                            team_b_option = player_pages[3].locator('text="Team B"').first
+                                            if team_b_option.is_visible(timeout=5000):
+                                                team_b_option.click()
+                                                time.sleep(1)
+
+                                                join_btn = player_pages[3].locator('button:has-text("Join Game")').first
+                                                if join_btn.is_visible(timeout=2000):
+                                                    join_btn.click()
+                                                    player_pages[3].wait_for_load_state('networkidle')
+                                                    time.sleep(2)
+                                                    print("✅ Player 4 joined Team B")
+                                                    player_pages[3].screenshot(path='./tmp/player4_08_joined_team.png', full_page=True)
+                                            else:
+                                                print("⚠️  Player 4 couldn't find Team B")
+                                                player_pages[3].screenshot(path='./tmp/player4_05_no_team_b.png', full_page=True)
+
+                                            # Give time for all team joins to propagate
+                                            time.sleep(2)
+                                            print("✅ All teams created and players assigned!")
+
+                                            # Game Play Loop
+                                            print("\n" + "="*50)
+                                            print("🎲 Starting Game Play...")
+                                            print("="*50 + "\n")
+
+                                            # Wait a moment and take screenshot of initial state
+                                            time.sleep(2)
+                                            page.screenshot(path='./tmp/host_before_start.png', full_page=True)
+
+                                            question_num = 1
+                                            max_questions = 5  # Test with just 5 questions for now
+
+                                            while question_num <= max_questions:
+                                                print(f"\n📝 Question {question_num}...")
+
+                                                # Host advances to next question
+                                                # Try multiple selectors for the next button
+                                                next_button = page.locator('button:has-text("Next Question"), button:has-text("Next"), [aria-label*="Next" i]').first
+
+                                                try:
+                                                    if next_button.is_visible(timeout=5000):
+                                                        print("🔘 Found Next button, clicking...")
+                                                        next_button.click()
+                                                        page.wait_for_load_state('networkidle')
+                                                        time.sleep(2)
+                                                        print("✅ Host advanced to question")
+                                                        page.screenshot(path=f'./tmp/host_question_{question_num}.png', full_page=True)
+
+                                                        # Players answer (randomly one from each team)
+                                                        # Team A: Either player 1 or player 2 answers
+                                                        team_a_player_idx = random.choice([0, 1])
+                                                        team_b_player_idx = random.choice([2, 3])
+
+                                                        for player_idx in [team_a_player_idx, team_b_player_idx]:
+                                                            player_page = player_pages[player_idx]
+                                                            team_name = "Team A" if player_idx < 2 else "Team B"
+
+                                                            # Wait for question to appear
+                                                            time.sleep(1)
+
+                                                            # Find answer buttons (usually 4 options)
+                                                            answer_buttons = player_page.locator('button').all()
+
+                                                            # Filter for answer buttons containing answer text
+                                                            visible_buttons = [btn for btn in answer_buttons if btn.is_visible()]
+
+                                                            if len(visible_buttons) >= 4:
+                                                                # Select one of the first 4 answer buttons
+                                                                selected_button = random.choice(visible_buttons[:4])
+                                                                try:
+                                                                    selected_button.click()
+                                                                    print(f"✅ Player {player_idx + 1} ({team_name}) answered")
+                                                                    time.sleep(0.5)
+                                                                    player_page.screenshot(path=f'./tmp/player{player_idx + 1}_q{question_num}_answered.png', full_page=True)
+                                                                except Exception as e:
+                                                                    print(f"⚠️  Player {player_idx + 1} couldn't answer: {e}")
+                                                            else:
+                                                                print(f"⚠️  Player {player_idx + 1} couldn't find answer buttons")
+
+                                                        # Wait for question to complete
+                                                        time.sleep(2)
+                                                        question_num += 1
+                                                    else:
+                                                        print("⏹️  Next button not visible")
+                                                        break
+                                                except Exception as e:
+                                                    print(f"⏹️  Error with next button: {e}")
+                                                    break
+
+                                            print("\n" + "="*50)
+                                            print("🏁 Game Completed!")
+                                            print("="*50)
+
+                                            # Final screenshots
+                                            page.screenshot(path='./tmp/host_final.png', full_page=True)
+                                            for i, player_page in enumerate(player_pages, 1):
+                                                player_page.screenshot(path=f'./tmp/player{i}_final.png', full_page=True)
+
+                                            # Close player contexts
+                                            for context in player_contexts:
+                                                context.close()
+
+                                        else:
+                                            print("❌ Could not extract game code from page")
                                     else:
                                         print("⚠️  Could not find 'Welcome to the Game!' message")
                                         print("🔍 Looking for welcome-related text...")
