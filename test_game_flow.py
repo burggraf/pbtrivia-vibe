@@ -503,6 +503,21 @@ def test_game_flow():
                                             for i, email in enumerate(player_emails, 1):
                                                 context = browser.new_context()
                                                 player_page = context.new_page()
+
+                                                # Enable console and error logging for this player
+                                                def make_console_handler(player_num):
+                                                    def handle_console(msg):
+                                                        print(f"[Player {player_num} CONSOLE {msg.type}] {msg.text}")
+                                                    return handle_console
+
+                                                def make_error_handler(player_num):
+                                                    def handle_error(exc):
+                                                        print(f"[Player {player_num} ERROR] {exc}")
+                                                    return handle_error
+
+                                                player_page.on("console", make_console_handler(i))
+                                                player_page.on("pageerror", make_error_handler(i))
+
                                                 player_contexts.append(context)
                                                 player_pages.append(player_page)
 
