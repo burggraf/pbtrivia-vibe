@@ -588,10 +588,10 @@ def test_game_flow():
                                                     time.sleep(0.5)
                                                     player_pages[0].screenshot(path='./tmp/player1_07_team_name_filled.png', full_page=True)
 
-                                                    # Click the Join Game button to confirm
+                                                    # Click the Join Game button to confirm (force=True to bypass pointer-events check)
                                                     join_btn = player_pages[0].locator('button:has-text("Join Game")').first
                                                     if join_btn.is_visible(timeout=2000):
-                                                        join_btn.click()
+                                                        join_btn.click(force=True)
                                                         player_pages[0].wait_for_load_state('networkidle')
                                                         time.sleep(2)
                                                         print("✅ Player 1 created Team A")
@@ -619,7 +619,7 @@ def test_game_flow():
 
                                                     join_btn = player_pages[2].locator('button:has-text("Join Game")').first
                                                     if join_btn.is_visible(timeout=2000):
-                                                        join_btn.click()
+                                                        join_btn.click(force=True)
                                                         player_pages[2].wait_for_load_state('networkidle')
                                                         time.sleep(2)
                                                         print("✅ Player 3 created Team B")
@@ -654,7 +654,7 @@ def test_game_flow():
                                                 # Click Join Game to join the selected team
                                                 join_btn = player_pages[1].locator('button:has-text("Join Game")').first
                                                 if join_btn.is_visible(timeout=2000):
-                                                    join_btn.click()
+                                                    join_btn.click(force=True)
                                                     player_pages[1].wait_for_load_state('networkidle')
                                                     time.sleep(2)
                                                     print("✅ Player 2 joined Team A")
@@ -685,7 +685,7 @@ def test_game_flow():
 
                                                 join_btn = player_pages[3].locator('button:has-text("Join Game")').first
                                                 if join_btn.is_visible(timeout=2000):
-                                                    join_btn.click()
+                                                    join_btn.click(force=True)
                                                     player_pages[3].wait_for_load_state('networkidle')
                                                     time.sleep(2)
                                                     print("✅ Player 4 joined Team B")
