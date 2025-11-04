@@ -8,6 +8,7 @@ import LobbyPage from './pages/LobbyPage'
 import JoinPage from './pages/JoinPage'
 import GamePage from './pages/GamePage'
 import ControllerPage from './pages/ControllerPage'
+import VerifyEmailPage from './pages/VerifyEmailPage'
 import AuthGuard from './components/AuthGuard'
 
 function App() {
@@ -87,6 +88,10 @@ function App() {
 				<Route
 					path='/join'
 					element={<JoinPage />}
+				/>
+				<Route
+					path='/verify'
+					element={<VerifyEmailPage />}
 				/>
 				<Route
 					path='/game/:id'
