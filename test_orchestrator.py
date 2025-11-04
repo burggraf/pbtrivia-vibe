@@ -24,7 +24,7 @@ def run_host_and_get_code():
     try:
         # Run host script and capture output in real-time
         process = subprocess.Popen(
-            ['python', 'test_host.py'],
+            [sys.executable, 'test_host.py'],
             stdout=subprocess.PIPE,
             stderr=subprocess.STDOUT,
             text=True,
@@ -163,17 +163,10 @@ def main():
         thread.start()
         creator_threads.append(thread)
 
-    # Wait for team creators to finish
-    for thread in creator_threads:
-        thread.join()
-
-    print("\n" + "="*60)
-    print("✅ ORCHESTRATOR: Team creators finished")
-    print("="*60)
-
-    # Wait a bit for teams to propagate
-    print("\n⏳ ORCHESTRATOR: Waiting 5 seconds for teams to be created...")
-    time.sleep(5)
+    # Don't wait for team creators to finish (they stay alive for the whole game)
+    # Just give them time to create the teams
+    print("\n⏳ ORCHESTRATOR: Waiting 10 seconds for teams to be created...")
+    time.sleep(10)
 
     # Step 4: Launch player 2 and player 4 (team joiners)
     print("\n" + "="*60)
@@ -198,17 +191,25 @@ def main():
         thread.start()
         joiner_threads.append(thread)
 
-    # Wait for team joiners to finish
-    for thread in joiner_threads:
-        thread.join()
+    # Collect all player threads
+    all_player_threads = creator_threads + joiner_threads
 
     print("\n" + "="*60)
-    print("✅ ORCHESTRATOR: All players finished")
+    print("⏳ ORCHESTRATOR: All players launched, waiting for game to complete...")
     print("="*60)
 
     # Step 5: Wait for host to finish
     print("\n⏳ ORCHESTRATOR: Waiting for host to finish...")
     host_process.wait()
+
+    print("\n⏳ ORCHESTRATOR: Host finished, waiting for all players...")
+    # Now wait for all player threads to finish
+    for thread in all_player_threads:
+        thread.join()
+
+    print("\n" + "="*60)
+    print("✅ ORCHESTRATOR: All players finished")
+    print("="*60)
 
     # Step 6: Report results
     print("\n" + "="*60)

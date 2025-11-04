@@ -71,10 +71,23 @@ def run_player_flow(game_code: str, email: str, team_name: str, action: str, pla
             login_button = page.locator('button:has-text("Sign In")').first
             login_button.click()
 
-            page.wait_for_load_state('networkidle')
-            time.sleep(2)
-            print(f"✅ {player_id.upper()}: Logged in", flush=True)
-            page.screenshot(path=f'./tmp/{player_id}_02_logged_in.png', full_page=True)
+            # Wait for navigation with timeout instead of networkidle (which can hang with multiple browsers)
+            print(f"⏳ {player_id.upper()}: Waiting for login to complete...", flush=True)
+            try:
+                page.wait_for_load_state('domcontentloaded', timeout=10000)
+                time.sleep(2)
+                print(f"✅ {player_id.upper()}: Logged in", flush=True)
+            except Exception as e:
+                print(f"⚠️  {player_id.upper()}: Login wait timed out, but continuing: {e}", flush=True)
+                time.sleep(1)
+
+            # Take screenshot (with error handling for parallel browser execution)
+            try:
+                print(f"📸 {player_id.upper()}: Taking logged_in screenshot...", flush=True)
+                page.screenshot(path=f'./tmp/{player_id}_02_logged_in.png', full_page=True)
+                print(f"✅ {player_id.upper()}: Screenshot saved", flush=True)
+            except Exception as e:
+                print(f"⚠️  {player_id.upper()}: Screenshot failed: {e}", flush=True)
 
             # Enter game code
             print(f"🎮 {player_id.upper()}: Entering game code {game_code}", flush=True)
@@ -87,13 +100,25 @@ def run_player_flow(game_code: str, email: str, team_name: str, action: str, pla
                 page.screenshot(path=f'./tmp/{player_id}_03_code_entered.png', full_page=True)
 
                 # Click Join Game button
+                print(f"🔍 {player_id.upper()}: Looking for 'Join Game' button...", flush=True)
+                page.screenshot(path=f'./tmp/{player_id}_03a_before_join_button.png', full_page=True)
+
                 join_button = page.locator('button:has-text("Join Game"), button:has-text("Join")').first
-                if join_button.is_visible(timeout=2000):
+                if join_button.is_visible(timeout=10000):
+                    print(f"✅ {player_id.upper()}: Found 'Join Game' button, clicking...", flush=True)
                     join_button.click()
-                    page.wait_for_load_state('networkidle')
+                    try:
+                        page.wait_for_load_state('domcontentloaded', timeout=10000)
+                    except Exception as e:
+                        print(f"⚠️  {player_id.upper()}: Join wait timed out: {e}", flush=True)
                     time.sleep(2)
                     print(f"✅ {player_id.upper()}: Joined game", flush=True)
                     page.screenshot(path=f'./tmp/{player_id}_04_in_game.png', full_page=True)
+                else:
+                    print(f"❌ {player_id.upper()}: 'Join Game' button not found after 10 seconds!", flush=True)
+                    print(f"📍 {player_id.upper()}: Current URL: {page.url}", flush=True)
+                    page.screenshot(path=f'./tmp/{player_id}_03b_join_button_not_found.png', full_page=True)
+                    print(f"⚠️  {player_id.upper()}: Continuing without joining game...", flush=True)
 
             # Handle team creation or joining
             if action == 'create':
@@ -123,7 +148,10 @@ def run_player_flow(game_code: str, email: str, team_name: str, action: str, pla
                         team_input.press('Enter')
                         print(f"📋 {player_id.upper()}: ENTER key pressed, waiting for network...", flush=True)
 
-                        page.wait_for_load_state('networkidle')
+                        try:
+                            page.wait_for_load_state('domcontentloaded', timeout=10000)
+                        except Exception as e:
+                            print(f"⚠️  {player_id.upper()}: Team creation wait timed out: {e}", flush=True)
                         time.sleep(2)
 
                         # Check if modal is still open (indicates failure)
@@ -148,31 +176,47 @@ def run_player_flow(game_code: str, email: str, team_name: str, action: str, pla
                 # Wait for team to appear
                 team_found = False
                 for attempt in range(15):  # Try for 15 seconds
-                    team_option = page.locator(f'text="{team_name}"').first
-                    if team_option.is_visible(timeout=1000):
+                    # Find the button that contains the team name (not just the text)
+                    team_button = page.locator(f'button:has-text("{team_name}")').first
+                    if team_button.is_visible(timeout=1000):
                         team_found = True
                         print(f"✅ {player_id.upper()}: Found team '{team_name}'", flush=True)
-                        team_option.click()
-                        time.sleep(1.5)
+
+                        # Click the team button to select it
+                        team_button.click(force=True)
+                        print(f"🔘 {player_id.upper()}: Clicked team button for '{team_name}'", flush=True)
+                        time.sleep(2)  # Increased wait for React state to update
                         page.screenshot(path=f'./tmp/{player_id}_06_team_selected.png', full_page=True)
 
-                        # Press ENTER to join the selected team
-                        print(f"⌨️  {player_id.upper()}: Pressing ENTER key to join team...", flush=True)
-                        page.keyboard.press('Enter')
-                        print(f"📋 {player_id.upper()}: ENTER key pressed, waiting for network...", flush=True)
+                        # Click the "Join Game" button at the bottom of the modal
+                        print(f"🔵 {player_id.upper()}: Looking for 'Join Game' submit button...", flush=True)
+                        # Use a more specific selector for the blue submit button
+                        join_button = page.locator('button:has-text("Join Game")').filter(has=page.locator('text="Join Game"')).last
 
-                        page.wait_for_load_state('networkidle')
-                        time.sleep(2)
+                        if join_button.is_visible(timeout=3000):
+                            print(f"🔵 {player_id.upper()}: Clicking 'Join Game' submit button...", flush=True)
+                            join_button.click(force=True)
+                            print(f"📋 {player_id.upper()}: Button clicked, waiting for navigation...", flush=True)
 
-                        # Check if we successfully joined
-                        modal_still_open = page.locator('text="Select your team"').is_visible()
-                        if modal_still_open:
-                            print(f"⚠️  {player_id.upper()}: Modal still open - join may have failed!", flush=True)
+                            try:
+                                page.wait_for_load_state('domcontentloaded', timeout=10000)
+                            except Exception as e:
+                                print(f"⚠️  {player_id.upper()}: Team join wait timed out: {e}", flush=True)
+                            time.sleep(2)
+
+                            # Check if we successfully joined
+                            modal_still_open = page.locator('text="Select your team"').is_visible()
+                            if modal_still_open:
+                                print(f"⚠️  {player_id.upper()}: Modal still open - join may have failed!", flush=True)
+                                print(f"📍 {player_id.upper()}: Current URL: {page.url}", flush=True)
+                            else:
+                                print(f"✅ {player_id.upper()}: Modal closed - join appears successful", flush=True)
+
+                            print(f"✅ {player_id.upper()}: Joined team '{team_name}'", flush=True)
+                            page.screenshot(path=f'./tmp/{player_id}_07_team_joined.png', full_page=True)
                         else:
-                            print(f"✅ {player_id.upper()}: Modal closed - join appears successful", flush=True)
+                            print(f"❌ {player_id.upper()}: 'Join Game' submit button not visible!", flush=True)
 
-                        print(f"✅ {player_id.upper()}: Joined team '{team_name}'", flush=True)
-                        page.screenshot(path=f'./tmp/{player_id}_07_team_joined.png', full_page=True)
                         break
                     print(f"⏳ {player_id.upper()}: Waiting for team '{team_name}'... ({attempt + 1}/15)", flush=True)
                     time.sleep(1)
@@ -182,34 +226,63 @@ def run_player_flow(game_code: str, email: str, team_name: str, action: str, pla
                     page.screenshot(path=f'./tmp/{player_id}_05_team_not_found.png', full_page=True)
 
             # Play through questions - randomly answer
-            print(f"🎲 {player_id.upper()}: Waiting for questions", flush=True)
+            # With 3 rounds and 3 questions each, we have 9 questions total
+            print(f"🎲 {player_id.upper()}: Waiting for questions to start", flush=True)
 
-            for question_num in range(1, 6):  # 5 questions
-                # Wait for question to appear
-                time.sleep(2)
+            for question_num in range(1, 10):  # 9 questions (3 rounds x 3 questions)
+                print(f"📝 {player_id.upper()}: Waiting for Question {question_num}...", flush=True)
 
-                # Try to find answer buttons
-                answer_buttons = page.locator('button').all()
-                available_answers = []
+                # Wait for answer buttons to appear (up to 30 seconds)
+                answer_found = False
+                max_wait = 30
+                start_wait = time.time()
 
-                for btn in answer_buttons:
-                    if btn.is_visible():
-                        btn_text = btn.text_content() or ''
-                        # Answer buttons typically have A), B), C), D) or similar
-                        if any(marker in btn_text for marker in ['A)', 'B)', 'C)', 'D)', '1.', '2.', '3.', '4.']):
-                            available_answers.append(btn)
+                while not answer_found and (time.time() - start_wait) < max_wait:
+                    try:
+                        # Look for answer buttons - they start with "A.", "B.", "C.", "D."
+                        available_answers = []
 
-                if available_answers:
-                    # Randomly choose an answer
-                    chosen_answer = random.choice(available_answers)
-                    chosen_answer.click()
-                    print(f"✅ {player_id.upper()}: Answered question {question_num}", flush=True)
-                    page.screenshot(path=f'./tmp/{player_id}_q{question_num}_answered.png', full_page=True)
-                    time.sleep(1)
-                else:
-                    print(f"⚠️  {player_id.upper()}: No answer buttons for Q{question_num}", flush=True)
+                        # Try to find elements that start with answer labels
+                        for label in ['A.', 'B.', 'C.', 'D.']:
+                            answer_elements = page.locator(f'text=/^{label}\\s+/').all()
+                            for elem in answer_elements:
+                                if elem.is_visible():
+                                    # Get the parent button/div that's clickable
+                                    parent = elem.locator('xpath=..').first
+                                    if parent.is_visible():
+                                        available_answers.append(parent)
 
-            print(f"🏁 {player_id.upper()}: Completed game!", flush=True)
+                        if available_answers:
+                            answer_found = True
+
+                            # Random wait time between 1-5 seconds before answering
+                            wait_time = random.uniform(1, 5)
+                            print(f"⏳ {player_id.upper()}: Waiting {wait_time:.1f}s before answering...", flush=True)
+                            time.sleep(wait_time)
+
+                            # Randomly choose an answer
+                            chosen_answer = random.choice(available_answers)
+                            answer_text = chosen_answer.text_content()[:50] if chosen_answer.text_content() else "unknown"
+
+                            print(f"🎯 {player_id.upper()}: Clicking answer: {answer_text}", flush=True)
+                            chosen_answer.click()
+                            print(f"✅ {player_id.upper()}: Answered question {question_num}", flush=True)
+                            page.screenshot(path=f'./tmp/{player_id}_q{question_num}_answered.png', full_page=True)
+
+                            # Wait a bit for answer to register
+                            time.sleep(2)
+                            break
+                        else:
+                            time.sleep(1)
+                    except Exception as e:
+                        print(f"⚠️  {player_id.upper()}: Error finding buttons: {e}", flush=True)
+                        time.sleep(1)
+
+                if not answer_found:
+                    print(f"⚠️  {player_id.upper()}: No answer buttons found for Q{question_num} after {max_wait}s", flush=True)
+                    page.screenshot(path=f'./tmp/{player_id}_q{question_num}_no_answers.png', full_page=True)
+
+            print(f"🏁 {player_id.upper()}: Completed all questions!", flush=True)
             page.screenshot(path=f'./tmp/{player_id}_final.png', full_page=True)
 
             time.sleep(5)  # Keep browser open

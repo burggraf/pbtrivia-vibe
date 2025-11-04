@@ -166,22 +166,34 @@ def run_host_flow():
             max_wait = 60  # seconds
             start_time = time.time()
 
+            check_count = 0
             while not teams_ready and (time.time() - start_time) < max_wait:
+                # Refresh page every 3 checks (every 6 seconds) to get latest player data
+                if check_count > 0 and check_count % 3 == 0:
+                    print("🔄 HOST: Refreshing page to check for new players...", flush=True)
+                    page.reload()
+                    time.sleep(2)
+
+                check_count += 1
                 content = page.content()
 
-                # Check for "Teams Ready: 2" (meaning 2 teams exist)
-                teams_element = page.locator('text=/Teams Ready.*2/').first
-                if teams_element.is_visible(timeout=1000):
-                    # Also verify we have at least 4 players (2 per team)
-                    # Count player names: User1, User2, User3, User4
+                # Check if "Start Game" button is visible (indicates teams are ready)
+                start_button = page.locator('button:has-text("Start Game")').first
+                if start_button.is_visible(timeout=1000):
+                    # Count how many players we have
                     player_count = content.count('User1') + content.count('User2') + content.count('User3') + content.count('User4')
 
-                    if player_count >= 4:
-                        print(f"✅ HOST: Both teams ready with {player_count} players!", flush=True)
+                    # Check if we have at least 2 teams
+                    has_team_a = 'Team A' in content
+                    has_team_b = 'Team B' in content
+
+                    # Wait for all 4 players to join before starting
+                    if has_team_a and has_team_b and player_count >= 4:
+                        print(f"✅ HOST: Teams ready with {player_count} players!", flush=True)
                         teams_ready = True
                         break
                     else:
-                        print(f"⏳ HOST: 2 teams found, but only {player_count} players joined (need 4)...", flush=True)
+                        print(f"⏳ HOST: Waiting for all players... (TeamA: {has_team_a}, TeamB: {has_team_b}, Players: {player_count}/4)", flush=True)
 
                 time.sleep(2)
                 page.screenshot(path='./tmp/host_05_waiting_teams.png', full_page=True)
@@ -202,18 +214,23 @@ def run_host_flow():
 
                     content = page.content()
 
-                    # Check for "Teams Ready: 2"
-                    teams_element = page.locator('text=/Teams Ready.*2/').first
-                    if teams_element.is_visible(timeout=1000):
+                    # Check if "Start Game" button is visible
+                    start_button = page.locator('button:has-text("Start Game")').first
+                    if start_button.is_visible(timeout=1000):
                         # Count players
                         player_count = content.count('User1') + content.count('User2') + content.count('User3') + content.count('User4')
 
-                        if player_count >= 4:
+                        # Check if we have both teams
+                        has_team_a = 'Team A' in content
+                        has_team_b = 'Team B' in content
+
+                        # Wait for all 4 players
+                        if has_team_a and has_team_b and player_count >= 4:
                             print(f"✅ HOST: Teams appeared after refresh with {player_count} players!", flush=True)
                             teams_ready = True
                             break
                         else:
-                            print(f"⏳ HOST: 2 teams found, but only {player_count}/4 players joined...", flush=True)
+                            print(f"⏳ HOST: Waiting for all players... (TeamA: {has_team_a}, TeamB: {has_team_b}, Players: {player_count}/4)", flush=True)
                     else:
                         print(f"⏳ HOST: Still waiting for teams... ({int(time.time() - start_extended)}s elapsed)", flush=True)
 
@@ -223,6 +240,19 @@ def run_host_flow():
                     print("⚠️  HOST: Still no teams after extended wait", flush=True)
                     browser.close()
                     return game_code
+
+            # Click Start Game button now that all players are ready
+            print("🎮 HOST: All players ready, clicking Start Game button...", flush=True)
+            start_game_btn = page.locator('button:has-text("Start Game")').first
+            if start_game_btn.is_visible(timeout=5000):
+                start_game_btn.click()
+                time.sleep(2)
+                page.screenshot(path='./tmp/host_07_game_started.png', full_page=True)
+                print("✅ HOST: Game started!", flush=True)
+            else:
+                print("⚠️  HOST: Start Game button not found!", flush=True)
+                browser.close()
+                return game_code
 
             # Start playing through questions
             print("🎲 HOST: Starting questions", flush=True)
