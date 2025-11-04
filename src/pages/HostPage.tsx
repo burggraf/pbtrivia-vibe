@@ -2,12 +2,12 @@ import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { Button } from '@/components/ui/button'
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion'
-import ThemeToggle from '@/components/ThemeToggle'
+import AppHeader from '@/components/ui/AppHeader'
 import GameEditModal from '@/components/games/GameEditModal'
 import RoundEditModal from '@/components/games/RoundEditModal'
 import QuestionsList from '@/components/games/QuestionsList'
 import CategoryIcon, { getAvailableCategories } from '@/components/ui/CategoryIcon'
-import { Info, Plus, Play } from 'lucide-react'
+import { Info, Plus, Play, LogOut } from 'lucide-react'
 import pb from '@/lib/pocketbase'
 import { gamesService } from '@/lib/games'
 import { roundsService } from '@/lib/rounds'
@@ -386,26 +386,24 @@ export default function HostPage() {
     return remainingMinutes > 0 ? `${hours}h ${remainingMinutes}m` : `${hours}h`
   }
 
-  
+
   return (
-    <div className="min-h-screen bg-[#fafafa] dark:bg-slate-950 p-12">
-      <div className="max-w-[1200px] mx-auto">
-        <div className="flex justify-between items-center mb-12">
-          <div className="flex flex-col gap-1">
-            <h1 className="text-[28px] font-semibold tracking-tight text-[#0a0a0a] dark:text-white">Host Dashboard</h1>
-            <p className="text-[14px] text-[#737373] dark:text-slate-400">Manage your trivia games</p>
-          </div>
-          <div className="flex gap-2 items-center">
-            <ThemeToggle />
-            <Button
-              variant="outline"
-              onClick={handleLogout}
-              className="h-[32px] px-3 text-[13px] font-medium border-[#e5e5e5] dark:border-slate-600 text-[#525252] dark:text-slate-300 hover:bg-[#fafafa] dark:hover:bg-slate-800"
-            >
-              Logout
-            </Button>
-          </div>
-        </div>
+    <div className="min-h-screen bg-[#fafafa] dark:bg-slate-950">
+      <AppHeader
+        title="Game Manager"
+        leftButton={
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={handleLogout}
+            className="text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700"
+            aria-label="Logout"
+          >
+            <LogOut className="h-5 w-5" />
+          </Button>
+        }
+      />
+      <div className="max-w-[1200px] mx-auto p-12">
 
         <div className="bg-white dark:bg-slate-900 border border-[#e5e5e5] dark:border-slate-800 rounded-lg overflow-hidden">
             <div className="flex items-center justify-between px-5 py-4 border-b border-[#e5e5e5] dark:border-slate-800">
