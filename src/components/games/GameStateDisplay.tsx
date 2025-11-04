@@ -88,17 +88,17 @@ export default function GameStateDisplay({ gameData, rounds, game }: GameStateDi
                 <Button
                   onClick={handleCopyToClipboard}
                   variant="outline"
-                  className="p-8 rounded-lg shadow-sm h-auto flex flex-col hover:scale-105 hover:shadow-lg transition-transform duration-200 focus-visible:ring-blue-500 active:scale-98 [&_svg]:!size-auto"
+                  className="p-6 rounded-lg shadow-sm h-auto flex flex-col hover:scale-105 hover:shadow-lg transition-transform duration-200 focus-visible:ring-blue-500 active:scale-98 [&_svg]:!size-auto"
                   aria-label="Click to copy game join link to clipboard"
                   type="button"
                 >
                   <QRCode
                     value={`${getPublicUrl()}/join?code=${game?.code}`}
-                    size={320}
+                    size={240}
                     level="M"
                     aria-label={`QR code to join game ${game?.code}`}
                   />
-                  <p className="text-center text-base text-slate-600 dark:text-slate-400 mt-4">
+                  <p className="text-center text-sm text-slate-600 dark:text-slate-400 mt-3">
                     Scan to join
                   </p>
                 </Button>
