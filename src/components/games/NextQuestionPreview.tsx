@@ -322,7 +322,7 @@ export default function NextQuestionPreview({ gameId, gameData, rounds }: NextQu
                 Next Question:  Round {nextQuestion.roundNumber} of {nextQuestion.totalRounds} - Question {nextQuestion.questionNumber}
               </h2>
               <div className="space-y-2">
-                <div className="flex flex-row items-center justify-between">
+                <div className="flex flex-row items-center justify-between px-4">
                   <Badge variant="secondary" className="text-xs md:text-sm px-2 py-1 md:px-3 md:py-1">
                     {nextQuestion.category}
                   </Badge>
