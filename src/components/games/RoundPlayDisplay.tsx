@@ -157,10 +157,10 @@ export default function RoundPlayDisplay({ gameData, mode = 'controller', onAnsw
         </h2>
         <div className="flex flex-col sm:flex-row items-center justify-center gap-1 sm:gap-2">
           <Badge variant="secondary" className="text-xs md:text-sm px-2 py-1 md:px-3 md:py-1">
-            Category: {gameData.question.category}
+            {gameData.question.category}
           </Badge>
           <Badge variant="outline" className="text-xs md:text-sm px-2 py-1 md:px-3 md:py-1">
-            Difficulty: {gameData.question.difficulty}
+            {gameData.question.difficulty}
           </Badge>
         </div>
       </div>

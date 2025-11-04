@@ -323,10 +323,10 @@ export default function NextQuestionPreview({ gameId, gameData, rounds }: NextQu
               </h2>
               <div className="flex flex-col sm:flex-row items-center justify-center gap-1 sm:gap-2">
                 <Badge variant="secondary" className="text-xs md:text-sm px-2 py-1 md:px-3 md:py-1">
-                  Category: {nextQuestion.category}
+                  {nextQuestion.category}
                 </Badge>
                 <Badge variant="outline" className="text-xs md:text-sm px-2 py-1 md:px-3 md:py-1">
-                  Difficulty: {nextQuestion.difficulty}
+                  {nextQuestion.difficulty}
                 </Badge>
                 <Button
                   variant="outline"
