@@ -4,6 +4,7 @@ import { Badge } from '@/components/ui/badge'
 import pb from '@/lib/pocketbase'
 import { gameAnswersService } from '@/lib/gameAnswers'
 import { GameScoreboard } from '@/types/games'
+import { useTextSize } from '@/contexts/TextSizeContext'
 
 interface RoundPlayDisplayProps {
   gameData: {
@@ -41,6 +42,35 @@ interface RoundPlayDisplayProps {
 
 export default function RoundPlayDisplay({ gameData, mode = 'controller', onAnswerSubmit, gameId, scoreboard }: RoundPlayDisplayProps) {
   const [teamAnswerStatus, setTeamAnswerStatus] = useState<Map<string, { answered: boolean, isCorrect?: boolean }>>(new Map()) // Track which teams have answered and their correctness
+  const { textSize } = useTextSize()
+
+  // Get text size classes based on the current text size setting
+  const getTextSizeClasses = () => {
+    switch (textSize) {
+      case 'small':
+        return {
+          question: 'text-base md:text-xl',
+          answer: 'text-sm md:text-base'
+        }
+      case 'medium':
+        return {
+          question: 'text-lg md:text-2xl',
+          answer: 'text-base md:text-lg'
+        }
+      case 'large':
+        return {
+          question: 'text-xl md:text-3xl',
+          answer: 'text-lg md:text-xl'
+        }
+      case 'xlarge':
+        return {
+          question: 'text-2xl md:text-4xl',
+          answer: 'text-xl md:text-2xl'
+        }
+    }
+  }
+
+  const textSizeClasses = getTextSizeClasses()
 
   // Reset team answer status when question changes
   useEffect(() => {
@@ -168,7 +198,7 @@ export default function RoundPlayDisplay({ gameData, mode = 'controller', onAnsw
       {/* Question Card */}
       <Card className="max-w-3xl mx-auto mb-4 md:mb-6">
         <CardHeader>
-          <CardTitle className="text-base md:text-xl">
+          <CardTitle className={textSizeClasses.question}>
             {gameData.question.question}
           </CardTitle>
         </CardHeader>
@@ -222,7 +252,7 @@ export default function RoundPlayDisplay({ gameData, mode = 'controller', onAnsw
                       key={answer.label}
                       className={`${answerClasses} flex justify-between items-start`}
                     >
-                      <div>
+                      <div className={textSizeClasses.answer}>
                         <span className="font-medium">{answer.label}.</span> {answer.text}
                       </div>
                       <div className="flex-shrink-0 ml-2">
@@ -245,7 +275,7 @@ export default function RoundPlayDisplay({ gameData, mode = 'controller', onAnsw
                       onClick={(e) => !isDisabled && handleAnswerClick(answer.label, e)}
                       tabIndex={-1}
                     >
-                      <div>
+                      <div className={textSizeClasses.answer}>
                         <span className="font-medium">{answer.label}.</span> {answer.text}
                       </div>
                       <div className="flex-shrink-0 ml-2">

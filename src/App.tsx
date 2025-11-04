@@ -10,6 +10,8 @@ import GamePage from './pages/GamePage'
 import ControllerPage from './pages/ControllerPage'
 import VerifyEmailPage from './pages/VerifyEmailPage'
 import AuthGuard from './components/AuthGuard'
+import { Toaster } from '@/components/ui/sonner'
+import { ThemeProvider } from './contexts/ThemeContext'
 
 function App() {
 	const [connectionStatus, setConnectionStatus] = useState<'connecting' | 'connected' | 'error'>(
@@ -74,40 +76,43 @@ function App() {
 	}
 
 	return (
-		<Router>
-			<Routes>
-				<Route path='/' element={<AuthPage />} />
-				<Route
-					path='/host'
-					element={isAuthenticated ? <HostPage /> : <Navigate to='/' replace />}
-				/>
-								<Route
-					path='/lobby'
-					element={isAuthenticated ? <LobbyPage /> : <Navigate to='/' replace />}
-				/>
-				<Route
-					path='/join'
-					element={<JoinPage />}
-				/>
-				<Route
-					path='/verify'
-					element={<VerifyEmailPage />}
-				/>
-				<Route
-					path='/game/:id'
-					element={
-						<AuthGuard>
-							<GamePage />
-						</AuthGuard>
-					}
-				/>
-				<Route
-					path='/controller/:id'
-					element={isAuthenticated ? <ControllerPage /> : <Navigate to='/' replace />}
-				/>
-				<Route path='*' element={<Navigate to='/' replace />} />
-			</Routes>
-		</Router>
+		<ThemeProvider>
+			<Toaster />
+			<Router>
+				<Routes>
+					<Route path='/' element={<AuthPage />} />
+					<Route
+						path='/host'
+						element={isAuthenticated ? <HostPage /> : <Navigate to='/' replace />}
+					/>
+									<Route
+						path='/lobby'
+						element={isAuthenticated ? <LobbyPage /> : <Navigate to='/' replace />}
+					/>
+					<Route
+						path='/join'
+						element={<JoinPage />}
+					/>
+					<Route
+						path='/verify'
+						element={<VerifyEmailPage />}
+					/>
+					<Route
+						path='/game/:id'
+						element={
+							<AuthGuard>
+								<GamePage />
+							</AuthGuard>
+						}
+					/>
+					<Route
+						path='/controller/:id'
+						element={isAuthenticated ? <ControllerPage /> : <Navigate to='/' replace />}
+					/>
+					<Route path='*' element={<Navigate to='/' replace />} />
+				</Routes>
+			</Router>
+		</ThemeProvider>
 	)
 }
 
