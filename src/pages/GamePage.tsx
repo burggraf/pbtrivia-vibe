@@ -1,7 +1,8 @@
 import { useParams, useNavigate } from 'react-router-dom'
 import { useState, useEffect } from 'react'
+import { ArrowLeft } from 'lucide-react'
 import { Button } from '@/components/ui/button'
-import ThemeToggle from '@/components/ThemeToggle'
+import AppHeader from '@/components/ui/AppHeader'
 import GameStateRenderer from '@/components/games/GameStateRenderer'
 import { gamesService } from '@/lib/games'
 import { gameAnswersService } from '@/lib/gameAnswers'
@@ -17,15 +18,6 @@ export default function GamePage() {
   const [isSubmittingAnswer, setIsSubmittingAnswer] = useState(false)
   const [currentTeamId, setCurrentTeamId] = useState<string | null>(null)
   const [teamAnswer, setTeamAnswer] = useState<{ answer: string, isCorrect?: boolean } | null>(null)
-
-  const handleLogout = async () => {
-    try {
-      pb.authStore.clear()
-      window.location.href = '/'
-    } catch (error) {
-      console.error('Logout failed:', error)
-    }
-  }
 
   const handleAnswerSubmit = async (selectedLabel: string) => {
     if (!id || !gameData?.question || !currentTeamId || isSubmittingAnswer) return
@@ -309,37 +301,26 @@ export default function GamePage() {
   }, [id])
 
   return (
-    <div className="min-h-screen bg-slate-50 dark:bg-slate-900 p-4 md:p-6 lg:p-8">
-      <div className="max-w-6xl mx-auto">
-        <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-3 mb-4 md:mb-6">
-          {game?.name && (
-            <h1 className="text-lg md:text-2xl font-semibold text-slate-800 dark:text-slate-100 text-center sm:text-left">
-              {game.name}
-            </h1>
-          )}
-          <div className="flex gap-2 justify-center sm:justify-end">
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => navigate('/lobby')}
-              className="border-slate-300 dark:border-slate-600 text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800"
-            >
-              ← Lobby
-            </Button>
-            <ThemeToggle />
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={handleLogout}
-              className="border-slate-300 dark:border-slate-600 text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800"
-            >
-              Logout
-            </Button>
-          </div>
-        </div>
+    <div className="min-h-screen bg-slate-50 dark:bg-slate-900">
+      <AppHeader
+        title={game?.name || 'Game'}
+        leftButton={
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={() => navigate('/lobby')}
+            className="text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700"
+            aria-label="Back to Lobby"
+          >
+            <ArrowLeft className="h-5 w-5" />
+          </Button>
+        }
+      />
 
-        {/* Game State Renderer */}
-        <GameStateRenderer
+      <div className="max-w-6xl mx-auto p-4 md:p-6 lg:p-8">
+
+      {/* Game State Renderer */}
+      <GameStateRenderer
           gameData={{
             ...gameData,
             playerTeam: currentTeamId,

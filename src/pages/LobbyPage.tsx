@@ -1,9 +1,10 @@
 import { useState, useRef, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
+import { LogOut } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
-import ThemeToggle from '@/components/ThemeToggle'
+import AppHeader from '@/components/ui/AppHeader'
 import TeamSelectionModal from '@/components/games/TeamSelectionModal'
 import { gamesService, gameTeamsService, gamePlayersService } from '@/lib/games'
 import pb from '@/lib/pocketbase'
@@ -145,25 +146,26 @@ export default function LobbyPage() {
   }
 
   return (
-    <div className="min-h-screen bg-slate-50 dark:bg-slate-900 px-6 py-4 md:p-6 lg:p-8">
-      <div className="w-full max-w-4xl mx-auto">
-        <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-3 mb-4 md:mb-6">
-          <h1 className="text-lg md:text-2xl font-semibold text-slate-800 dark:text-slate-100 text-center sm:text-left">Lobby</h1>
-          <div className="flex gap-2 justify-center sm:justify-end">
-            <ThemeToggle />
-            <Button
-              variant="outline"
-              size="default"
-              onClick={handleLogout}
-              className="min-h-11 border-slate-300 dark:border-slate-600 text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800"
-            >
-              Logout
-            </Button>
-          </div>
-        </div>
+    <div className="min-h-screen bg-slate-50 dark:bg-slate-900">
+      <AppHeader
+        title="Lobby"
+        leftButton={
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={handleLogout}
+            className="text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700"
+            aria-label="Logout"
+          >
+            <LogOut className="h-5 w-5" />
+          </Button>
+        }
+      />
 
-        {/* Join Game Section */}
-        <Card className="mx-4 sm:mx-auto max-w-sm bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700">
+      <div className="w-full max-w-4xl mx-auto px-6 py-4 md:p-6 lg:p-8">
+
+      {/* Join Game Section */}
+      <Card className="mx-4 sm:mx-auto max-w-sm bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700">
             <CardHeader className="text-center pb-4">
               <CardTitle className="text-xl md:text-2xl font-bold text-slate-800 dark:text-slate-100">Join a Game</CardTitle>
               <p className="text-sm text-slate-600 dark:text-slate-400 mt-2">Enter your game code</p>
@@ -208,16 +210,16 @@ export default function LobbyPage() {
                 </div>
               )}
             </CardContent>
-        </Card>
-      </div>
+      </Card>
 
-      {/* Team Selection Modal */}
-      <TeamSelectionModal
-        isOpen={showTeamModal}
-        onClose={() => setShowTeamModal(false)}
-        gameId={currentGame?.id || ''}
-        onTeamSelected={handleTeamSelected}
-      />
+        {/* Team Selection Modal */}
+        <TeamSelectionModal
+          isOpen={showTeamModal}
+          onClose={() => setShowTeamModal(false)}
+          gameId={currentGame?.id || ''}
+          onTeamSelected={handleTeamSelected}
+        />
+      </div>
     </div>
   )
 }
