@@ -20,6 +20,8 @@ export default function ProfileModal({ isOpen, onClose }: ProfileModalProps) {
   const [avatarPreview, setAvatarPreview] = useState<string | null>(null)
   const fileInputRef = useRef<HTMLInputElement>(null)
   const [avatarFile, setAvatarFile] = useState<File | null>(null)
+  const [isResendingVerification, setIsResendingVerification] = useState(false)
+  const [verificationSent, setVerificationSent] = useState(false)
 
   const getAvatarUrl = () => {
     if (avatarPreview) {
@@ -137,6 +139,29 @@ export default function ProfileModal({ isOpen, onClose }: ProfileModalProps) {
     }
   }
 
+  const handleResendVerification = async () => {
+    if (!pb.authStore.model?.email) {
+      setError('Email not found')
+      return
+    }
+
+    try {
+      setIsResendingVerification(true)
+      setError('')
+      setVerificationSent(false)
+
+      await pb.collection('users').requestVerification(pb.authStore.model.email)
+
+      setVerificationSent(true)
+      console.log('Verification email sent successfully')
+    } catch (error) {
+      console.error('Failed to resend verification email:', error)
+      setError('Failed to send verification email. Please try again.')
+    } finally {
+      setIsResendingVerification(false)
+    }
+  }
+
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="max-w-md">
@@ -208,6 +233,26 @@ export default function ProfileModal({ isOpen, onClose }: ProfileModalProps) {
               )}
             </div>
           </div>
+
+          {/* Resend Verification Button */}
+          {!pb.authStore.model?.verified && (
+            <div className="flex flex-col gap-2">
+              <Button
+                variant="outline"
+                size="sm"
+                disabled={isResendingVerification || isLoading}
+                onClick={handleResendVerification}
+                className="w-full"
+              >
+                {isResendingVerification ? 'Sending...' : 'Resend Verification Email'}
+              </Button>
+              {verificationSent && (
+                <div className="text-sm text-green-600 dark:text-green-400">
+                  Verification email sent! Please check your inbox.
+                </div>
+              )}
+            </div>
+          )}
 
           {/* Name (editable) - placeholder */}
           <div>

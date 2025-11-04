@@ -65,6 +65,7 @@ export default function AuthPage() {
     }
 
     try {
+      // Create the user account
       await pb.collection('users').create({
         email: formData.email,
         password: formData.password,
@@ -72,9 +73,18 @@ export default function AuthPage() {
         name: formData.name
       })
 
-      setSuccess('Registration successful! Please check your email to verify your account.')
-      setMode('login')
-      setFormData({ email: '', password: '', passwordConfirm: '', name: '' })
+      // Request email verification
+      try {
+        await pb.collection('users').requestVerification(formData.email)
+      } catch (verificationErr) {
+        // Log but don't fail registration if verification email fails
+        console.warn('Failed to send verification email:', verificationErr)
+      }
+
+      // Auto-login after successful registration
+      await pb.collection('users').authWithPassword(formData.email, formData.password)
+
+      setSuccess('Account created successfully! Please check your email to verify your account.')
     } catch (err: any) {
       setError(err.message || 'Registration failed')
     } finally {
