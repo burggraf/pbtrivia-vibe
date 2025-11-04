@@ -11,6 +11,7 @@ import ControllerPage from './pages/ControllerPage'
 import VerifyEmailPage from './pages/VerifyEmailPage'
 import AuthGuard from './components/AuthGuard'
 import { Toaster } from '@/components/ui/sonner'
+import { ThemeProvider } from './contexts/ThemeContext'
 
 function App() {
 	const [connectionStatus, setConnectionStatus] = useState<'connecting' | 'connected' | 'error'>(
@@ -75,7 +76,7 @@ function App() {
 	}
 
 	return (
-		<>
+		<ThemeProvider>
 			<Toaster />
 			<Router>
 				<Routes>
@@ -111,7 +112,7 @@ function App() {
 					<Route path='*' element={<Navigate to='/' replace />} />
 				</Routes>
 			</Router>
-		</>
+		</ThemeProvider>
 	)
 }
 
