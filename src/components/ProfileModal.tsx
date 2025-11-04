@@ -15,6 +15,37 @@ interface ProfileModalProps {
 export default function ProfileModal({ isOpen, onClose }: ProfileModalProps) {
   const navigate = useNavigate()
   const [name, setName] = useState(pb.authStore.model?.name || '')
+  const [isLoading, setIsLoading] = useState(false)
+  const [error, setError] = useState('')
+
+  const handleSave = async () => {
+    if (!name.trim()) {
+      setError('Name is required')
+      return
+    }
+
+    if (!pb.authStore.model?.id) {
+      setError('User not authenticated')
+      return
+    }
+
+    try {
+      setIsLoading(true)
+      setError('')
+
+      await pb.collection('users').update(pb.authStore.model.id, {
+        name: name.trim()
+      })
+
+      // Success - could add toast notification here
+      console.log('Profile updated successfully')
+    } catch (error) {
+      console.error('Failed to update profile:', error)
+      setError('Failed to update profile. Please try again.')
+    } finally {
+      setIsLoading(false)
+    }
+  }
 
   const handleLogout = async () => {
     try {
@@ -76,20 +107,30 @@ export default function ProfileModal({ isOpen, onClose }: ProfileModalProps) {
               value={name}
               onChange={(e) => setName(e.target.value)}
               className="w-full"
+              disabled={isLoading}
             />
           </div>
+
+          {error && (
+            <div className="text-sm text-red-600 dark:text-red-400">
+              {error}
+            </div>
+          )}
 
           {/* Action buttons */}
           <div className="flex flex-col gap-2 pt-4">
             <Button
               className="w-full bg-blue-600 hover:bg-blue-700 dark:bg-blue-500 dark:hover:bg-blue-600"
+              disabled={isLoading}
+              onClick={handleSave}
             >
-              Save Changes
+              {isLoading ? 'Saving...' : 'Save Changes'}
             </Button>
             <Button
               variant="destructive"
               className="w-full"
               onClick={handleLogout}
+              disabled={isLoading}
             >
               Log Out
             </Button>
