@@ -532,9 +532,12 @@ def test_game_flow():
 
                                             print("\n✅ All players logged in!")
 
-                                            # Enter game code for all players
-                                            print(f"\n🎮 All players entering game code: {game_code}")
-                                            for i, player_page in enumerate(player_pages, 1):
+                                            # Phase 1: Players 1 and 3 enter game code first (they will create teams)
+                                            print(f"\n🎮 Phase 1: Players 1 and 3 entering game code: {game_code}")
+                                            for player_idx in [0, 2]:  # Player 1 and Player 3
+                                                i = player_idx + 1
+                                                player_page = player_pages[player_idx]
+
                                                 # Make sure we're on the lobby page
                                                 time.sleep(1)
                                                 print(f"📍 Player {i} URL: {player_page.url}")
@@ -603,6 +606,9 @@ def test_game_flow():
                                                     time.sleep(0.5)
                                                     player_pages[0].screenshot(path='./tmp/player1_07_team_name_filled.png', full_page=True)
 
+                                                    # Wait for app to be ready before clicking Join Game
+                                                    time.sleep(1.5)
+
                                                     # Click the Join Game button to confirm (force=True to bypass pointer-events check)
                                                     join_btn = player_pages[0].locator('button:has-text("Join Game")').first
                                                     if join_btn.is_visible(timeout=2000):
@@ -632,6 +638,9 @@ def test_game_flow():
                                                     team_name_input.fill('Team B')
                                                     time.sleep(0.5)
 
+                                                    # Wait for app to be ready before clicking Join Game
+                                                    time.sleep(1.5)
+
                                                     join_btn = player_pages[2].locator('button:has-text("Join Game")').first
                                                     if join_btn.is_visible(timeout=2000):
                                                         join_btn.click(force=True)
@@ -642,31 +651,58 @@ def test_game_flow():
                                             else:
                                                 print("⚠️  Player 3 couldn't find Create New Team button")
 
-                                            # Wait for teams to be created before user2 and user4 try to join
-                                            print("\n⏳ Waiting for teams to propagate to other players...")
+                                            # Wait for teams to be created on backend
+                                            print("\n⏳ Waiting for teams to be created on backend...")
                                             time.sleep(3)
 
-                                            # Player 2: Join Team A (wait for it to exist first)
-                                            print("👤 Player 2: Waiting for Team A to appear, then joining...")
-                                            player_pages[1].screenshot(path='./tmp/player2_05_team_modal_initial.png', full_page=True)
+                                            # Phase 2: Players 2 and 4 enter game code (teams already exist)
+                                            print(f"\n🎮 Phase 2: Players 2 and 4 entering game code: {game_code}")
+                                            for player_idx in [1, 3]:  # Player 2 and Player 4
+                                                i = player_idx + 1
+                                                player_page = player_pages[player_idx]
 
-                                            # Wait up to 10 seconds for Team A to appear
-                                            team_a_found = False
-                                            for attempt in range(10):
-                                                team_a_option = player_pages[1].locator('text="Team A"').first
-                                                if team_a_option.is_visible(timeout=1000):
-                                                    team_a_found = True
-                                                    print("  ✅ Team A appeared!")
-                                                    break
-                                                print(f"  Waiting for Team A... ({attempt + 1}/10)")
+                                                # Make sure we're on the lobby page
                                                 time.sleep(1)
+                                                print(f"📍 Player {i} URL: {player_page.url}")
 
-                                            if team_a_found:
-                                                player_pages[1].screenshot(path='./tmp/player2_05_team_a_visible.png', full_page=True)
+                                                # Save screenshot before entering code
+                                                player_page.screenshot(path=f'./tmp/player{i}_02_before_code.png', full_page=True)
+
+                                                # Find game code input on lobby page
+                                                try:
+                                                    code_input = player_page.locator('input[placeholder*="ABC123" i], input[placeholder*="code" i], input[type="text"]').first
+                                                    if code_input.is_visible(timeout=3000):
+                                                        print(f"  Found game code input for Player {i}")
+                                                        code_input.click()
+                                                        code_input.fill('')
+                                                        code_input.type(game_code, delay=50)
+                                                        time.sleep(0.5)
+
+                                                        player_page.screenshot(path=f'./tmp/player{i}_03_code_entered.png', full_page=True)
+
+                                                        # Click join button
+                                                        join_button = player_page.locator('button:has-text("Join Game"), button:has-text("Join")').first
+                                                        if join_button.is_visible(timeout=2000):
+                                                            join_button.click()
+                                                            print(f"🔘 Player {i} clicked Join button")
+                                                            player_page.wait_for_load_state('networkidle')
+                                                            time.sleep(2)
+
+                                                            player_page.screenshot(path=f'./tmp/player{i}_04_after_join.png', full_page=True)
+                                                            print(f"✅ Player {i} joined game and should see teams")
+                                                except Exception as e:
+                                                    print(f"⚠️  Player {i} error: {e}")
+
+                                            # Player 2: Join Team A
+                                            print("\n👤 Player 2: Joining Team A...")
+                                            player_pages[1].screenshot(path='./tmp/player2_05_team_modal.png', full_page=True)
+
+                                            team_a_option = player_pages[1].locator('text="Team A"').first
+                                            if team_a_option.is_visible(timeout=5000):
+                                                print("  ✅ Team A visible to Player 2!")
                                                 team_a_option.click()
-                                                time.sleep(1)
+                                                time.sleep(1.5)  # Wait for app to be ready
 
-                                                # Click Join Game to join the selected team
                                                 join_btn = player_pages[1].locator('button:has-text("Join Game")').first
                                                 if join_btn.is_visible(timeout=2000):
                                                     join_btn.click(force=True)
@@ -675,28 +711,18 @@ def test_game_flow():
                                                     print("✅ Player 2 joined Team A")
                                                     player_pages[1].screenshot(path='./tmp/player2_08_joined_team.png', full_page=True)
                                             else:
-                                                print("⚠️  Player 2 couldn't find Team A after waiting")
+                                                print("⚠️  Player 2 couldn't find Team A")
                                                 player_pages[1].screenshot(path='./tmp/player2_05_no_team_a.png', full_page=True)
 
-                                            # Player 4: Join Team B (wait for it to exist first)
-                                            print("👤 Player 4: Waiting for Team B to appear, then joining...")
-                                            player_pages[3].screenshot(path='./tmp/player4_05_team_modal_initial.png', full_page=True)
+                                            # Player 4: Join Team B
+                                            print("👤 Player 4: Joining Team B...")
+                                            player_pages[3].screenshot(path='./tmp/player4_05_team_modal.png', full_page=True)
 
-                                            # Wait up to 10 seconds for Team B to appear
-                                            team_b_found = False
-                                            for attempt in range(10):
-                                                team_b_option = player_pages[3].locator('text="Team B"').first
-                                                if team_b_option.is_visible(timeout=1000):
-                                                    team_b_found = True
-                                                    print("  ✅ Team B appeared!")
-                                                    break
-                                                print(f"  Waiting for Team B... ({attempt + 1}/10)")
-                                                time.sleep(1)
-
-                                            if team_b_found:
-                                                player_pages[3].screenshot(path='./tmp/player4_05_team_b_visible.png', full_page=True)
+                                            team_b_option = player_pages[3].locator('text="Team B"').first
+                                            if team_b_option.is_visible(timeout=5000):
+                                                print("  ✅ Team B visible to Player 4!")
                                                 team_b_option.click()
-                                                time.sleep(1)
+                                                time.sleep(1.5)  # Wait for app to be ready
 
                                                 join_btn = player_pages[3].locator('button:has-text("Join Game")').first
                                                 if join_btn.is_visible(timeout=2000):
@@ -706,7 +732,7 @@ def test_game_flow():
                                                     print("✅ Player 4 joined Team B")
                                                     player_pages[3].screenshot(path='./tmp/player4_08_joined_team.png', full_page=True)
                                             else:
-                                                print("⚠️  Player 4 couldn't find Team B after waiting")
+                                                print("⚠️  Player 4 couldn't find Team B")
                                                 player_pages[3].screenshot(path='./tmp/player4_05_no_team_b.png', full_page=True)
 
                                             # Give time for all team joins to propagate

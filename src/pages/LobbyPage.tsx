@@ -1,6 +1,7 @@
 import { useState, useRef, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { LogOut } from 'lucide-react'
+import { User } from 'lucide-react'
+import ProfileModal from '@/components/ProfileModal'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
@@ -16,20 +17,12 @@ export default function LobbyPage() {
   const [showTeamModal, setShowTeamModal] = useState(false)
   const [currentGame, setCurrentGame] = useState<any>(null)
   const [error, setError] = useState('')
+  const [profileModalOpen, setProfileModalOpen] = useState(false)
   const inputRef = useRef<HTMLInputElement>(null)
 
   useEffect(() => {
     inputRef.current?.focus()
   }, [])
-
-  const handleLogout = async () => {
-    try {
-      pb.authStore.clear()
-      navigate('/')
-    } catch (error) {
-      console.error('Logout failed:', error)
-    }
-  }
 
   const handleClearCode = () => {
     setGameCode('')
@@ -153,11 +146,11 @@ export default function LobbyPage() {
           <Button
             variant="ghost"
             size="icon"
-            onClick={handleLogout}
+            onClick={() => setProfileModalOpen(true)}
             className="text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700"
-            aria-label="Logout"
+            aria-label="Profile"
           >
-            <LogOut className="h-5 w-5" />
+            <User className="h-5 w-5" />
           </Button>
         }
       />
@@ -218,6 +211,11 @@ export default function LobbyPage() {
           onClose={() => setShowTeamModal(false)}
           gameId={currentGame?.id || ''}
           onTeamSelected={handleTeamSelected}
+        />
+
+        <ProfileModal
+          isOpen={profileModalOpen}
+          onClose={() => setProfileModalOpen(false)}
         />
       </div>
     </div>
