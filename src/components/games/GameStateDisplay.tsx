@@ -8,6 +8,8 @@ import GameEnd from './states/GameEnd'
 import Thanks from './states/Thanks'
 import QRCode from 'react-qr-code'
 import { getPublicUrl } from '@/lib/networkUrl'
+import { toast } from 'sonner'
+import { copyToClipboard } from '@/lib/clipboard'
 
 type GameState = 'game-start' | 'round-start' | 'round-play' | 'round-end' | 'game-end' | 'thanks' | 'return-to-lobby'
 
@@ -54,6 +56,21 @@ export default function GameStateDisplay({ gameData, rounds, game }: GameStateDi
     )
   }
 
+  const handleCopyToClipboard = async () => {
+    const url = `${getPublicUrl()}/join?code=${game?.code}`
+    const result = await copyToClipboard(url)
+
+    if (result.success) {
+      toast.success('Link copied to clipboard!', {
+        duration: 3000,
+      })
+    } else {
+      toast.error(`Failed to copy link${result.error ? `: ${result.error}` : ''}`, {
+        duration: 5000,
+      })
+    }
+  }
+
   const renderStateContent = () => {
     switch (gameData.state) {
       case 'game-start':
@@ -67,7 +84,12 @@ export default function GameStateDisplay({ gameData, rounds, game }: GameStateDi
                 Game Code: <span className="font-mono font-bold">{game?.code}</span>
               </p>
               <div className="flex justify-center">
-                <div className="p-4 bg-white dark:bg-slate-800 rounded-lg border border-slate-200 dark:border-slate-700 shadow-sm inline-block">
+                <button
+                  onClick={handleCopyToClipboard}
+                  className="p-4 bg-white dark:bg-slate-800 rounded-lg border border-slate-200 dark:border-slate-700 shadow-sm inline-block cursor-pointer hover:scale-105 hover:shadow-lg transition-transform duration-200 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 active:scale-98"
+                  aria-label="Click to copy game join link to clipboard"
+                  type="button"
+                >
                   <QRCode
                     value={`${getPublicUrl()}/join?code=${game?.code}`}
                     size={200}
@@ -77,7 +99,7 @@ export default function GameStateDisplay({ gameData, rounds, game }: GameStateDi
                   <p className="text-center text-sm text-slate-600 dark:text-slate-400 mt-3">
                     Scan to join
                   </p>
-                </div>
+                </button>
               </div>
             </div>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-4xl mx-auto">
