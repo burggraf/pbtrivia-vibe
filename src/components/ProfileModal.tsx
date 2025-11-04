@@ -4,7 +4,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/u
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Badge } from '@/components/ui/badge'
-import { User } from 'lucide-react'
+import { User, Upload, X } from 'lucide-react'
 import pb from '@/lib/pocketbase'
 
 interface ProfileModalProps {
@@ -17,6 +17,19 @@ export default function ProfileModal({ isOpen, onClose }: ProfileModalProps) {
   const [name, setName] = useState(pb.authStore.model?.name || '')
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState('')
+  const [avatarPreview, _setAvatarPreview] = useState<string | null>(null)
+
+  const getAvatarUrl = () => {
+    if (avatarPreview) {
+      return avatarPreview
+    }
+    if (pb.authStore.model?.avatar) {
+      return pb.files.getUrl(pb.authStore.model, pb.authStore.model.avatar)
+    }
+    return null
+  }
+
+  const avatarUrl = getAvatarUrl()
 
   const handleSave = async () => {
     if (!name.trim()) {
@@ -66,8 +79,37 @@ export default function ProfileModal({ isOpen, onClose }: ProfileModalProps) {
         <div className="space-y-4">
           {/* Avatar section placeholder */}
           <div className="flex flex-col items-center gap-4">
-            <div className="w-20 h-20 md:w-24 md:h-24 rounded-full bg-slate-100 dark:bg-slate-800 border-2 border-slate-200 dark:border-slate-700 flex items-center justify-center">
-              <User className="h-10 w-10 text-slate-400 dark:text-slate-500" />
+            <div className="w-20 h-20 md:w-24 md:h-24 rounded-full bg-slate-100 dark:bg-slate-800 border-2 border-slate-200 dark:border-slate-700 flex items-center justify-center overflow-hidden">
+              {avatarUrl ? (
+                <img
+                  src={avatarUrl}
+                  alt="Profile avatar"
+                  className="w-full h-full object-cover"
+                />
+              ) : (
+                <User className="h-10 w-10 text-slate-400 dark:text-slate-500" />
+              )}
+            </div>
+
+            <div className="flex gap-2">
+              <Button
+                variant="outline"
+                size="sm"
+                disabled={isLoading}
+              >
+                <Upload className="h-4 w-4 mr-1" />
+                Upload
+              </Button>
+              {avatarUrl && (
+                <Button
+                  variant="outline"
+                  size="sm"
+                  disabled={isLoading}
+                >
+                  <X className="h-4 w-4 mr-1" />
+                  Remove
+                </Button>
+              )}
             </div>
           </div>
 
