@@ -183,30 +183,30 @@ export default function ProfileModal({ isOpen, onClose }: ProfileModalProps) {
             </div>
           </div>
 
-          {/* Email (read-only) */}
-          <div>
-            <label className="text-sm font-medium text-slate-700 dark:text-slate-300 block mb-1">
-              Email
-            </label>
-            <div className="text-sm text-slate-600 dark:text-slate-400">
-              {pb.authStore.model?.email}
+          {/* Email and Status (read-only) */}
+          <div className="flex items-start justify-between gap-4">
+            <div className="flex-1">
+              <label className="text-sm font-medium text-slate-700 dark:text-slate-300 block mb-1">
+                Email
+              </label>
+              <div className="text-sm text-slate-600 dark:text-slate-400">
+                {pb.authStore.model?.email}
+              </div>
             </div>
-          </div>
-
-          {/* Verified status (read-only) */}
-          <div>
-            <label className="text-sm font-medium text-slate-700 dark:text-slate-300 block mb-1">
-              Status
-            </label>
-            {pb.authStore.model?.verified ? (
-              <Badge className="bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400">
-                ✓ Verified
-              </Badge>
-            ) : (
-              <Badge variant="secondary">
-                Unverified
-              </Badge>
-            )}
+            <div className="flex flex-col items-end">
+              <label className="text-sm font-medium text-slate-700 dark:text-slate-300 block mb-1">
+                Status
+              </label>
+              {pb.authStore.model?.verified ? (
+                <Badge className="bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400">
+                  ✓ Verified
+                </Badge>
+              ) : (
+                <Badge variant="secondary">
+                  Unverified
+                </Badge>
+              )}
+            </div>
           </div>
 
           {/* Name (editable) - placeholder */}
