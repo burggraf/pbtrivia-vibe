@@ -1,4 +1,5 @@
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { Button } from '@/components/ui/button'
 import { Clock, Users, Star, ChevronRight } from 'lucide-react'
 import { GameScoreboard } from '@/types/games'
 import RoundStartDisplay from './RoundStartDisplay'
@@ -84,9 +85,10 @@ export default function GameStateDisplay({ gameData, rounds, game }: GameStateDi
                 Game Code: <span className="font-mono font-bold">{game?.code}</span>
               </p>
               <div className="flex justify-center">
-                <button
+                <Button
                   onClick={handleCopyToClipboard}
-                  className="p-4 bg-white dark:bg-slate-800 rounded-lg border border-slate-200 dark:border-slate-700 shadow-sm inline-block cursor-pointer hover:scale-105 hover:shadow-lg transition-transform duration-200 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 active:scale-98"
+                  variant="outline"
+                  className="p-4 rounded-lg shadow-sm h-auto flex-col hover:scale-105 hover:shadow-lg transition-transform duration-200 focus-visible:ring-blue-500 active:scale-98"
                   aria-label="Click to copy game join link to clipboard"
                   type="button"
                 >
@@ -99,7 +101,7 @@ export default function GameStateDisplay({ gameData, rounds, game }: GameStateDi
                   <p className="text-center text-sm text-slate-600 dark:text-slate-400 mt-3">
                     Scan to join
                   </p>
-                </button>
+                </Button>
               </div>
             </div>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-4xl mx-auto">
