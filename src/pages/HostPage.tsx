@@ -7,7 +7,8 @@ import GameEditModal from '@/components/games/GameEditModal'
 import RoundEditModal from '@/components/games/RoundEditModal'
 import QuestionsList from '@/components/games/QuestionsList'
 import CategoryIcon, { getAvailableCategories } from '@/components/ui/CategoryIcon'
-import { Info, Plus, Play, LogOut } from 'lucide-react'
+import { Info, Plus, Play, User } from 'lucide-react'
+import ProfileModal from '@/components/ProfileModal'
 import pb from '@/lib/pocketbase'
 import { gamesService } from '@/lib/games'
 import { roundsService } from '@/lib/rounds'
@@ -30,7 +31,8 @@ export default function HostPage() {
   const [isCreateMode, setIsCreateMode] = useState(false)
   const [isRoundCreateMode, setIsRoundCreateMode] = useState(false)
   const [currentGameId, setCurrentGameId] = useState<string | null>(null)
-  
+  const [profileModalOpen, setProfileModalOpen] = useState(false)
+
   const fetchGames = async () => {
     try {
       setLoading(true)
@@ -66,15 +68,6 @@ export default function HostPage() {
   useEffect(() => {
     fetchGames()
   }, [])
-
-  const handleLogout = async () => {
-    try {
-      pb.authStore.clear()
-      navigate('/')
-    } catch (error) {
-      console.error('Logout failed:', error)
-    }
-  }
 
   const handleCreateGame = () => {
     setIsCreateMode(true)
@@ -395,11 +388,11 @@ export default function HostPage() {
           <Button
             variant="ghost"
             size="icon"
-            onClick={handleLogout}
+            onClick={() => setProfileModalOpen(true)}
             className="text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700"
-            aria-label="Logout"
+            aria-label="Profile"
           >
-            <LogOut className="h-5 w-5" />
+            <User className="h-5 w-5" />
           </Button>
         }
       />
@@ -628,6 +621,11 @@ export default function HostPage() {
           onDelete={!isRoundCreateMode ? handleDeleteRound : undefined}
           isLoading={saving}
           isCreateMode={isRoundCreateMode}
+        />
+
+        <ProfileModal
+          isOpen={profileModalOpen}
+          onClose={() => setProfileModalOpen(false)}
         />
       </div>
     </div>
