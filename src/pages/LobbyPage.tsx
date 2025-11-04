@@ -150,7 +150,15 @@ export default function LobbyPage() {
             className="text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700"
             aria-label="Profile"
           >
-            <User className="h-5 w-5" />
+            {pb.authStore.model?.avatar ? (
+              <img
+                src={pb.files.getUrl(pb.authStore.model, pb.authStore.model.avatar)}
+                alt="Profile"
+                className="h-8 w-8 rounded-full object-cover"
+              />
+            ) : (
+              <User className="h-5 w-5" />
+            )}
           </Button>
         }
       />
