@@ -88,7 +88,7 @@ export default function GameStateDisplay({ gameData, rounds, game }: GameStateDi
                 <Button
                   onClick={handleCopyToClipboard}
                   variant="outline"
-                  className="p-8 rounded-lg shadow-sm h-auto flex-col hover:scale-105 hover:shadow-lg transition-transform duration-200 focus-visible:ring-blue-500 active:scale-98"
+                  className="p-8 rounded-lg shadow-sm h-auto flex flex-col hover:scale-105 hover:shadow-lg transition-transform duration-200 focus-visible:ring-blue-500 active:scale-98 [&_svg]:!size-auto"
                   aria-label="Click to copy game join link to clipboard"
                   type="button"
                 >
