@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useRef } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog'
 import { Button } from '@/components/ui/button'
@@ -17,7 +17,9 @@ export default function ProfileModal({ isOpen, onClose }: ProfileModalProps) {
   const [name, setName] = useState(pb.authStore.model?.name || '')
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState('')
-  const [avatarPreview, _setAvatarPreview] = useState<string | null>(null)
+  const [avatarPreview, setAvatarPreview] = useState<string | null>(null)
+  const fileInputRef = useRef<HTMLInputElement>(null)
+  const [avatarFile, setAvatarFile] = useState<File | null>(null)
 
   const getAvatarUrl = () => {
     if (avatarPreview) {
@@ -46,11 +48,19 @@ export default function ProfileModal({ isOpen, onClose }: ProfileModalProps) {
       setIsLoading(true)
       setError('')
 
-      await pb.collection('users').update(pb.authStore.model.id, {
-        name: name.trim()
-      })
+      const formData = new FormData()
+      formData.append('name', name.trim())
 
-      // Success - could add toast notification here
+      if (avatarFile) {
+        formData.append('avatar', avatarFile)
+      }
+
+      await pb.collection('users').update(pb.authStore.model.id, formData)
+
+      // Clear preview and file after successful save
+      setAvatarFile(null)
+      setAvatarPreview(null)
+
       console.log('Profile updated successfully')
     } catch (error) {
       console.error('Failed to update profile:', error)
@@ -58,6 +68,37 @@ export default function ProfileModal({ isOpen, onClose }: ProfileModalProps) {
     } finally {
       setIsLoading(false)
     }
+  }
+
+  const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0]
+    if (!file) return
+
+    // Validate file type
+    if (!file.type.startsWith('image/')) {
+      setError('Please select an image file')
+      return
+    }
+
+    // Validate file size (5MB max)
+    if (file.size > 5 * 1024 * 1024) {
+      setError('Image must be less than 5MB')
+      return
+    }
+
+    setAvatarFile(file)
+    setError('')
+
+    // Create preview
+    const reader = new FileReader()
+    reader.onloadend = () => {
+      setAvatarPreview(reader.result as string)
+    }
+    reader.readAsDataURL(file)
+  }
+
+  const handleUploadClick = () => {
+    fileInputRef.current?.click()
   }
 
   const handleLogout = async () => {
@@ -96,6 +137,7 @@ export default function ProfileModal({ isOpen, onClose }: ProfileModalProps) {
                 variant="outline"
                 size="sm"
                 disabled={isLoading}
+                onClick={handleUploadClick}
               >
                 <Upload className="h-4 w-4 mr-1" />
                 Upload
@@ -178,6 +220,14 @@ export default function ProfileModal({ isOpen, onClose }: ProfileModalProps) {
             </Button>
           </div>
         </div>
+
+        <input
+          ref={fileInputRef}
+          type="file"
+          accept="image/*"
+          className="hidden"
+          onChange={handleFileSelect}
+        />
       </DialogContent>
     </Dialog>
   )
