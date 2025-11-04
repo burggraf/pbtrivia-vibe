@@ -102,7 +102,7 @@ export default function HostPage() {
       setEditingRound({
         id: '',
         title: '',
-        question_count: 10,
+        question_count: 3,
         categories: [],
         sequence_number: nextSequenceNumber,
         game: gameId,

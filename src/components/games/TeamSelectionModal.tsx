@@ -67,7 +67,14 @@ export default function TeamSelectionModal({
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="w-[calc(100%-2rem)] sm:max-w-md p-0">
+      <DialogContent
+        className="w-[calc(100%-2rem)] sm:max-w-md p-0"
+        onKeyDown={(e) => {
+          if (e.key === 'Enter' && isFormValid && !isLoading && !createNewTeam) {
+            handleJoinGame()
+          }
+        }}
+      >
         <DialogHeader className="text-center px-6 pt-6 pb-4">
           <DialogTitle className="text-2xl font-bold">Join Game</DialogTitle>
           <DialogDescription className="text-slate-600 dark:text-slate-400 pt-1">
@@ -124,6 +131,11 @@ export default function TeamSelectionModal({
                       placeholder="Enter team name"
                       value={newTeamName}
                       onChange={(e) => setNewTeamName(e.target.value)}
+                      onKeyDown={(e) => {
+                        if (e.key === 'Enter' && isFormValid && !isLoading) {
+                          handleJoinGame()
+                        }
+                      }}
                       maxLength={30}
                       autoFocus
                       className="h-12 text-lg font-semibold border-0 bg-white dark:bg-slate-800 focus-visible:ring-2 focus-visible:ring-blue-500"

@@ -49,6 +49,7 @@ lerna-debug.log*
 # Temporary files
 *.tmp
 *.temp
+/tmp
 
 # Data files
 *.tsv

@@ -1,7 +1,8 @@
 import { useParams, useNavigate } from 'react-router-dom'
 import { useState, useEffect, useCallback } from 'react'
+import { ArrowLeft, ChevronLeft, ChevronRight } from 'lucide-react'
 import { Button } from '@/components/ui/button'
-import ThemeToggle from '@/components/ThemeToggle'
+import AppHeader from '@/components/ui/AppHeader'
 import TeamDisplay from '@/components/games/TeamDisplay'
 import GameStateDisplay from '@/components/games/GameStateDisplay'
 import NextQuestionPreview from '@/components/games/NextQuestionPreview'
@@ -56,15 +57,6 @@ export default function ControllerPage() {
   const [isLoading, setIsLoading] = useState(true)
   const [rounds, setRounds] = useState<any[]>([])
   const [gameData, setGameData] = useState<GameData | null>(null)
-
-  const handleLogout = async () => {
-    try {
-      pb.authStore.clear()
-      navigate('/')
-    } catch (error) {
-      console.error('Logout failed:', error)
-    }
-  }
 
   const handleBackToHost = () => {
     navigate('/host')
@@ -700,35 +692,62 @@ export default function ControllerPage() {
   }, [id, navigate, rebuildScoreboard])
 
   return (
-    <div className="min-h-screen bg-slate-50 dark:bg-slate-900 p-8">
-      <div className="max-w-6xl mx-auto">
-        <div className="flex justify-between items-center mb-8">
-          <div>
-            <div className="flex flex-col gap-2">
-              <p className="text-slate-600 dark:text-slate-400">
-                Game ID: {id} {game && `- ${game.name}`}
-              </p>
-              {game && (
-                <div className="flex items-center gap-2">
-                  <span className="text-sm text-slate-500">Status:</span>
-                  <span className={`text-sm font-medium px-2 py-1 rounded-full ${
-                    game.status === 'ready' ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200' :
-                    game.status === 'in-progress' ? 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200' :
-                    game.status === 'completed' ? 'bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-200' :
-                    'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200'
-                  }`}>
-                    {game.status.replace('-', ' ')}
-                  </span>
-                </div>
-              )}
-            </div>
+    <div className="min-h-screen bg-slate-50 dark:bg-slate-900">
+      {/* Header Bar */}
+      <AppHeader
+        title={game?.name || 'Controller'}
+        leftButton={
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={handleBackToHost}
+            className="text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700"
+            aria-label="Back to Host"
+          >
+            <ArrowLeft className="h-5 w-5" />
+          </Button>
+        }
+      />
+
+      {/* Action Bar with Navigation */}
+      <div className="bg-white dark:bg-slate-800 border-b border-slate-200 dark:border-slate-700 px-4 h-14">
+        <div className="max-w-6xl mx-auto flex items-center justify-between h-full">
+          {/* Left: Back Navigation */}
+          <div className="flex items-center gap-2 w-1/3">
+            {game?.scoreboard && Object.keys(game.scoreboard.teams).length > 0 && gameData && (
+              <Button
+                variant="outline"
+                size="sm"
+                className="border-slate-300 dark:border-slate-600 text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800"
+                onClick={handlePreviousState}
+                disabled={GAME_STATES.indexOf(gameData.state) === 0}
+              >
+                <ChevronLeft className="h-4 w-4 mr-1" />
+                {gameData.state === 'round-play' && !!gameData.question?.correct_answer
+                  ? 'Question'
+                  : gameData.state === 'round-play' && !gameData.question?.correct_answer
+                  ? `Q${Math.max(1, (gameData.question?.question_number || 1) - 1)}`
+                  : 'Back'}
+              </Button>
+            )}
           </div>
-          <div className="flex gap-3 items-center">
-            {/* Navigation Controls */}
+
+          {/* Center: Game Code */}
+          <div className="flex items-center justify-center w-1/3">
+            {game?.code && (
+              <div className="text-base md:text-lg font-semibold tracking-widest text-slate-800 dark:text-slate-100">
+                {game.code}
+              </div>
+            )}
+          </div>
+
+          {/* Right: Forward Navigation & Start Game */}
+          <div className="flex items-center justify-end gap-2 w-1/3">
             {game?.scoreboard && Object.keys(game.scoreboard.teams).length > 0 && (
               <>
                 {game?.status === 'ready' && (
                   <Button
+                    size="sm"
                     className="bg-green-600 hover:bg-green-700 dark:bg-green-700 dark:hover:bg-green-600 text-white"
                     onClick={handleStartGame}
                   >
@@ -736,60 +755,33 @@ export default function ControllerPage() {
                   </Button>
                 )}
                 {gameData && (
-                  <>
-                    <Button
-                      variant="outline"
-                      className="border-slate-300 dark:border-slate-600 text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800"
-                      onClick={handlePreviousState}
-                      disabled={GAME_STATES.indexOf(gameData.state) === 0}
-                    >
-                      {gameData.state === 'round-play' && !!gameData.question?.correct_answer
-                        ? '← Question'
-                        : gameData.state === 'round-play' && !gameData.question?.correct_answer
-                        ? `← Q${Math.max(1, (gameData.question?.question_number || 1) - 1)}`
-                        : '← Back'}
-                    </Button>
-                    <Button
-                      className="bg-blue-600 hover:bg-blue-700 dark:bg-blue-700 dark:hover:bg-blue-600 text-white"
-                      onClick={handleNextState}
-                      disabled={gameData.state === 'return-to-lobby' || gameData.state === 'thanks'}
-                    >
-                      {(() => {
-                        const isAnswerRevealed = !!gameData.question?.correct_answer
-                        return gameData.state === 'round-play' && !isAnswerRevealed
-                          ? 'Reveal Answer'
-                          : gameData.state === 'round-play' && isAnswerRevealed
-                          ? `Next Question →`
-                          : gameData.state === 'game-end'
-                          ? 'Thanks →'
-                          : 'Next →'
-                      })()}
-                    </Button>
-                  </>
+                  <Button
+                    size="sm"
+                    className="bg-blue-600 hover:bg-blue-700 dark:bg-blue-700 dark:hover:bg-blue-600 text-white"
+                    onClick={handleNextState}
+                    disabled={gameData.state === 'return-to-lobby' || gameData.state === 'thanks'}
+                  >
+                    {(() => {
+                      const isAnswerRevealed = !!gameData.question?.correct_answer
+                      return gameData.state === 'round-play' && !isAnswerRevealed
+                        ? 'Reveal'
+                        : gameData.state === 'round-play' && isAnswerRevealed
+                        ? 'Next'
+                        : gameData.state === 'game-end'
+                        ? 'Thanks'
+                        : 'Next'
+                    })()}
+                    <ChevronRight className="h-4 w-4 ml-1" />
+                  </Button>
                 )}
               </>
             )}
-            <div className="w-px h-6 bg-slate-300 dark:bg-slate-600"></div>
-            {/* Page Controls */}
-            <ThemeToggle />
-            <Button
-              variant="outline"
-              onClick={handleBackToHost}
-              className="border-slate-300 dark:border-slate-600 text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800"
-            >
-              Back to Host
-            </Button>
-            <Button
-              variant="outline"
-              onClick={handleLogout}
-              className="border-slate-300 dark:border-slate-600 text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800"
-            >
-              Logout
-            </Button>
           </div>
         </div>
+      </div>
 
-
+      {/* Main Content */}
+      <div className="max-w-6xl mx-auto p-4 md:p-6 lg:p-8">
         {/* Game State Display */}
         {gameData && game && (
           <GameStateDisplay
