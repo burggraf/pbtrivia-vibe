@@ -2,24 +2,33 @@
 
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
+## Package Management
+
+**IMPORTANT**: This project uses **pnpm** as the package manager. Always use `pnpm` commands instead of `npm`.
+
+- `pnpm install` - Install dependencies
+- `pnpm run <script>` - Run package scripts
+- `pnpm add <package>` - Add new dependency
+- `pnpm remove <package>` - Remove dependency
+
 ## Development Commands
 
 ### Starting Development Environment
 
 - `./dev.sh` - Start complete development environment (PocketBase + frontend) on port 5173
-- `npm run dev` - Start frontend development server only (requires PocketBase running separately)
+- `pnpm run dev` - Start frontend development server only (requires PocketBase running separately)
 
 ### Building and Testing
 
-- `npm run build` - Build for production (runs TypeScript compilation + Vite build)
-- `npm run lint` - Run ESLint with TypeScript rules
-- `npm run preview` - Preview production build locally
+- `pnpm run build` - Build for production (runs TypeScript compilation + Vite build)
+- `pnpm run lint` - Run ESLint with TypeScript rules
+- `pnpm run preview` - Preview production build locally
 
 ### Database Operations
 
 - `pocketbase serve --dev --http 0.0.0.0:8090` - Start PocketBase server
 - `pocketbase superuser upsert admin@example.com Password123` - Create/update admin account
-- `npm run import-questions-efficient` - Import questions with optimized performance (recommended) (used to load the questions data from questions.tsv into the questions collection)
+- `pnpm run import-questions-efficient` - Import questions with optimized performance (recommended) (used to load the questions data from questions.tsv into the questions collection)
 
 ### Database Migrations
 
@@ -118,9 +127,9 @@ scripts/             # Database import and maintenance scripts
 The application includes a robust question import system:
 
 - Source: `questions.tsv` (~60K questions)
-- **Standard import**: `npm run import-questions`
-- **Efficient import**: `npm run import-questions-efficient` (recommended)
-- **Test import**: `npm run import-questions-test` (smaller dataset)
+- **Standard import**: `pnpm run import-questions`
+- **Efficient import**: `pnpm run import-questions-efficient` (recommended)
+- **Test import**: `pnpm run import-questions-test` (smaller dataset)
 - Automatic collection schema creation
 - Duplicate prevention using external_id
 - Batch processing for performance (100 questions per batch)
