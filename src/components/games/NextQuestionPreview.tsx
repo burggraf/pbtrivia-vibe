@@ -321,29 +321,33 @@ export default function NextQuestionPreview({ gameId, gameData, rounds }: NextQu
               <h2 className="text-lg md:text-2xl font-bold text-slate-800 dark:text-slate-100 mb-2">
                 Next Question:  Round {nextQuestion.roundNumber} of {nextQuestion.totalRounds} - Question {nextQuestion.questionNumber}
               </h2>
-              <div className="flex flex-col sm:flex-row items-center justify-center gap-1 sm:gap-2">
-                <Badge variant="secondary" className="text-xs md:text-sm px-2 py-1 md:px-3 md:py-1">
-                  {nextQuestion.category}
-                </Badge>
-                <Badge variant="outline" className="text-xs md:text-sm px-2 py-1 md:px-3 md:py-1">
-                  {nextQuestion.difficulty}
-                </Badge>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={handleReplaceQuestion}
-                  disabled={isReplacing}
-                  className="gap-1 text-xs"
-                >
-                  {isReplacing ? (
-                    <div className="animate-spin">
+              <div className="space-y-2">
+                <div className="flex flex-row items-center justify-between">
+                  <Badge variant="secondary" className="text-xs md:text-sm px-2 py-1 md:px-3 md:py-1">
+                    {nextQuestion.category}
+                  </Badge>
+                  <Badge variant="outline" className="text-xs md:text-sm px-2 py-1 md:px-3 md:py-1">
+                    {nextQuestion.difficulty}
+                  </Badge>
+                </div>
+                <div className="flex justify-center">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={handleReplaceQuestion}
+                    disabled={isReplacing}
+                    className="gap-1 text-xs"
+                  >
+                    {isReplacing ? (
+                      <div className="animate-spin">
+                        <RotateCcw className="h-3 w-3" />
+                      </div>
+                    ) : (
                       <RotateCcw className="h-3 w-3" />
-                    </div>
-                  ) : (
-                    <RotateCcw className="h-3 w-3" />
-                  )}
-                  Replace
-                </Button>
+                    )}
+                    Replace
+                  </Button>
+                </div>
               </div>
             </div>
           )}
