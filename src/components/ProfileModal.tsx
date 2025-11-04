@@ -101,6 +101,33 @@ export default function ProfileModal({ isOpen, onClose }: ProfileModalProps) {
     fileInputRef.current?.click()
   }
 
+  const handleRemoveAvatar = async () => {
+    if (!pb.authStore.model?.id) {
+      setError('User not authenticated')
+      return
+    }
+
+    try {
+      setIsLoading(true)
+      setError('')
+
+      await pb.collection('users').update(pb.authStore.model.id, {
+        avatar: null
+      })
+
+      // Clear local state
+      setAvatarFile(null)
+      setAvatarPreview(null)
+
+      console.log('Avatar removed successfully')
+    } catch (error) {
+      console.error('Failed to remove avatar:', error)
+      setError('Failed to remove avatar. Please try again.')
+    } finally {
+      setIsLoading(false)
+    }
+  }
+
   const handleLogout = async () => {
     try {
       pb.authStore.clear()
@@ -147,6 +174,7 @@ export default function ProfileModal({ isOpen, onClose }: ProfileModalProps) {
                   variant="outline"
                   size="sm"
                   disabled={isLoading}
+                  onClick={handleRemoveAvatar}
                 >
                   <X className="h-4 w-4 mr-1" />
                   Remove
