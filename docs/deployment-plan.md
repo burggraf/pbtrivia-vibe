@@ -20,18 +20,18 @@ Deploy pbtrivia-vibe to Ubuntu 18 server at trivia.azabab.com with:
 ### 1.1 Download and Install PocketBase Binary
 ```bash
 # On server
-cd /home/root
-mkdir -p pocketbase
-cd pocketbase
-wget https://github.com/pocketbase/pocketbase/releases/download/v0.23.7/pocketbase_0.23.7_linux_amd64.zip
-unzip pocketbase_0.23.7_linux_amd64.zip
+cd /root
+mkdir -p pocketbase/trivia
+cd pocketbase/trivia
+wget https://github.com/pocketbase/pocketbase/releases/download/v0.30.3/pocketbase_0.30.3_linux_amd64.zip
+unzip pocketbase_0.30.3_linux_amd64.zip
 chmod +x pocketbase
-rm pocketbase_0.23.7_linux_amd64.zip
+rm pocketbase_0.30.3_linux_amd64.zip
 ```
 
 ### 1.2 Create Directory Structure
 ```bash
-cd /home/root/pocketbase
+cd /root/pocketbase/trivia
 mkdir -p pb_migrations pb_public pb_data/storage
 ```
 
@@ -42,21 +42,21 @@ mkdir -p pb_migrations pb_public pb_data/storage
 ### 2.1 Build Frontend Locally
 ```bash
 # On local machine
-cd /Users/markb/dev/pbtrivia-vibe
+cd ~/dev/pbtrivia-vibe
 pnpm run build  # Outputs to dist/
 ```
 
 ### 2.2 Copy Files to Server
 ```bash
 # Copy frontend build to pb_public
-rsync -avz --delete dist/ root@<server-ip>:/home/root/pocketbase/pb_public/
+rsync -avz --delete dist/ root@<server-ip>:/root/pocketbase/trivia/pb_public/
 
 # Copy migrations
-rsync -avz pb_migrations/ root@<server-ip>:/home/root/pocketbase/pb_migrations/
+rsync -avz pb_migrations/ root@<server-ip>:/root/pocketbase/trivia/pb_migrations/
 
 # Copy questions data and import script
-scp questions.tsv root@<server-ip>:/home/root/pocketbase/
-scp scripts/import-questions-efficient.js root@<server-ip>:/home/root/pocketbase/
+scp questions.tsv root@<server-ip>:/root/pocketbase/trivia/
+scp scripts/import-questions-efficient.js root@<server-ip>:/root/pocketbase/trivia/
 ```
 
 **Note:** No environment configuration needed! The frontend auto-detects the PocketBase URL at runtime based on the current hostname and protocol.
@@ -67,7 +67,7 @@ scp scripts/import-questions-efficient.js root@<server-ip>:/home/root/pocketbase
 
 ### 3.1 Start PocketBase Temporarily (First Run)
 ```bash
-cd /home/root/pocketbase
+cd /root/pocketbase/trivia
 ./pocketbase serve --http=0.0.0.0:8090
 # Migrations will run automatically
 # Ctrl+C after server starts successfully
@@ -80,7 +80,7 @@ cd /home/root/pocketbase
 
 ### 3.3 Import Questions Data
 ```bash
-cd /home/root/pocketbase
+cd /root/pocketbase/trivia
 
 # Install Node.js if not present
 curl -fsSL https://deb.nodesource.com/setup_18.x | bash -
@@ -108,8 +108,8 @@ After=network.target
 Type=simple
 User=root
 Group=root
-WorkingDirectory=/home/root/pocketbase
-ExecStart=/home/root/pocketbase/pocketbase serve --http=127.0.0.1:8090
+WorkingDirectory=/root/pocketbase/trivia
+ExecStart=/root/pocketbase/trivia/pocketbase serve --http=127.0.0.1:8090
 Restart=always
 RestartSec=5
 StandardOutput=journal
@@ -196,7 +196,7 @@ systemctl list-timers | grep certbot  # Check renewal timer
 set -e
 
 SERVER="root@<server-ip>"
-REMOTE_PATH="/home/root/pocketbase"
+REMOTE_PATH="/root/pocketbase/trivia"
 
 echo "Building frontend..."
 pnpm run build
@@ -214,7 +214,7 @@ echo "Visit https://trivia.azabab.com"
 set -e
 
 SERVER="root@<server-ip>"
-REMOTE_PATH="/home/root/pocketbase"
+REMOTE_PATH="/root/pocketbase/trivia"
 
 echo "Deploying migrations..."
 rsync -avz pb_migrations/ $SERVER:$REMOTE_PATH/pb_migrations/
@@ -284,7 +284,7 @@ openssl s_client -connect trivia.azabab.com:443 -servername trivia.azabab.com
 ### Database Backups (Recommended)
 ```bash
 # Add to crontab on server
-0 2 * * * /home/root/pocketbase/pocketbase backup /home/root/backups
+0 2 * * * /root/pocketbase/trivia/pocketbase backup /root/backups
 ```
 
 ---
@@ -332,7 +332,7 @@ certbot renew --dry-run  # Test renewal
 # Check nginx is proxying correctly
 curl -I http://localhost:8090
 # Check pb_public has files
-ls -la /home/root/pocketbase/pb_public/
+ls -la /root/pocketbase/trivia/pb_public/
 ```
 
 ### Questions Not Importing
@@ -350,7 +350,7 @@ curl http://localhost:8090/api/health
 
 ### File Structure on Server
 ```
-/home/root/pocketbase/
+/root/pocketbase/trivia/
 ├── pocketbase              # Binary executable
 ├── pb_migrations/          # Database migrations (auto-applied on start)
 ├── pb_public/              # Static frontend files (served by PocketBase)
