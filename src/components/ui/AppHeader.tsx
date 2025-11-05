@@ -16,9 +16,9 @@ interface AppHeaderProps {
  */
 export default function AppHeader({ title, leftButton, className = '' }: AppHeaderProps) {
   return (
-    <header className={`flex items-center justify-between h-14 px-4 bg-white dark:bg-slate-800 border-b border-slate-200 dark:border-slate-700 ${className}`}>
+    <header className={`flex items-center justify-between h-[60px] px-4 bg-white dark:bg-slate-800 border-b border-slate-200 dark:border-slate-700 ${className}`}>
       {/* Left section - button or empty */}
-      <div className="flex items-center justify-start w-20">
+      <div className="flex items-center justify-start min-w-[44px]">
         {leftButton}
       </div>
 

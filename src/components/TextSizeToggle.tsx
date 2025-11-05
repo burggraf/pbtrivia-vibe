@@ -28,9 +28,9 @@ export default function TextSizeToggle() {
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
         <Button
-          variant="outline"
-          size="sm"
-          className="h-[32px] w-[32px] p-0 border-[#e5e5e5] dark:border-slate-600 text-[#525252] dark:text-slate-300 hover:bg-[#fafafa] dark:hover:bg-slate-800"
+          variant="ghost"
+          size="icon"
+          className="h-[44px] w-[44px] text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700"
           title={`Current text size: ${getLabel(textSize)}. Click to change.`}
         >
           <Type className="h-5 w-5" />

@@ -701,7 +701,7 @@ export default function ControllerPage() {
             variant="ghost"
             size="icon"
             onClick={handleBackToHost}
-            className="text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700"
+            className="h-[44px] w-[44px] text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700"
             aria-label="Back to Host"
           >
             <ArrowLeft className="h-5 w-5" />
@@ -710,15 +710,14 @@ export default function ControllerPage() {
       />
 
       {/* Action Bar with Navigation */}
-      <div className="bg-white dark:bg-slate-800 border-b border-slate-200 dark:border-slate-700 px-4 h-14">
+      <div className="bg-white dark:bg-slate-800 border-b border-slate-200 dark:border-slate-700 px-4 h-[60px]">
         <div className="max-w-6xl mx-auto flex items-center justify-between h-full">
           {/* Left: Back Navigation */}
           <div className="flex items-center gap-2 w-1/3">
             {game?.scoreboard && Object.keys(game.scoreboard.teams).length > 0 && gameData && (
               <Button
                 variant="outline"
-                size="sm"
-                className="border-slate-300 dark:border-slate-600 text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800"
+                className="h-[44px] border-slate-300 dark:border-slate-600 text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800"
                 onClick={handlePreviousState}
                 disabled={GAME_STATES.indexOf(gameData.state) === 0}
               >
@@ -741,40 +740,26 @@ export default function ControllerPage() {
             )}
           </div>
 
-          {/* Right: Forward Navigation & Start Game */}
+          {/* Right: Forward Navigation */}
           <div className="flex items-center justify-end gap-2 w-1/3">
-            {game?.scoreboard && Object.keys(game.scoreboard.teams).length > 0 && (
-              <>
-                {game?.status === 'ready' && (
-                  <Button
-                    size="sm"
-                    className="bg-green-600 hover:bg-green-700 dark:bg-green-700 dark:hover:bg-green-600 text-white"
-                    onClick={handleStartGame}
-                  >
-                    Start Game
-                  </Button>
-                )}
-                {gameData && (
-                  <Button
-                    size="sm"
-                    className="bg-blue-600 hover:bg-blue-700 dark:bg-blue-700 dark:hover:bg-blue-600 text-white"
-                    onClick={handleNextState}
-                    disabled={gameData.state === 'return-to-lobby' || gameData.state === 'thanks'}
-                  >
-                    {(() => {
-                      const isAnswerRevealed = !!gameData.question?.correct_answer
-                      return gameData.state === 'round-play' && !isAnswerRevealed
-                        ? 'Reveal'
-                        : gameData.state === 'round-play' && isAnswerRevealed
-                        ? 'Next'
-                        : gameData.state === 'game-end'
-                        ? 'Thanks'
-                        : 'Next'
-                    })()}
-                    <ChevronRight className="h-4 w-4 ml-1" />
-                  </Button>
-                )}
-              </>
+            {game?.scoreboard && Object.keys(game.scoreboard.teams).length > 0 && gameData && (
+              <Button
+                className="h-[44px] bg-blue-600 hover:bg-blue-700 dark:bg-blue-700 dark:hover:bg-blue-600 text-white"
+                onClick={handleNextState}
+                disabled={gameData.state === 'return-to-lobby' || gameData.state === 'thanks'}
+              >
+                {(() => {
+                  const isAnswerRevealed = !!gameData.question?.correct_answer
+                  return gameData.state === 'round-play' && !isAnswerRevealed
+                    ? 'Reveal'
+                    : gameData.state === 'round-play' && isAnswerRevealed
+                    ? 'Next'
+                    : gameData.state === 'game-end'
+                    ? 'Thanks'
+                    : 'Next'
+                })()}
+                <ChevronRight className="h-4 w-4 ml-1" />
+              </Button>
             )}
           </div>
         </div>
