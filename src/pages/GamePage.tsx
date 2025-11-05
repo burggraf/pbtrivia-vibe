@@ -4,7 +4,8 @@ import { ArrowLeft } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import AppHeader from '@/components/ui/AppHeader'
 import GameStateRenderer from '@/components/games/GameStateRenderer'
-import { gamesService } from '@/lib/games'
+import TeamSelectionModal from '@/components/games/TeamSelectionModal'
+import { gamesService, gameTeamsService, gamePlayersService } from '@/lib/games'
 import { gameAnswersService } from '@/lib/gameAnswers'
 import pb from '@/lib/pocketbase'
 import { Game } from '@/types/games'
@@ -18,6 +19,7 @@ export default function GamePage() {
   const [isSubmittingAnswer, setIsSubmittingAnswer] = useState(false)
   const [currentTeamId, setCurrentTeamId] = useState<string | null>(null)
   const [teamAnswer, setTeamAnswer] = useState<{ answer: string, isCorrect?: boolean } | null>(null)
+  const [showTeamModal, setShowTeamModal] = useState(false)
 
   const handleAnswerSubmit = async (selectedLabel: string) => {
     if (!id || !gameData?.question || !currentTeamId || isSubmittingAnswer) return
@@ -50,6 +52,67 @@ export default function GamePage() {
       console.error('Failed to submit answer:', error)
     } finally {
       setIsSubmittingAnswer(false)
+    }
+  }
+
+  const handleChangeTeam = () => {
+    // Clear current team and open team modal
+    setCurrentTeamId(null)
+    setShowTeamModal(true)
+  }
+
+  const handleTeamSelected = async (teamId: string | null, newTeamName?: string) => {
+    if (!id || !pb.authStore.model?.id) return
+
+    try {
+      setIsLoading(true)
+      setShowTeamModal(false)
+
+      let finalTeamId = teamId
+
+      // Create new team if needed
+      if (!teamId && newTeamName) {
+        const newTeam = await gameTeamsService.createTeam({
+          game: id,
+          name: newTeamName,
+        }, game?.host)
+        finalTeamId = newTeam.id
+      }
+
+      if (!finalTeamId) {
+        console.error('No team selected or created')
+        return
+      }
+
+      // Check if player already exists in game
+      const existingPlayer = await gamePlayersService.findPlayerInGame(id, pb.authStore.model.id)
+
+      if (existingPlayer) {
+        // Update existing player with new team
+        await gamePlayersService.updatePlayer(existingPlayer.id, {
+          team: finalTeamId,
+          name: pb.authStore.model.name,
+          avatar: pb.authStore.model.avatar,
+        })
+      } else {
+        // Create new player
+        await gamePlayersService.createPlayer({
+          game: id,
+          player: pb.authStore.model.id,
+          team: finalTeamId,
+          name: pb.authStore.model.name,
+          avatar: pb.authStore.model.avatar,
+        }, game?.host)
+      }
+
+      // The page will refresh via subscriptions
+      console.log('Team selected successfully, waiting for page refresh')
+    } catch (error) {
+      console.error('Failed to join team:', error)
+      alert('Failed to join team. Please try again.')
+      setShowTeamModal(true)
+    } finally {
+      setIsLoading(false)
     }
   }
 
@@ -249,6 +312,23 @@ export default function GamePage() {
         const updatedGame = e.record as unknown as Game
         setGame(updatedGame)
 
+        // Update current user's team from scoreboard
+        if (updatedGame.scoreboard?.teams) {
+          const currentUserId = pb.authStore.model?.id
+          const userTeam = Object.entries(updatedGame.scoreboard.teams).find(([, team]: [string, any]) =>
+            team.players.some((player: any) => player.id === currentUserId)
+          )
+
+          if (userTeam) {
+            setCurrentTeamId(userTeam[0])
+            console.log('Updated current user team ID from subscription:', userTeam[0])
+          } else {
+            // User is not in any team anymore
+            setCurrentTeamId(null)
+            console.log('User is not in any team')
+          }
+        }
+
         // Parse updated game data
         if (updatedGame.data) {
           console.log('📊 GamePage parsing updated game data:', {
@@ -332,6 +412,9 @@ export default function GamePage() {
           scoreboard={game?.scoreboard}
           isLoading={isLoading}
           onAnswerSubmit={handleAnswerSubmit}
+          gameStatus={game?.status}
+          currentTeamId={currentTeamId}
+          onChangeTeam={handleChangeTeam}
         />
 
         {/* Game End Navigation - Show when game is in game-end state */}
@@ -346,6 +429,16 @@ export default function GamePage() {
           </div>
         )}
       </div>
+
+      {/* Team Selection Modal */}
+      {game && showTeamModal && (
+        <TeamSelectionModal
+          isOpen={showTeamModal}
+          onClose={() => setShowTeamModal(false)}
+          gameId={game.id}
+          onTeamSelected={handleTeamSelected}
+        />
+      )}
     </div>
   )
 }

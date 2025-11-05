@@ -14,13 +14,16 @@ interface GameStateRendererProps {
   scoreboard?: GameScoreboard
   isLoading?: boolean
   onAnswerSubmit?: (answer: string) => void
+  gameStatus?: 'setup' | 'ready' | 'in-progress' | 'completed'
+  currentTeamId?: string | null
+  onChangeTeam?: () => void
 }
 
-export default function GameStateRenderer({ gameData, gameId, scoreboard, isLoading, onAnswerSubmit }: GameStateRendererProps) {
+export default function GameStateRenderer({ gameData, gameId, scoreboard, isLoading, onAnswerSubmit, gameStatus, currentTeamId, onChangeTeam }: GameStateRendererProps) {
   const renderStateContent = () => {
     // Handle game-start state
     if (gameData?.state === 'game-start') {
-      return <GameStart gameData={gameData} />
+      return <GameStart gameData={gameData} gameId={gameId} gameStatus={gameStatus} currentTeamId={currentTeamId} onChangeTeam={onChangeTeam} />
     }
 
     // Handle round-start state
