@@ -224,23 +224,6 @@ export default function ControllerPage() {
     }
   }
 
-  // Start game functionality
-  const handleStartGame = async () => {
-    if (!game) return
-
-    try {
-      // Update game status to in-progress
-      await gamesService.updateGame(game.id, { status: 'in-progress' })
-
-      // Initialize game data with clean state
-      await updateGameData({
-        state: 'game-start'
-      })
-    } catch (error) {
-      console.error('Failed to start game:', error)
-    }
-  }
-
   // Navigate to next state - CLEAN STATE MACHINE
   const handleNextState = async () => {
     if (!gameData) return
