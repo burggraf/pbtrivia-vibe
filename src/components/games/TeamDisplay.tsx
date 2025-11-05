@@ -1,5 +1,6 @@
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { GameScoreboard } from '@/types/games'
+import pb from '@/lib/pocketbase'
 
 interface TeamDisplayProps {
   scoreboard?: GameScoreboard
@@ -8,6 +9,7 @@ interface TeamDisplayProps {
 }
 
 export default function TeamDisplay({ scoreboard, isLoading = false, className = "" }: TeamDisplayProps) {
+  const currentUserId = pb.authStore.model?.id
   if (isLoading) {
     return (
       <div className={`text-center py-8 md:py-12 ${className}`}>
@@ -58,22 +60,33 @@ export default function TeamDisplay({ scoreboard, isLoading = false, className =
           </CardHeader>
           <CardContent className="pt-0">
             <div className="space-y-1.5 md:space-y-2">
-              {teamData.players.map((player) => (
-                <div
-                  key={player.id}
-                  className="flex items-center gap-2 p-1.5 md:p-2 rounded bg-slate-50 dark:bg-slate-700"
-                >
-                  <div className="w-2 h-2 rounded-full bg-green-500"></div>
-                  <div className="flex-1 min-w-0">
-                    <p className="text-sm font-medium text-slate-800 dark:text-slate-100 truncate">
-                      {player.name}
-                    </p>
-                    <p className="text-xs text-slate-500 dark:text-slate-400 truncate">
-                      {player.avatar}
-                    </p>
+              {teamData.players.map((player) => {
+                const isCurrentUser = player.id === currentUserId
+                return (
+                  <div
+                    key={player.id}
+                    className={`flex items-center gap-2 p-1.5 md:p-2 rounded ${
+                      isCurrentUser
+                        ? 'bg-blue-100 dark:bg-blue-900/30 ring-2 ring-blue-500 dark:ring-blue-400'
+                        : 'bg-slate-50 dark:bg-slate-700'
+                    }`}
+                  >
+                    <div className={`w-2 h-2 rounded-full ${isCurrentUser ? 'bg-blue-500' : 'bg-green-500'}`}></div>
+                    <div className="flex-1 min-w-0">
+                      <p className={`text-sm font-medium truncate ${
+                        isCurrentUser
+                          ? 'text-blue-900 dark:text-blue-100 font-semibold'
+                          : 'text-slate-800 dark:text-slate-100'
+                      }`}>
+                        {player.name} {isCurrentUser && '(You)'}
+                      </p>
+                      <p className="text-xs text-slate-500 dark:text-slate-400 truncate">
+                        {player.avatar}
+                      </p>
+                    </div>
                   </div>
-                </div>
-              ))}
+                )
+              })}
             </div>
           </CardContent>
         </Card>

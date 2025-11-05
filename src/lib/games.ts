@@ -189,6 +189,25 @@ export const gamePlayersService = {
       throw error;
     }
   },
+
+  async removePlayerFromGame(gameId: string, playerId: string): Promise<void> {
+    try {
+      // Find the player record first
+      const playerRecord = await this.findPlayerInGame(gameId, playerId);
+
+      if (!playerRecord) {
+        console.warn('No player record found to remove');
+        return;
+      }
+
+      // Delete the player record
+      await pb.collection('game_players').delete(playerRecord.id);
+      console.log('Successfully removed player from game');
+    } catch (error) {
+      console.error('Failed to remove player from game:', error);
+      throw error;
+    }
+  },
 };
 
 function generateGameCode(): string {
