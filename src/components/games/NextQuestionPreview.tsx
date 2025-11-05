@@ -281,9 +281,9 @@ export default function NextQuestionPreview({ gameId, gameData, rounds }: NextQu
         {/* Left: Collapse/Expand Toggle */}
         <Button
           variant="ghost"
-          size="sm"
+          size="icon"
           onClick={() => setIsExpanded(!isExpanded)}
-          className="gap-1"
+          className="h-[44px] w-[44px]"
         >
           {isExpanded ? (
             <ChevronUp className="h-4 w-4" />
@@ -300,9 +300,9 @@ export default function NextQuestionPreview({ gameId, gameData, rounds }: NextQu
         {/* Right: Show/Hide Answer Toggle */}
         <Button
           variant="ghost"
-          size="sm"
+          size="icon"
           onClick={() => setShowCorrectAnswer(!showCorrectAnswer)}
-          className="gap-1"
+          className="h-[44px] w-[44px]"
         >
           {showCorrectAnswer ? (
             <Eye className="h-4 w-4" />
@@ -333,10 +333,9 @@ export default function NextQuestionPreview({ gameId, gameData, rounds }: NextQu
                 <div className="flex justify-center">
                   <Button
                     variant="outline"
-                    size="sm"
                     onClick={handleReplaceQuestion}
                     disabled={isReplacing}
-                    className="gap-1 text-xs"
+                    className="h-[44px] gap-1 text-xs"
                   >
                     {isReplacing ? (
                       <div className="animate-spin">

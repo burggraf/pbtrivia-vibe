@@ -740,38 +740,26 @@ export default function ControllerPage() {
             )}
           </div>
 
-          {/* Right: Forward Navigation & Start Game */}
+          {/* Right: Forward Navigation */}
           <div className="flex items-center justify-end gap-2 w-1/3">
-            {game?.scoreboard && Object.keys(game.scoreboard.teams).length > 0 && (
-              <>
-                {game?.status === 'ready' && (
-                  <Button
-                    className="h-[44px] bg-green-600 hover:bg-green-700 dark:bg-green-700 dark:hover:bg-green-600 text-white"
-                    onClick={handleStartGame}
-                  >
-                    Start Game
-                  </Button>
-                )}
-                {gameData && (
-                  <Button
-                    className="h-[44px] bg-blue-600 hover:bg-blue-700 dark:bg-blue-700 dark:hover:bg-blue-600 text-white"
-                    onClick={handleNextState}
-                    disabled={gameData.state === 'return-to-lobby' || gameData.state === 'thanks'}
-                  >
-                    {(() => {
-                      const isAnswerRevealed = !!gameData.question?.correct_answer
-                      return gameData.state === 'round-play' && !isAnswerRevealed
-                        ? 'Reveal'
-                        : gameData.state === 'round-play' && isAnswerRevealed
-                        ? 'Next'
-                        : gameData.state === 'game-end'
-                        ? 'Thanks'
-                        : 'Next'
-                    })()}
-                    <ChevronRight className="h-4 w-4 ml-1" />
-                  </Button>
-                )}
-              </>
+            {game?.scoreboard && Object.keys(game.scoreboard.teams).length > 0 && gameData && (
+              <Button
+                className="h-[44px] bg-blue-600 hover:bg-blue-700 dark:bg-blue-700 dark:hover:bg-blue-600 text-white"
+                onClick={handleNextState}
+                disabled={gameData.state === 'return-to-lobby' || gameData.state === 'thanks'}
+              >
+                {(() => {
+                  const isAnswerRevealed = !!gameData.question?.correct_answer
+                  return gameData.state === 'round-play' && !isAnswerRevealed
+                    ? 'Reveal'
+                    : gameData.state === 'round-play' && isAnswerRevealed
+                    ? 'Next'
+                    : gameData.state === 'game-end'
+                    ? 'Thanks'
+                    : 'Next'
+                })()}
+                <ChevronRight className="h-4 w-4 ml-1" />
+              </Button>
             )}
           </div>
         </div>
