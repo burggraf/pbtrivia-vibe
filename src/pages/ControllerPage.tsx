@@ -701,7 +701,7 @@ export default function ControllerPage() {
             variant="ghost"
             size="icon"
             onClick={handleBackToHost}
-            className="text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700"
+            className="h-[44px] w-[44px] text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700"
             aria-label="Back to Host"
           >
             <ArrowLeft className="h-5 w-5" />

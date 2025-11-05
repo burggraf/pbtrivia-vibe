@@ -309,7 +309,7 @@ export default function GamePage() {
             variant="ghost"
             size="icon"
             onClick={() => navigate('/lobby')}
-            className="text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700"
+            className="h-[44px] w-[44px] text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700"
             aria-label="Back to Lobby"
           >
             <ArrowLeft className="h-5 w-5" />

@@ -147,7 +147,7 @@ export default function LobbyPage() {
             variant="ghost"
             size="icon"
             onClick={() => setProfileModalOpen(true)}
-            className="text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700"
+            className="h-[44px] w-[44px] text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700"
             aria-label="Profile"
           >
             {pb.authStore.model?.avatar ? (
