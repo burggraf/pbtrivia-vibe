@@ -111,7 +111,12 @@ scripts/             # Database import and maintenance scripts
 ### PocketBase Configuration
 
 - Default admin: `admin@example.com` / `Password123`
-- Database URL: `http://localhost:8090`
+- Database URL: Auto-detected at runtime (no .env files needed)
+  - **Development mode** (running on non-standard port like 5173): Connects to `:8090` on same host
+    - `http://localhost:5173` → `http://localhost:8090`
+    - `http://192.168.1.122:5173` → `http://192.168.1.122:8090` (LAN testing)
+  - **Production mode** (port 80/443 or no port): Uses same origin via Nginx reverse proxy
+    - `https://trivia.azabab.com` → `https://trivia.azabab.com` (proxied to localhost:8090)
 - Collections: games, rounds, questions, round_questions, game_teams, game_players
 - Access control: Host-based row-level security using `host.id=@request.auth.id`
 

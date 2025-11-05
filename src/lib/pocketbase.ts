@@ -1,16 +1,26 @@
 import PocketBase from 'pocketbase';
 
 function getPocketBaseUrl(): string {
-  const envUrl = import.meta.env.VITE_POCKETBASE_URL || '';
+  // Auto-detect PocketBase URL based on current page
+  // Development: Direct access to PocketBase on port 8090
+  // Production: Same origin via Nginx reverse proxy
+  const protocol = window.location.protocol;
+  const hostname = window.location.hostname;
+  const port = window.location.port;
 
-  // If env URL starts with https://, it's production - use as-is
-  if (envUrl.startsWith('https://')) {
-    return envUrl;
+  // Development mode detection:
+  // - If running on a non-standard port (not 80/443), it's a dev server
+  // - Dev servers run on ports like 5173, 5174, etc.
+  const isDevMode = port && port !== '80' && port !== '443';
+
+  if (isDevMode) {
+    // Development: Connect directly to PocketBase on port 8090
+    // Works for localhost, 127.0.0.1, and LAN IPs like 192.168.1.122
+    return `${protocol}//${hostname}:8090`;
   }
 
-  // Otherwise (http:// or empty), use runtime detection for development
-  const hostname = window.location.hostname;
-  return `http://${hostname}:8090`;
+  // Production: Use same origin (Nginx reverse proxy handles routing)
+  return `${protocol}//${hostname}`;
 }
 
 const pb = new PocketBase(getPocketBaseUrl());
