@@ -251,7 +251,7 @@ export default function GameEditModal({ game, isOpen, onClose, onSave, onDelete,
             </DialogDescription>
           </DialogHeader>
           <form onSubmit={handleSubmit} className="flex flex-col min-h-0">
-            <div className="overflow-y-auto px-6 py-4">
+            <div className="overflow-y-auto px-6 py-4 space-y-4">
               <div className="grid grid-cols-4 items-center gap-4">
                 <Label htmlFor="name" className="text-right">
                   Name
@@ -345,11 +345,10 @@ export default function GameEditModal({ game, isOpen, onClose, onSave, onDelete,
                   </div>
                 </div>
               )}
-            </div>
 
-            {/* Categories Section - only show for create mode */}
-            {!isEdit && (
-              <div className="border-t pt-4">
+              {/* Categories Section - only show for create mode */}
+              {!isEdit && (
+                <div className="border-t pt-4">
                 <div className="mb-4">
                   <div className="flex items-center justify-between mb-4">
                     <Label className="text-base font-medium">Categories</Label>
@@ -389,6 +388,7 @@ export default function GameEditModal({ game, isOpen, onClose, onSave, onDelete,
                 </div>
               </div>
             )}
+            </div>
             <DialogFooter>
               <div className="flex flex-col-reverse sm:flex-row sm:justify-end sm:space-x-2 w-full">
                 <div className="flex flex-col-reverse sm:flex-row sm:justify-start sm:space-x-2">
