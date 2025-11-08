@@ -1,6 +1,6 @@
 import { useParams, useNavigate } from 'react-router-dom'
 import { useState, useEffect, useCallback } from 'react'
-import { ArrowLeft, ChevronLeft, ChevronRight } from 'lucide-react'
+import { ArrowLeft, ChevronLeft, ChevronRight, Pause, Play } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import AppHeader from '@/components/ui/AppHeader'
 import TeamDisplay from '@/components/games/TeamDisplay'
@@ -44,6 +44,9 @@ interface GameData {
     duration: number
     expiresAt: string
     isEarlyAdvance?: boolean
+    isPaused?: boolean         // NEW: Whether timer is currently paused
+    pausedAt?: string          // NEW: ISO timestamp when paused
+    pausedRemaining?: number   // NEW: Seconds remaining when paused
   }
 }
 
@@ -223,6 +226,42 @@ export default function ControllerPage() {
     }
   }, [id])
 
+  // Toggle timer pause/resume
+  const handleTogglePause = useCallback(async () => {
+    if (!gameData?.timer || !id) return
+
+    if (gameData.timer.isPaused) {
+      // Resume: calculate new expiresAt from remaining time
+      const remaining = gameData.timer.pausedRemaining || 0
+      const timer = {
+        ...gameData.timer,
+        expiresAt: new Date(Date.now() + remaining * 1000).toISOString(),
+        isPaused: false,
+        pausedAt: undefined,
+        pausedRemaining: undefined
+      }
+
+      console.log('▶️ Resuming timer with', remaining, 'seconds remaining')
+      await updateGameDataClean({ ...gameData, timer })
+    } else {
+      // Pause: calculate and store remaining time
+      const now = Date.now()
+      const expiresAt = new Date(gameData.timer.expiresAt).getTime()
+      const remainingMs = Math.max(0, expiresAt - now)
+      const remainingSeconds = Math.ceil(remainingMs / 1000)
+
+      const timer = {
+        ...gameData.timer,
+        isPaused: true,
+        pausedAt: new Date().toISOString(),
+        pausedRemaining: remainingSeconds
+      }
+
+      console.log('⏸️ Pausing timer with', remainingSeconds, 'seconds remaining')
+      await updateGameDataClean({ ...gameData, timer })
+    }
+  }, [gameData, id, updateGameDataClean])
+
   // Check if all teams have answered and trigger early advance
   useEffect(() => {
     // Only monitor when question is active (not revealed yet)
@@ -263,8 +302,8 @@ export default function ControllerPage() {
 
       console.log('👥 Teams answered:', teamsAnswered, 'of', teamsWithPlayers)
 
-      // If all answered and no early-advance timer exists yet
-      if (teamsAnswered >= teamsWithPlayers && !gameData.timer?.isEarlyAdvance) {
+      // If all answered and no early-advance timer exists yet and timer not paused
+      if (teamsAnswered >= teamsWithPlayers && !gameData.timer?.isEarlyAdvance && !gameData.timer?.isPaused) {
         console.log('🎉 All teams answered! Triggering early advance in 3 seconds')
 
         // Create 3-second early-advance timer
@@ -767,7 +806,7 @@ export default function ControllerPage() {
 
   // Auto-advance when timer expires (host only)
   useEffect(() => {
-    if (!gameData?.timer || !id) return
+    if (!gameData?.timer || gameData.timer.isPaused || !id) return
 
     console.log('⏰ Timer active:', {
       state: gameData.state,
@@ -907,23 +946,46 @@ export default function ControllerPage() {
           {/* Right: Forward Navigation */}
           <div className="flex items-center justify-end gap-2 w-1/3">
             {game?.scoreboard && Object.keys(game.scoreboard.teams).length > 0 && gameData && (
-              <Button
-                className="h-[44px] bg-blue-600 hover:bg-blue-700 dark:bg-blue-700 dark:hover:bg-blue-600 text-white"
-                onClick={handleNextState}
-                disabled={gameData.state === 'return-to-lobby' || gameData.state === 'thanks'}
-              >
-                {(() => {
-                  const isAnswerRevealed = !!gameData.question?.correct_answer
-                  return gameData.state === 'round-play' && !isAnswerRevealed
-                    ? 'Reveal'
-                    : gameData.state === 'round-play' && isAnswerRevealed
-                    ? 'Next'
-                    : gameData.state === 'game-end'
-                    ? 'Thanks'
-                    : 'Next'
-                })()}
-                <ChevronRight className="h-4 w-4 ml-1" />
-              </Button>
+              <>
+                {gameData?.timer && (
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={handleTogglePause}
+                    className="flex items-center gap-2"
+                  >
+                    {gameData.timer.isPaused ? (
+                      <>
+                        <Play className="h-4 w-4" />
+                        Resume
+                      </>
+                    ) : (
+                      <>
+                        <Pause className="h-4 w-4" />
+                        Pause
+                      </>
+                    )}
+                  </Button>
+                )}
+
+                <Button
+                  className="h-[44px] bg-blue-600 hover:bg-blue-700 dark:bg-blue-700 dark:hover:bg-blue-600 text-white"
+                  onClick={handleNextState}
+                  disabled={gameData.state === 'return-to-lobby' || gameData.state === 'thanks'}
+                >
+                  {(() => {
+                    const isAnswerRevealed = !!gameData.question?.correct_answer
+                    return gameData.state === 'round-play' && !isAnswerRevealed
+                      ? 'Reveal'
+                      : gameData.state === 'round-play' && isAnswerRevealed
+                      ? 'Next'
+                      : gameData.state === 'game-end'
+                      ? 'Thanks'
+                      : 'Next'
+                  })()}
+                  <ChevronRight className="h-4 w-4 ml-1" />
+                </Button>
+              </>
             )}
           </div>
         </div>
