@@ -697,6 +697,32 @@ export default function ControllerPage() {
     }
   }
 
+  // Auto-advance when timer expires (host only)
+  useEffect(() => {
+    if (!gameData?.timer || !id) return
+
+    console.log('⏰ Timer active:', {
+      state: gameData.state,
+      expiresAt: gameData.timer.expiresAt,
+      duration: gameData.timer.duration
+    })
+
+    const checkTimer = setInterval(() => {
+      const now = Date.now()
+      const expiresAt = new Date(gameData.timer!.expiresAt).getTime()
+
+      if (now >= expiresAt) {
+        console.log('⏰ Timer expired! Auto-advancing from state:', gameData.state)
+        clearInterval(checkTimer)
+        handleNextState()
+      }
+    }, 100)
+
+    return () => {
+      clearInterval(checkTimer)
+    }
+  }, [gameData?.timer, id])
+
   // Set up realtime subscription for game changes
   useEffect(() => {
     if (!id) return
