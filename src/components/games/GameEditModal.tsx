@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { Game, CreateGameData, UpdateGameData } from '@/types/games'
+import { Game, CreateGameData, UpdateGameData, GameMetadata } from '@/types/games'
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -110,8 +110,19 @@ export default function GameEditModal({ game, isOpen, onClose, onSave, onDelete,
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
 
+    // Convert empty/zero values to null for timers
+    const metadata: GameMetadata = {
+      question_timer: (formData as any).question_timer || null,
+      answer_timer: (formData as any).answer_timer || null,
+      game_start_timer: (formData as any).game_start_timer || null,
+      round_start_timer: (formData as any).round_start_timer || null,
+      game_end_timer: (formData as any).game_end_timer || null,
+      thanks_timer: (formData as any).thanks_timer || null
+    }
+
     const submitData = {
       ...formData,
+      metadata: metadata,
       startdate: formData.startdate ? new Date(formData.startdate).toISOString() : undefined
     }
 
