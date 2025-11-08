@@ -5,6 +5,9 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
+// @ts-expect-error - Accordion components will be used in Task 8
+import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion'
+import { useToast } from '@/hooks/use-toast'
 import { Checkbox } from '@/components/ui/checkbox'
 import { getAvailableCategories } from '@/components/ui/CategoryIcon'
 import CategoryIcon from '@/components/ui/CategoryIcon'
@@ -20,6 +23,8 @@ interface GameEditModalProps {
 
 export default function GameEditModal({ game, isOpen, onClose, onSave, onDelete, isLoading = false }: GameEditModalProps) {
   const isEdit = !!game
+  // @ts-expect-error - toast will be used in Task 6
+  const { toast } = useToast()
   const [formData, setFormData] = useState<UpdateGameData | CreateGameData & {
     rounds?: number;
     questionsPerRound?: number;
