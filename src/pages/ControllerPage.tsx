@@ -38,6 +38,11 @@ interface GameData {
     correct_answer?: string
     submitted_answer?: string
   }
+  timer?: {
+    startedAt: string
+    duration: number
+    expiresAt: string
+  }
 }
 
 const GAME_STATES: GameState[] = [
