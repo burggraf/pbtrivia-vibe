@@ -1,6 +1,6 @@
 import { useParams, useNavigate } from 'react-router-dom'
 import { useState, useEffect, useCallback } from 'react'
-import { ArrowLeft, ChevronLeft, ChevronRight } from 'lucide-react'
+import { ArrowLeft, ChevronLeft, ChevronRight, Pause, Play } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import AppHeader from '@/components/ui/AppHeader'
 import TeamDisplay from '@/components/games/TeamDisplay'
@@ -227,7 +227,6 @@ export default function ControllerPage() {
   }, [id])
 
   // Toggle timer pause/resume
-  // @ts-expect-error - Used in Task 3 (pause button)
   const handleTogglePause = useCallback(async () => {
     if (!gameData?.timer || !id) return
 
@@ -947,23 +946,46 @@ export default function ControllerPage() {
           {/* Right: Forward Navigation */}
           <div className="flex items-center justify-end gap-2 w-1/3">
             {game?.scoreboard && Object.keys(game.scoreboard.teams).length > 0 && gameData && (
-              <Button
-                className="h-[44px] bg-blue-600 hover:bg-blue-700 dark:bg-blue-700 dark:hover:bg-blue-600 text-white"
-                onClick={handleNextState}
-                disabled={gameData.state === 'return-to-lobby' || gameData.state === 'thanks'}
-              >
-                {(() => {
-                  const isAnswerRevealed = !!gameData.question?.correct_answer
-                  return gameData.state === 'round-play' && !isAnswerRevealed
-                    ? 'Reveal'
-                    : gameData.state === 'round-play' && isAnswerRevealed
-                    ? 'Next'
-                    : gameData.state === 'game-end'
-                    ? 'Thanks'
-                    : 'Next'
-                })()}
-                <ChevronRight className="h-4 w-4 ml-1" />
-              </Button>
+              <>
+                {gameData?.timer && (
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={handleTogglePause}
+                    className="flex items-center gap-2"
+                  >
+                    {gameData.timer.isPaused ? (
+                      <>
+                        <Play className="h-4 w-4" />
+                        Resume
+                      </>
+                    ) : (
+                      <>
+                        <Pause className="h-4 w-4" />
+                        Pause
+                      </>
+                    )}
+                  </Button>
+                )}
+
+                <Button
+                  className="h-[44px] bg-blue-600 hover:bg-blue-700 dark:bg-blue-700 dark:hover:bg-blue-600 text-white"
+                  onClick={handleNextState}
+                  disabled={gameData.state === 'return-to-lobby' || gameData.state === 'thanks'}
+                >
+                  {(() => {
+                    const isAnswerRevealed = !!gameData.question?.correct_answer
+                    return gameData.state === 'round-play' && !isAnswerRevealed
+                      ? 'Reveal'
+                      : gameData.state === 'round-play' && isAnswerRevealed
+                      ? 'Next'
+                      : gameData.state === 'game-end'
+                      ? 'Thanks'
+                      : 'Next'
+                  })()}
+                  <ChevronRight className="h-4 w-4 ml-1" />
+                </Button>
+              </>
             )}
           </div>
         </div>
