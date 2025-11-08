@@ -17,11 +17,13 @@ export default function GameTimer({ timer }: GameTimerProps) {
     const updateTimer = () => {
       const now = Date.now()
       const expiresAt = new Date(timer.expiresAt).getTime()
-      const remaining = Math.max(0, Math.ceil((expiresAt - now) / 1000))
-      setRemainingSeconds(remaining)
+      const remainingMs = Math.max(0, expiresAt - now)
+      const remainingSeconds = Math.ceil(remainingMs / 1000)
+      setRemainingSeconds(remainingSeconds)
 
-      // Calculate progress percentage (100% = full time, 0% = expired)
-      const percentage = Math.max(0, Math.min(100, (remaining / timer.duration) * 100))
+      // Calculate progress percentage from milliseconds for smooth animation
+      const totalMs = timer.duration * 1000
+      const percentage = Math.max(0, Math.min(100, (remainingMs / totalMs) * 100))
       setProgressValue(percentage)
     }
 
