@@ -181,7 +181,6 @@ export default function GameEditModal({ game, isOpen, onClose, onSave, onDelete,
     setShowDeleteConfirm(false)
   }
 
-  // @ts-expect-error - will be used in Task 10 Timers accordion section
   const handleCopyTimersFromPreviousGame = async () => {
     try {
       // Fetch recent games
@@ -401,6 +400,165 @@ export default function GameEditModal({ game, isOpen, onClose, onSave, onDelete,
                             ))}
                           </div>
                         </div>
+                      </div>
+                    </AccordionContent>
+                  </AccordionItem>
+                )}
+
+                {/* Timers Section - Create mode only */}
+                {!isEdit && (
+                  <AccordionItem value="timers">
+                    <AccordionTrigger className="text-base font-semibold">
+                      Timers
+                    </AccordionTrigger>
+                    <AccordionContent>
+                      <div className="grid gap-4 pt-4">
+                        {/* Copy from Previous Game Button */}
+                        <div className="flex justify-end mb-2">
+                          <Button
+                            type="button"
+                            variant="outline"
+                            size="sm"
+                            onClick={handleCopyTimersFromPreviousGame}
+                            className="text-xs"
+                          >
+                            Copy from Previous Game
+                          </Button>
+                        </div>
+
+                        {/* Timer Inputs - 2 columns on desktop, 1 on mobile */}
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                          {/* Question Timer */}
+                          <div className="space-y-2">
+                            <Label htmlFor="question_timer" className="text-sm font-medium">
+                              Question Timer
+                            </Label>
+                            <div className="flex items-center gap-2">
+                              <Input
+                                id="question_timer"
+                                type="number"
+                                min="0"
+                                max="300"
+                                value={('question_timer' in formData ? formData.question_timer : null) ?? ''}
+                                onChange={(e) => handleInputChange('question_timer', e.target.value ? parseInt(e.target.value) : null)}
+                                placeholder="No limit"
+                                className="flex-1"
+                              />
+                              <span className="text-sm text-slate-500">seconds</span>
+                            </div>
+                            <p className="text-xs text-slate-500">(round-play state)</p>
+                          </div>
+
+                          {/* Answer Display Timer */}
+                          <div className="space-y-2">
+                            <Label htmlFor="answer_timer" className="text-sm font-medium">
+                              Answer Display Timer
+                            </Label>
+                            <div className="flex items-center gap-2">
+                              <Input
+                                id="answer_timer"
+                                type="number"
+                                min="0"
+                                max="600"
+                                value={('answer_timer' in formData ? formData.answer_timer : null) ?? ''}
+                                onChange={(e) => handleInputChange('answer_timer', e.target.value ? parseInt(e.target.value) : null)}
+                                placeholder="No limit"
+                                className="flex-1"
+                              />
+                              <span className="text-sm text-slate-500">seconds</span>
+                            </div>
+                            <p className="text-xs text-slate-500">(round-end state)</p>
+                          </div>
+
+                          {/* Round Start Timer */}
+                          <div className="space-y-2">
+                            <Label htmlFor="round_start_timer" className="text-sm font-medium">
+                              Round Start Timer
+                            </Label>
+                            <div className="flex items-center gap-2">
+                              <Input
+                                id="round_start_timer"
+                                type="number"
+                                min="0"
+                                max="600"
+                                value={('round_start_timer' in formData ? formData.round_start_timer : null) ?? ''}
+                                onChange={(e) => handleInputChange('round_start_timer', e.target.value ? parseInt(e.target.value) : null)}
+                                placeholder="No limit"
+                                className="flex-1"
+                              />
+                              <span className="text-sm text-slate-500">seconds</span>
+                            </div>
+                            <p className="text-xs text-slate-500">(round-start state)</p>
+                          </div>
+
+                          {/* Game Start Timer */}
+                          <div className="space-y-2">
+                            <Label htmlFor="game_start_timer" className="text-sm font-medium">
+                              Game Start Timer
+                            </Label>
+                            <div className="flex items-center gap-2">
+                              <Input
+                                id="game_start_timer"
+                                type="number"
+                                min="0"
+                                max="600"
+                                value={('game_start_timer' in formData ? formData.game_start_timer : null) ?? ''}
+                                onChange={(e) => handleInputChange('game_start_timer', e.target.value ? parseInt(e.target.value) : null)}
+                                placeholder="No limit"
+                                className="flex-1"
+                              />
+                              <span className="text-sm text-slate-500">seconds</span>
+                            </div>
+                            <p className="text-xs text-slate-500">(game-start state)</p>
+                          </div>
+
+                          {/* Game End Timer */}
+                          <div className="space-y-2">
+                            <Label htmlFor="game_end_timer" className="text-sm font-medium">
+                              Game End Timer
+                            </Label>
+                            <div className="flex items-center gap-2">
+                              <Input
+                                id="game_end_timer"
+                                type="number"
+                                min="0"
+                                max="600"
+                                value={('game_end_timer' in formData ? formData.game_end_timer : null) ?? ''}
+                                onChange={(e) => handleInputChange('game_end_timer', e.target.value ? parseInt(e.target.value) : null)}
+                                placeholder="No limit"
+                                className="flex-1"
+                              />
+                              <span className="text-sm text-slate-500">seconds</span>
+                            </div>
+                            <p className="text-xs text-slate-500">(game-end state)</p>
+                          </div>
+
+                          {/* Thanks Screen Timer */}
+                          <div className="space-y-2">
+                            <Label htmlFor="thanks_timer" className="text-sm font-medium">
+                              Thanks Screen Timer
+                            </Label>
+                            <div className="flex items-center gap-2">
+                              <Input
+                                id="thanks_timer"
+                                type="number"
+                                min="0"
+                                max="600"
+                                value={('thanks_timer' in formData ? formData.thanks_timer : null) ?? ''}
+                                onChange={(e) => handleInputChange('thanks_timer', e.target.value ? parseInt(e.target.value) : null)}
+                                placeholder="No limit"
+                                className="flex-1"
+                              />
+                              <span className="text-sm text-slate-500">seconds</span>
+                            </div>
+                            <p className="text-xs text-slate-500">(thanks state)</p>
+                          </div>
+                        </div>
+
+                        {/* Helper Note */}
+                        <p className="text-xs text-slate-500 italic mt-2">
+                          Leave blank or enter 0 for no time limit (manual advance)
+                        </p>
                       </div>
                     </AccordionContent>
                   </AccordionItem>
