@@ -43,6 +43,7 @@ interface GameData {
     startedAt: string
     duration: number
     expiresAt: string
+    isEarlyAdvance?: boolean
   }
 }
 
