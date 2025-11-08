@@ -43,6 +43,7 @@ interface GameData {
     startedAt: string
     duration: number
     expiresAt: string
+    isEarlyAdvance?: boolean
   }
 }
 
@@ -208,6 +209,85 @@ export default function ControllerPage() {
     }
   }, [id])
 
+  // Update game data (clean version that replaces entire data object)
+  const updateGameDataClean = useCallback(async (cleanGameData: GameData) => {
+    if (!id) return
+
+    try {
+      await pb.collection('games').update(id, {
+        data: JSON.stringify(cleanGameData)
+      })
+      setGameData(cleanGameData)
+    } catch (error) {
+      console.error('Failed to update game data:', error)
+    }
+  }, [id])
+
+  // Check if all teams have answered and trigger early advance
+  useEffect(() => {
+    // Only monitor when question is active (not revealed yet)
+    if (!gameData?.question?.id || gameData.question.correct_answer || !id || !game?.scoreboard) return
+
+    console.log('👥 Monitoring answers for early advance:', {
+      questionId: gameData.question.id,
+      gameId: id
+    })
+
+    const unsubscribe = pb.collection('game_answers').subscribe('*', async (e) => {
+      // Filter to current question
+      if ((e.record as any).game_questions_id !== gameData.question!.id) return
+      if ((e.record as any).game !== id) return
+
+      console.log('👥 Answer event detected:', {
+        action: e.action,
+        questionId: (e.record as any).game_questions_id,
+        team: (e.record as any).team
+      })
+
+      // Count teams with players
+      const teamsWithPlayers = Object.values(game.scoreboard?.teams || {})
+        .filter(team => team.players && team.players.length > 0).length
+
+      console.log('👥 Teams with players:', teamsWithPlayers)
+
+      // If no teams with players, skip
+      if (teamsWithPlayers === 0) {
+        console.log('👥 No teams with players, skipping early advance check')
+        return
+      }
+
+      // Get all answers for current question
+      const { gameAnswersService } = await import('@/lib/gameAnswers')
+      const answers = await gameAnswersService.getTeamAnswersForQuestion(id, gameData.question!.id)
+      const teamsAnswered = answers.length
+
+      console.log('👥 Teams answered:', teamsAnswered, 'of', teamsWithPlayers)
+
+      // If all answered and no early-advance timer exists yet
+      if (teamsAnswered >= teamsWithPlayers && !gameData.timer?.isEarlyAdvance) {
+        console.log('🎉 All teams answered! Triggering early advance in 3 seconds')
+
+        // Create 3-second early-advance timer
+        const timer = {
+          startedAt: new Date().toISOString(),
+          duration: 3,
+          expiresAt: new Date(Date.now() + 3000).toISOString(),
+          isEarlyAdvance: true
+        }
+
+        await updateGameDataClean({
+          ...gameData,
+          timer
+        })
+      }
+    }, { filter: `game = "${id}"` })
+
+    return () => {
+      console.log('👥 Cleaning up answer subscription for question:', gameData.question?.id)
+      unsubscribe.then(unsub => unsub())
+    }
+  }, [gameData?.question?.id, gameData?.question?.correct_answer, id, game?.scoreboard, updateGameDataClean])
+
   // Fetch game data
   const fetchGameData = async () => {
     if (!id) return
@@ -253,19 +333,6 @@ export default function ControllerPage() {
         data: JSON.stringify(updatedData)
       })
       setGameData(updatedData as GameData)
-    } catch (error) {
-      console.error('Failed to update game data:', error)
-    }
-  }
-
-  const updateGameDataClean = async (cleanGameData: GameData) => {
-    if (!id) return
-
-    try {
-      await pb.collection('games').update(id, {
-        data: JSON.stringify(cleanGameData)
-      })
-      setGameData(cleanGameData)
     } catch (error) {
       console.error('Failed to update game data:', error)
     }
