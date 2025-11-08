@@ -119,7 +119,11 @@ export default function GameEditModal({ game, isOpen, onClose, onSave, onDelete,
     onClose()
   }
 
-  const handleInputChange = (field: keyof (UpdateGameData | CreateGameData) | 'rounds' | 'questionsPerRound' | 'categories', value: string | number | string[] | undefined) => {
+  const handleInputChange = (
+    field: keyof (UpdateGameData | CreateGameData) | 'rounds' | 'questionsPerRound' | 'categories' |
+           'question_timer' | 'answer_timer' | 'game_start_timer' | 'round_start_timer' | 'game_end_timer' | 'thanks_timer',
+    value: string | number | string[] | null | undefined
+  ) => {
     setFormData(prev => ({ ...prev, [field]: value }))
   }
 
