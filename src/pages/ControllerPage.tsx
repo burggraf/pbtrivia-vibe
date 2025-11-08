@@ -721,7 +721,7 @@ export default function ControllerPage() {
     return () => {
       clearInterval(checkTimer)
     }
-  }, [gameData?.timer, id])
+  }, [gameData?.timer, id, handleNextState])
 
   // Set up realtime subscription for game changes
   useEffect(() => {
