@@ -12,7 +12,7 @@ import { gameQuestionsService } from '@/lib/gameQuestions'
 import { questionsService } from '@/lib/questions'
 import { scoreboardService } from '@/lib/scoreboard'
 import pb from '@/lib/pocketbase'
-import { Game } from '@/types/games'
+import { Game, GameMetadata } from '@/types/games'
 
 type GameState = 'game-start' | 'round-start' | 'round-play' | 'round-end' | 'game-end' | 'thanks' | 'return-to-lobby'
 
@@ -54,6 +54,48 @@ const GAME_STATES: GameState[] = [
   'thanks',
   'return-to-lobby'
 ]
+
+// Helper function to create timer object from metadata
+// @ts-expect-error - Function will be used in next task
+const createTimerForState = (state: GameState, isAnswerRevealed: boolean, metadata?: GameMetadata): GameData['timer'] | undefined => {
+  if (!metadata) return undefined
+
+  let timerSeconds: number | null | undefined
+
+  // Map state to appropriate timer field
+  switch (state) {
+    case 'game-start':
+      timerSeconds = metadata.game_start_timer
+      break
+    case 'round-start':
+      timerSeconds = metadata.round_start_timer
+      break
+    case 'round-play':
+      // Use question_timer before reveal, answer_timer after reveal
+      timerSeconds = isAnswerRevealed ? metadata.answer_timer : metadata.question_timer
+      break
+    case 'game-end':
+      timerSeconds = metadata.game_end_timer
+      break
+    case 'thanks':
+      timerSeconds = metadata.thanks_timer
+      break
+    default:
+      return undefined
+  }
+
+  // Only create timer if value is positive
+  if (!timerSeconds || timerSeconds <= 0) return undefined
+
+  const startedAt = new Date().toISOString()
+  const expiresAt = new Date(Date.now() + timerSeconds * 1000).toISOString()
+
+  return {
+    startedAt,
+    duration: timerSeconds,
+    expiresAt
+  }
+}
 
 export default function ControllerPage() {
   const { id } = useParams<{ id: string }>()
