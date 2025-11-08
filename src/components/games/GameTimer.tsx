@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { Progress } from '@/components/ui/progress'
 
 interface GameTimerProps {
@@ -6,6 +6,10 @@ interface GameTimerProps {
     startedAt: string
     duration: number
     expiresAt: string
+    isEarlyAdvance?: boolean
+    isPaused?: boolean
+    pausedAt?: string
+    pausedRemaining?: number
   }
 }
 
@@ -13,20 +17,35 @@ export default function GameTimer({ timer }: GameTimerProps) {
   const [remainingSeconds, setRemainingSeconds] = useState(0)
   const [progressValue, setProgressValue] = useState(100)
 
-  useEffect(() => {
-    const updateTimer = () => {
-      const now = Date.now()
-      const expiresAt = new Date(timer.expiresAt).getTime()
-      const remainingMs = Math.max(0, expiresAt - now)
-      const remainingSeconds = Math.ceil(remainingMs / 1000)
-      setRemainingSeconds(remainingSeconds)
+  const updateTimer = useCallback(() => {
+    if (!timer) return
 
-      // Calculate progress percentage from milliseconds for smooth animation
-      const totalMs = timer.duration * 1000
-      const percentage = Math.max(0, Math.min(100, (remainingMs / totalMs) * 100))
+    // If paused, use stored remaining time
+    if (timer.isPaused) {
+      const remaining = timer.pausedRemaining || 0
+      setRemainingSeconds(remaining)
+
+      // Calculate progress from paused remaining
+      const percentage = Math.max(0, Math.min(100, (remaining / timer.duration) * 100))
       setProgressValue(percentage)
+      return
     }
 
+    // Normal countdown logic (existing)
+    const now = Date.now()
+    const expiresAt = new Date(timer.expiresAt).getTime()
+    const remainingMs = Math.max(0, expiresAt - now)
+    const remainingSeconds = Math.ceil(remainingMs / 1000)
+
+    setRemainingSeconds(remainingSeconds)
+
+    // Calculate progress percentage from milliseconds for smooth animation
+    const totalMs = timer.duration * 1000
+    const percentage = Math.max(0, Math.min(100, (remainingMs / totalMs) * 100))
+    setProgressValue(percentage)
+  }, [timer])
+
+  useEffect(() => {
     // Initial update
     updateTimer()
 
@@ -34,7 +53,7 @@ export default function GameTimer({ timer }: GameTimerProps) {
     const interval = setInterval(updateTimer, 100)
 
     return () => clearInterval(interval)
-  }, [timer])
+  }, [updateTimer])
 
   const secondsText = remainingSeconds === 1 ? 'second' : 'seconds'
 
@@ -43,6 +62,11 @@ export default function GameTimer({ timer }: GameTimerProps) {
       <div className="max-w-6xl mx-auto">
         <div className="text-center text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
           {remainingSeconds} {secondsText}
+          {timer.isPaused && (
+            <span className="ml-2 text-yellow-600 dark:text-yellow-500 font-semibold">
+              PAUSED
+            </span>
+          )}
         </div>
         <Progress value={progressValue} className="h-2" />
       </div>
