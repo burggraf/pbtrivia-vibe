@@ -209,6 +209,20 @@ export default function ControllerPage() {
     }
   }, [id])
 
+  // Update game data (clean version that replaces entire data object)
+  const updateGameDataClean = useCallback(async (cleanGameData: GameData) => {
+    if (!id) return
+
+    try {
+      await pb.collection('games').update(id, {
+        data: JSON.stringify(cleanGameData)
+      })
+      setGameData(cleanGameData)
+    } catch (error) {
+      console.error('Failed to update game data:', error)
+    }
+  }, [id])
+
   // Check if all teams have answered and trigger early advance
   useEffect(() => {
     // Only monitor when question is active (not revealed yet)
@@ -272,7 +286,7 @@ export default function ControllerPage() {
       console.log('👥 Cleaning up answer subscription for question:', gameData.question?.id)
       unsubscribe.then(unsub => unsub())
     }
-  }, [gameData?.question?.id, gameData?.question?.correct_answer, id, game?.scoreboard, gameData])
+  }, [gameData?.question?.id, gameData?.question?.correct_answer, id, game?.scoreboard, updateGameDataClean])
 
   // Fetch game data
   const fetchGameData = async () => {
@@ -319,19 +333,6 @@ export default function ControllerPage() {
         data: JSON.stringify(updatedData)
       })
       setGameData(updatedData as GameData)
-    } catch (error) {
-      console.error('Failed to update game data:', error)
-    }
-  }
-
-  const updateGameDataClean = async (cleanGameData: GameData) => {
-    if (!id) return
-
-    try {
-      await pb.collection('games').update(id, {
-        data: JSON.stringify(cleanGameData)
-      })
-      setGameData(cleanGameData)
     } catch (error) {
       console.error('Failed to update game data:', error)
     }
