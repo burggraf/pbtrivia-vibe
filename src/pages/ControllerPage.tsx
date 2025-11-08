@@ -302,8 +302,8 @@ export default function ControllerPage() {
 
       console.log('👥 Teams answered:', teamsAnswered, 'of', teamsWithPlayers)
 
-      // If all answered and no early-advance timer exists yet
-      if (teamsAnswered >= teamsWithPlayers && !gameData.timer?.isEarlyAdvance) {
+      // If all answered and no early-advance timer exists yet and timer not paused
+      if (teamsAnswered >= teamsWithPlayers && !gameData.timer?.isEarlyAdvance && !gameData.timer?.isPaused) {
         console.log('🎉 All teams answered! Triggering early advance in 3 seconds')
 
         // Create 3-second early-advance timer
