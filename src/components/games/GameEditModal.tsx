@@ -8,6 +8,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 // @ts-expect-error - Accordion components will be used in Task 8
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion'
 import { useToast } from '@/hooks/use-toast'
+import { gamesService } from '@/lib/games'
 import { Checkbox } from '@/components/ui/checkbox'
 import { getAvailableCategories } from '@/components/ui/CategoryIcon'
 import CategoryIcon from '@/components/ui/CategoryIcon'
@@ -23,7 +24,6 @@ interface GameEditModalProps {
 
 export default function GameEditModal({ game, isOpen, onClose, onSave, onDelete, isLoading = false }: GameEditModalProps) {
   const isEdit = !!game
-  // @ts-expect-error - toast will be used in Task 6
   const { toast } = useToast()
   const [formData, setFormData] = useState<UpdateGameData | CreateGameData & {
     rounds?: number;
@@ -180,6 +180,56 @@ export default function GameEditModal({ game, isOpen, onClose, onSave, onDelete,
 
   const handleDeleteCancel = () => {
     setShowDeleteConfirm(false)
+  }
+
+  // @ts-expect-error - will be used in Task 10 Timers accordion section
+  const handleCopyTimersFromPreviousGame = async () => {
+    try {
+      // Fetch recent games
+      const games = await gamesService.getGames()
+
+      // Find most recent game with timer metadata
+      const previousGameWithTimers = games.find(g =>
+        g.metadata?.question_timer !== undefined ||
+        g.metadata?.answer_timer !== undefined ||
+        g.metadata?.game_start_timer !== undefined ||
+        g.metadata?.round_start_timer !== undefined ||
+        g.metadata?.game_end_timer !== undefined ||
+        g.metadata?.thanks_timer !== undefined
+      )
+
+      if (!previousGameWithTimers) {
+        toast({
+          title: "No Previous Timers",
+          description: "No previous games with timer configuration found.",
+          variant: "destructive"
+        })
+        return
+      }
+
+      // Copy timer values to form
+      setFormData(prev => ({
+        ...prev,
+        question_timer: previousGameWithTimers.metadata?.question_timer || null,
+        answer_timer: previousGameWithTimers.metadata?.answer_timer || null,
+        game_start_timer: previousGameWithTimers.metadata?.game_start_timer || null,
+        round_start_timer: previousGameWithTimers.metadata?.round_start_timer || null,
+        game_end_timer: previousGameWithTimers.metadata?.game_end_timer || null,
+        thanks_timer: previousGameWithTimers.metadata?.thanks_timer || null
+      }))
+
+      toast({
+        title: "Timers Copied",
+        description: `Copied timer settings from "${previousGameWithTimers.name}"`,
+      })
+    } catch (error) {
+      console.error('Failed to copy timers:', error)
+      toast({
+        title: "Error",
+        description: "Failed to load previous game timers.",
+        variant: "destructive"
+      })
+    }
   }
 
   return (
