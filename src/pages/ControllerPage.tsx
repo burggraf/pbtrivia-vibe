@@ -226,6 +226,43 @@ export default function ControllerPage() {
     }
   }, [id])
 
+  // Toggle timer pause/resume
+  // @ts-expect-error - Used in Task 3 (pause button)
+  const handleTogglePause = useCallback(async () => {
+    if (!gameData?.timer || !id) return
+
+    if (gameData.timer.isPaused) {
+      // Resume: calculate new expiresAt from remaining time
+      const remaining = gameData.timer.pausedRemaining || 0
+      const timer = {
+        ...gameData.timer,
+        expiresAt: new Date(Date.now() + remaining * 1000).toISOString(),
+        isPaused: false,
+        pausedAt: undefined,
+        pausedRemaining: undefined
+      }
+
+      console.log('▶️ Resuming timer with', remaining, 'seconds remaining')
+      await updateGameDataClean({ ...gameData, timer })
+    } else {
+      // Pause: calculate and store remaining time
+      const now = Date.now()
+      const expiresAt = new Date(gameData.timer.expiresAt).getTime()
+      const remainingMs = Math.max(0, expiresAt - now)
+      const remainingSeconds = Math.ceil(remainingMs / 1000)
+
+      const timer = {
+        ...gameData.timer,
+        isPaused: true,
+        pausedAt: new Date().toISOString(),
+        pausedRemaining: remainingSeconds
+      }
+
+      console.log('⏸️ Pausing timer with', remainingSeconds, 'seconds remaining')
+      await updateGameDataClean({ ...gameData, timer })
+    }
+  }, [gameData, id, updateGameDataClean])
+
   // Check if all teams have answered and trigger early advance
   useEffect(() => {
     // Only monitor when question is active (not revealed yet)
