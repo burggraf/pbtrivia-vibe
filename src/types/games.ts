@@ -15,6 +15,18 @@ export interface GameScoreboard {
   teams: Record<string, ScoreboardTeam>;
 }
 
+export interface GameMetadata {
+  // Key timers (descriptive names for primary gameplay)
+  question_timer?: number | null;        // round-play state
+  answer_timer?: number | null;          // round-end state
+
+  // Transition timers (state-based names)
+  game_start_timer?: number | null;      // game-start state
+  round_start_timer?: number | null;     // round-start state
+  game_end_timer?: number | null;        // game-end state
+  thanks_timer?: number | null;          // thanks state
+}
+
 export interface Game {
   id: string;
   host: string;
@@ -26,6 +38,7 @@ export interface Game {
   status: 'setup' | 'ready' | 'in-progress' | 'completed';
   scoreboard?: GameScoreboard;
   data?: string | Record<string, any>;
+  metadata?: GameMetadata;
   created: string;
   updated: string;
 }
@@ -39,6 +52,7 @@ export interface CreateGameData {
   rounds?: number;
   questionsPerRound?: number;
   categories?: string[];
+  metadata?: GameMetadata;
 }
 
 export interface UpdateGameData {
@@ -50,6 +64,7 @@ export interface UpdateGameData {
   rounds?: number;
   questionsPerRound?: number;
   categories?: string[];
+  metadata?: GameMetadata;
 }
 
 export interface GameTeam {

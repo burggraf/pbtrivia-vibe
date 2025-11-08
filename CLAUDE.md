@@ -140,6 +140,14 @@ The application includes a robust question import system:
 - Batch processing for performance (100 questions per batch)
 - Progress tracking and error handling
 
+### Timer Configuration
+
+- Game timers configured via Create Game dialog (Timers accordion section)
+- Timer values stored in `games.metadata` JSON field
+- 6 timer types: question, answer, game_start, round_start, game_end, thanks
+- Values in seconds, null/0 = no time limit
+- Timer enforcement not yet implemented (data capture only)
+
 ### Authentication Flow
 
 - Users authenticate with PocketBase using email/password
