@@ -6,6 +6,7 @@ import AppHeader from '@/components/ui/AppHeader'
 import TeamDisplay from '@/components/games/TeamDisplay'
 import GameStateDisplay from '@/components/games/GameStateDisplay'
 import NextQuestionPreview from '@/components/games/NextQuestionPreview'
+import GameTimer from '@/components/games/GameTimer'
 import { gamesService } from '@/lib/games'
 import { roundsService } from '@/lib/rounds'
 import { gameQuestionsService } from '@/lib/gameQuestions'
@@ -890,6 +891,9 @@ export default function ControllerPage() {
           />
         )}
       </div>
+
+      {/* Timer Display - Fixed to bottom when active */}
+      {gameData?.timer && <GameTimer timer={gameData.timer} />}
     </div>
   )
 }
