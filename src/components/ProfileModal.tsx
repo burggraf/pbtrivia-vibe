@@ -6,6 +6,7 @@ import { Input } from '@/components/ui/input'
 import { Badge } from '@/components/ui/badge'
 import { User, Upload, X } from 'lucide-react'
 import pb from '@/lib/pocketbase'
+import packageJson from '../../package.json'
 
 interface ProfileModalProps {
   isOpen: boolean
@@ -305,6 +306,11 @@ export default function ProfileModal({ isOpen, onClose }: ProfileModalProps) {
             >
               Log Out
             </Button>
+          </div>
+
+          {/* Version number */}
+          <div className="text-center text-xs text-slate-400 dark:text-slate-600 pt-2">
+            v{packageJson.version}
           </div>
         </div>
 
