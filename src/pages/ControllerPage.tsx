@@ -56,7 +56,6 @@ const GAME_STATES: GameState[] = [
 ]
 
 // Helper function to create timer object from metadata
-// @ts-expect-error - Function will be used in next task
 const createTimerForState = (state: GameState, isAnswerRevealed: boolean, metadata?: GameMetadata): GameData['timer'] | undefined => {
   if (!metadata) return undefined
 
@@ -382,14 +381,19 @@ export default function ControllerPage() {
             }
 
             // Update game data with correct answer
-            await updateGameDataClean({
+            const newGameData: GameData = {
               state: 'round-play',
               round: gameData.round,
               question: {
                 ...gameData.question,
                 correct_answer: correctAnswerLabel
               }
-            })
+            }
+            // Add timer if configured (answer timer, now revealed)
+            const timer = createTimerForState('round-play', true, game?.metadata)
+            if (timer) newGameData.timer = timer
+
+            await updateGameDataClean(newGameData)
 
             console.log(`🎯 All answers graded. Correct answer: ${correctAnswerLabel}`)
 
@@ -435,7 +439,7 @@ export default function ControllerPage() {
               nextQuestion.answer_d
             )
 
-            await updateGameDataClean({
+            const newGameData: GameData = {
               state: 'round-play',
               round: gameData.round,
               question: {
@@ -449,17 +453,24 @@ export default function ControllerPage() {
                 c: shuffled.shuffledAnswers[2].text,
                 d: shuffled.shuffledAnswers[3].text
               }
-            })
+            }
+            // Add timer if configured (question timer, not revealed yet)
+            const timer = createTimerForState('round-play', false, game?.metadata)
+            if (timer) newGameData.timer = timer
+
+            await updateGameDataClean(newGameData)
             console.log('🔍 DEBUG: Next question loaded successfully')
           }
           return
         } else {
           // End of round
           console.log('🔍 DEBUG: Ending round')
-          await updateGameDataClean({
+          const newGameData: GameData = {
             state: 'round-end',
             round: gameData.round
-          })
+          }
+          // No timer for round-end state
+          await updateGameDataClean(newGameData)
           return
         }
       }
@@ -471,10 +482,15 @@ export default function ControllerPage() {
         // Move to first round
         const firstRound = await createRoundObject(0)
         if (firstRound) {
-          await updateGameDataClean({
+          const newGameData: GameData = {
             state: 'round-start',
             round: firstRound
-          })
+          }
+          // Add timer if configured
+          const timer = createTimerForState('round-start', false, game?.metadata)
+          if (timer) newGameData.timer = timer
+
+          await updateGameDataClean(newGameData)
           // Update game status to in-progress
           if (game) {
             await gamesService.updateGame(game.id, { status: 'in-progress' })
@@ -504,7 +520,7 @@ export default function ControllerPage() {
               firstQuestion.answer_d
             )
 
-            await updateGameDataClean({
+            const newGameData: GameData = {
               state: 'round-play',
               round: gameData.round,
               question: {
@@ -518,7 +534,12 @@ export default function ControllerPage() {
                 c: shuffled.shuffledAnswers[2].text,
                 d: shuffled.shuffledAnswers[3].text
               }
-            })
+            }
+            // Add timer if configured (question timer, not revealed yet)
+            const timer = createTimerForState('round-play', false, game?.metadata)
+            if (timer) newGameData.timer = timer
+
+            await updateGameDataClean(newGameData)
           }
         }
         break
@@ -531,16 +552,26 @@ export default function ControllerPage() {
           // Start next round
           const nextRound = await createRoundObject(nextRoundIndex)
           if (nextRound) {
-            await updateGameDataClean({
+            const newGameData: GameData = {
               state: 'round-start',
               round: nextRound
-            })
+            }
+            // Add timer if configured
+            const timer = createTimerForState('round-start', false, game?.metadata)
+            if (timer) newGameData.timer = timer
+
+            await updateGameDataClean(newGameData)
           }
         } else {
           // All rounds completed, go to game-end
-          await updateGameDataClean({
+          const newGameData: GameData = {
             state: 'game-end'
-          })
+          }
+          // Add timer if configured
+          const timer = createTimerForState('game-end', false, game?.metadata)
+          if (timer) newGameData.timer = timer
+
+          await updateGameDataClean(newGameData)
           // Update game status to completed
           if (game) {
             await gamesService.updateGame(game.id, { status: 'completed' })
@@ -550,17 +581,26 @@ export default function ControllerPage() {
         break
       }
 
-      case 'game-end':
-        await updateGameDataClean({
+      case 'game-end': {
+        const newGameData: GameData = {
           state: 'thanks'
-        })
-        break
+        }
+        // Add timer if configured
+        const timer = createTimerForState('thanks', false, game?.metadata)
+        if (timer) newGameData.timer = timer
 
-      case 'thanks':
-        await updateGameDataClean({
-          state: 'return-to-lobby'
-        })
+        await updateGameDataClean(newGameData)
         break
+      }
+
+      case 'thanks': {
+        const newGameData: GameData = {
+          state: 'return-to-lobby'
+        }
+        // No timer for return-to-lobby
+        await updateGameDataClean(newGameData)
+        break
+      }
 
       case 'return-to-lobby': {
         // Mark game as completed before returning to lobby
