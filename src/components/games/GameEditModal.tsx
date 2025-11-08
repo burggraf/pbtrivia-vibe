@@ -20,14 +20,30 @@ interface GameEditModalProps {
 
 export default function GameEditModal({ game, isOpen, onClose, onSave, onDelete, isLoading = false }: GameEditModalProps) {
   const isEdit = !!game
-  const [formData, setFormData] = useState<UpdateGameData | CreateGameData & { rounds?: number; questionsPerRound?: number; categories?: string[] }>({
+  const [formData, setFormData] = useState<UpdateGameData | CreateGameData & {
+    rounds?: number;
+    questionsPerRound?: number;
+    categories?: string[];
+    question_timer?: number | null;
+    answer_timer?: number | null;
+    game_start_timer?: number | null;
+    round_start_timer?: number | null;
+    game_end_timer?: number | null;
+    thanks_timer?: number | null;
+  }>({
     name: '',
     startdate: '',
     duration: 120,
     location: '',
     rounds: 3,
     questionsPerRound: 10,
-    categories: []
+    categories: [],
+    question_timer: null,
+    answer_timer: null,
+    game_start_timer: null,
+    round_start_timer: null,
+    game_end_timer: null,
+    thanks_timer: null
   })
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false)
 
@@ -42,7 +58,13 @@ export default function GameEditModal({ game, isOpen, onClose, onSave, onDelete,
         location: game.location || '',
         rounds: 3,
         questionsPerRound: 10,
-        categories: []
+        categories: [],
+        question_timer: game.metadata?.question_timer || null,
+        answer_timer: game.metadata?.answer_timer || null,
+        game_start_timer: game.metadata?.game_start_timer || null,
+        round_start_timer: game.metadata?.round_start_timer || null,
+        game_end_timer: game.metadata?.game_end_timer || null,
+        thanks_timer: game.metadata?.thanks_timer || null
       })
     } else {
       // Calculate smart default start date/time
@@ -74,7 +96,13 @@ export default function GameEditModal({ game, isOpen, onClose, onSave, onDelete,
         location: '',
         rounds: 3,
         questionsPerRound: 10,
-        categories: getAvailableCategories() // Default to all categories for new games
+        categories: getAvailableCategories(), // Default to all categories for new games
+        question_timer: null,
+        answer_timer: null,
+        game_start_timer: null,
+        round_start_timer: null,
+        game_end_timer: null,
+        thanks_timer: null
       })
     }
   }, [game])
