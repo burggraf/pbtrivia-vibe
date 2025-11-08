@@ -5,7 +5,6 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
-// @ts-expect-error - Accordion components will be used in Task 8
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion'
 import { useToast } from '@/hooks/use-toast'
 import { gamesService } from '@/lib/games'
@@ -251,143 +250,162 @@ export default function GameEditModal({ game, isOpen, onClose, onSave, onDelete,
             </DialogDescription>
           </DialogHeader>
           <form onSubmit={handleSubmit} className="flex flex-col min-h-0">
-            <div className="overflow-y-auto px-6 py-4 space-y-4">
-              <div className="grid grid-cols-4 items-center gap-4">
-                <Label htmlFor="name" className="text-right">
-                  Name
-                </Label>
-                <Input
-                  id="name"
-                  value={formData.name}
-                  onChange={(e) => handleInputChange('name', e.target.value)}
-                  className="col-span-3"
-                  required
-                />
-              </div>
-
-              {/* Duration and Location on same line */}
-              <div className="grid grid-cols-4 items-center gap-4">
-                <Label htmlFor="duration" className="text-right">
-                  Duration
-                </Label>
-                <div className="col-span-3 flex gap-2">
-                  <Select
-                    value={formData.duration?.toString() || '120'}
-                    onValueChange={(value) => handleInputChange('duration', parseInt(value))}
-                  >
-                    <SelectTrigger className="flex-1 bg-white dark:bg-slate-800 border-input">
-                      <SelectValue placeholder="Select duration" />
-                    </SelectTrigger>
-                    <SelectContent className="bg-white dark:bg-slate-800 border border-input">
-                      {durationOptions.map((minutes) => (
-                        <SelectItem key={minutes} value={minutes.toString()}>
-                          {minutes === 0 ? 'No limit' : `${minutes} minutes`}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                  <div className="flex items-center px-2 text-slate-500">/</div>
-                  <Input
-                    id="location"
-                    value={formData.location}
-                    onChange={(e) => handleInputChange('location', e.target.value)}
-                    placeholder="Location"
-                    className="flex-1"
-                  />
-                </div>
-              </div>
-
-              {/* Start Date */}
-              <div className="grid grid-cols-4 items-center gap-4">
-                <Label htmlFor="startdate" className="text-right">
-                  Start Date
-                </Label>
-                <Input
-                  id="startdate"
-                  type="datetime-local"
-                  value={formData.startdate}
-                  onChange={(e) => handleInputChange('startdate', e.target.value)}
-                  className="col-span-3"
-                />
-              </div>
-
-              {/* Rounds and Questions - only show for create mode */}
-              {!isEdit && (
-                <div className="grid grid-cols-4 items-center gap-4">
-                  <Label htmlFor="rounds" className="text-right">
-                    Rounds
-                  </Label>
-                  <div className="col-span-3 flex gap-4 items-center">
-                    <Input
-                      id="rounds"
-                      type="number"
-                      min="0"
-                      max="99"
-                      value={formData.rounds || 3}
-                      onChange={(e) => handleInputChange('rounds', parseInt(e.target.value) || 3)}
-                      className="w-16 text-center"
-                      required
-                    />
-                    <Label htmlFor="questionsPerRound" className="text-sm text-slate-600 dark:text-slate-300 whitespace-nowrap">
-                      Questions
-                    </Label>
-                    <Input
-                      id="questionsPerRound"
-                      type="number"
-                      min="1"
-                      max="99"
-                      value={formData.questionsPerRound || 10}
-                      onChange={(e) => handleInputChange('questionsPerRound', parseInt(e.target.value) || 10)}
-                      className="w-16 text-center"
-                      placeholder="per round"
-                      required
-                    />
-                  </div>
-                </div>
-              )}
-
-              {/* Categories Section - only show for create mode */}
-              {!isEdit && (
-                <div className="border-t pt-4">
-                <div className="mb-4">
-                  <div className="flex items-center justify-between mb-4">
-                    <Label className="text-base font-medium">Categories</Label>
-                    <div className="flex items-center gap-2">
-                      <span className="text-xs text-slate-500 dark:text-slate-300">
-                        {formData.categories?.length || 0} of {getAvailableCategories().length} selected
-                      </span>
-                      <Button
-                        type="button"
-                        variant="outline"
-                        size="sm"
-                        onClick={handleToggleAllCategories}
-                        className="text-xs h-7"
-                      >
-                        {isAllCategoriesSelected() ? 'Check None' : 'Check All'}
-                      </Button>
-                    </div>
-                  </div>
-                  <div className="grid grid-cols-2 gap-3 max-h-40 overflow-y-auto">
-                    {getAvailableCategories().map((category) => (
-                      <div key={category} className="flex items-center space-x-2">
-                        <Checkbox
-                          id={category}
-                          checked={formData.categories?.includes(category) || false}
-                          onCheckedChange={(checked) => handleCategoryToggle(category, checked as boolean)}
-                        />
-                        <Label
-                          htmlFor={category}
-                          className="text-sm font-normal cursor-pointer flex items-center gap-2"
-                        >
-                          <CategoryIcon category={category} size={14} />
-                          {category}
+            <div className="overflow-y-auto px-6 py-4">
+              <Accordion type="single" collapsible defaultValue="basic-info" className="w-full">
+                {/* Basic Info Section */}
+                <AccordionItem value="basic-info">
+                  <AccordionTrigger className="text-base font-semibold">
+                    Basic Game Info
+                  </AccordionTrigger>
+                  <AccordionContent>
+                    <div className="grid gap-4 pt-4">
+                      {/* Name */}
+                      <div className="grid grid-cols-4 items-center gap-4">
+                        <Label htmlFor="name" className="text-right">
+                          Name
                         </Label>
+                        <Input
+                          id="name"
+                          value={formData.name}
+                          onChange={(e) => handleInputChange('name', e.target.value)}
+                          className="col-span-3"
+                          required
+                        />
                       </div>
-                    ))}
-                  </div>
-                </div>
-              </div>
-            )}
+
+                      {/* Duration and Location on same line */}
+                      <div className="grid grid-cols-4 items-center gap-4">
+                        <Label htmlFor="duration" className="text-right">
+                          Duration
+                        </Label>
+                        <div className="col-span-3 flex gap-2">
+                          <Select
+                            value={formData.duration?.toString() || '120'}
+                            onValueChange={(value) => handleInputChange('duration', parseInt(value))}
+                          >
+                            <SelectTrigger className="flex-1 bg-white dark:bg-slate-800 border-input">
+                              <SelectValue placeholder="Select duration" />
+                            </SelectTrigger>
+                            <SelectContent className="bg-white dark:bg-slate-800 border border-input">
+                              {durationOptions.map((minutes) => (
+                                <SelectItem key={minutes} value={minutes.toString()}>
+                                  {minutes === 0 ? 'No limit' : `${minutes} minutes`}
+                                </SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
+                          <div className="flex items-center px-2 text-slate-500">/</div>
+                          <Input
+                            id="location"
+                            value={formData.location}
+                            onChange={(e) => handleInputChange('location', e.target.value)}
+                            placeholder="Location"
+                            className="flex-1"
+                          />
+                        </div>
+                      </div>
+
+                      {/* Start Date */}
+                      <div className="grid grid-cols-4 items-center gap-4">
+                        <Label htmlFor="startdate" className="text-right">
+                          Start Date
+                        </Label>
+                        <Input
+                          id="startdate"
+                          type="datetime-local"
+                          value={formData.startdate}
+                          onChange={(e) => handleInputChange('startdate', e.target.value)}
+                          className="col-span-3"
+                        />
+                      </div>
+                    </div>
+                  </AccordionContent>
+                </AccordionItem>
+
+                {/* Game Structure Section - Create mode only */}
+                {!isEdit && (
+                  <AccordionItem value="game-structure">
+                    <AccordionTrigger className="text-base font-semibold">
+                      Game Structure
+                    </AccordionTrigger>
+                    <AccordionContent>
+                      <div className="grid gap-4 pt-4">
+                        {/* Rounds and Questions */}
+                        <div className="grid grid-cols-4 items-center gap-4">
+                          <Label htmlFor="rounds" className="text-right">
+                            Rounds
+                          </Label>
+                          <div className="col-span-3 flex gap-4 items-center">
+                            <Input
+                              id="rounds"
+                              type="number"
+                              min="0"
+                              max="99"
+                              value={formData.rounds || 3}
+                              onChange={(e) => handleInputChange('rounds', parseInt(e.target.value) || 3)}
+                              className="w-16 text-center"
+                              required
+                            />
+                            <Label htmlFor="questionsPerRound" className="text-sm text-slate-600 dark:text-slate-300 whitespace-nowrap">
+                              Questions
+                            </Label>
+                            <Input
+                              id="questionsPerRound"
+                              type="number"
+                              min="1"
+                              max="99"
+                              value={formData.questionsPerRound || 10}
+                              onChange={(e) => handleInputChange('questionsPerRound', parseInt(e.target.value) || 10)}
+                              className="w-16 text-center"
+                              placeholder="per round"
+                              required
+                            />
+                          </div>
+                        </div>
+
+                        {/* Categories */}
+                        <div className="border-t pt-4">
+                          <div className="flex items-center justify-between mb-4">
+                            <Label className="text-base font-medium">Categories</Label>
+                            <div className="flex items-center gap-2">
+                              <span className="text-xs text-slate-500 dark:text-slate-300">
+                                {formData.categories?.length || 0} of {getAvailableCategories().length} selected
+                              </span>
+                              <Button
+                                type="button"
+                                variant="outline"
+                                size="sm"
+                                onClick={handleToggleAllCategories}
+                                className="text-xs h-7"
+                              >
+                                {isAllCategoriesSelected() ? 'Check None' : 'Check All'}
+                              </Button>
+                            </div>
+                          </div>
+                          <div className="grid grid-cols-2 gap-3 max-h-40 overflow-y-auto">
+                            {getAvailableCategories().map((category) => (
+                              <div key={category} className="flex items-center space-x-2">
+                                <Checkbox
+                                  id={category}
+                                  checked={formData.categories?.includes(category) || false}
+                                  onCheckedChange={(checked) => handleCategoryToggle(category, checked as boolean)}
+                                />
+                                <Label
+                                  htmlFor={category}
+                                  className="text-sm font-normal cursor-pointer flex items-center gap-2"
+                                >
+                                  <CategoryIcon category={category} size={14} />
+                                  {category}
+                                </Label>
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                      </div>
+                    </AccordionContent>
+                  </AccordionItem>
+                )}
+              </Accordion>
             </div>
             <DialogFooter>
               <div className="flex flex-col-reverse sm:flex-row sm:justify-end sm:space-x-2 w-full">
