@@ -188,8 +188,8 @@ export default function GameEditModal({ game, isOpen, onClose, onSave, onDelete,
       // Fetch recent games
       const games = await gamesService.getGames()
 
-      // Find most recent game with timer metadata
-      const previousGameWithTimers = games.find(g =>
+      // Filter games that have timer metadata
+      const gamesWithTimers = games.filter(g =>
         g.metadata?.question_timer !== undefined ||
         g.metadata?.answer_timer !== undefined ||
         g.metadata?.game_start_timer !== undefined ||
@@ -198,7 +198,7 @@ export default function GameEditModal({ game, isOpen, onClose, onSave, onDelete,
         g.metadata?.thanks_timer !== undefined
       )
 
-      if (!previousGameWithTimers) {
+      if (gamesWithTimers.length === 0) {
         toast({
           title: "No Previous Timers",
           description: "No previous games with timer configuration found.",
@@ -206,6 +206,11 @@ export default function GameEditModal({ game, isOpen, onClose, onSave, onDelete,
         })
         return
       }
+
+      // Explicitly get the most recent by sorting by updated timestamp
+      const previousGameWithTimers = gamesWithTimers.sort((a, b) =>
+        new Date(b.updated).getTime() - new Date(a.updated).getTime()
+      )[0]
 
       // Copy timer values to form
       setFormData(prev => ({
