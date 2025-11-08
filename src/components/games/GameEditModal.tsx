@@ -240,7 +240,7 @@ export default function GameEditModal({ game, isOpen, onClose, onSave, onDelete,
   return (
     <>
       <Dialog open={isOpen} onOpenChange={onClose}>
-        <DialogContent className="sm:max-w-[425px]">
+        <DialogContent className="max-w-[600px] max-h-[80vh] overflow-hidden flex flex-col">
           <DialogHeader>
             <DialogTitle>{isEdit ? 'Edit Game' : 'Create Game'}</DialogTitle>
             <DialogDescription>
@@ -250,8 +250,8 @@ export default function GameEditModal({ game, isOpen, onClose, onSave, onDelete,
               }
             </DialogDescription>
           </DialogHeader>
-          <form onSubmit={handleSubmit}>
-            <div className="grid gap-4 py-4">
+          <form onSubmit={handleSubmit} className="flex flex-col min-h-0">
+            <div className="overflow-y-auto px-6 py-4">
               <div className="grid grid-cols-4 items-center gap-4">
                 <Label htmlFor="name" className="text-right">
                   Name
