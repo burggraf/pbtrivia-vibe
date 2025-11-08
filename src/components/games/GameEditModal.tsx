@@ -112,17 +112,17 @@ export default function GameEditModal({ game, isOpen, onClose, onSave, onDelete,
 
     // Convert empty/zero values to null for timers
     const metadata: GameMetadata = {
-      question_timer: (formData as any).question_timer || null,
-      answer_timer: (formData as any).answer_timer || null,
-      game_start_timer: (formData as any).game_start_timer || null,
-      round_start_timer: (formData as any).round_start_timer || null,
-      game_end_timer: (formData as any).game_end_timer || null,
-      thanks_timer: (formData as any).thanks_timer || null
+      question_timer: ('question_timer' in formData ? formData.question_timer : null) || null,
+      answer_timer: ('answer_timer' in formData ? formData.answer_timer : null) || null,
+      game_start_timer: ('game_start_timer' in formData ? formData.game_start_timer : null) || null,
+      round_start_timer: ('round_start_timer' in formData ? formData.round_start_timer : null) || null,
+      game_end_timer: ('game_end_timer' in formData ? formData.game_end_timer : null) || null,
+      thanks_timer: ('thanks_timer' in formData ? formData.thanks_timer : null) || null
     }
 
     const submitData = {
       ...formData,
-      metadata: metadata,
+      metadata,
       startdate: formData.startdate ? new Date(formData.startdate).toISOString() : undefined
     }
 
