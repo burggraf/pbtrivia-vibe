@@ -17,6 +17,7 @@ build/
 
 # PocketBase data
 pb_data/
+pb_public/
 pocketbase.log
 
 # IDE
