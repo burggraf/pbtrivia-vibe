@@ -806,7 +806,7 @@ export default function ControllerPage() {
 
   // Auto-advance when timer expires (host only)
   useEffect(() => {
-    if (!gameData?.timer || !id) return
+    if (!gameData?.timer || gameData.timer.isPaused || !id) return
 
     console.log('⏰ Timer active:', {
       state: gameData.state,
