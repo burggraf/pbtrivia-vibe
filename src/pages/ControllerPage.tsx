@@ -44,6 +44,9 @@ interface GameData {
     duration: number
     expiresAt: string
     isEarlyAdvance?: boolean
+    isPaused?: boolean         // NEW: Whether timer is currently paused
+    pausedAt?: string          // NEW: ISO timestamp when paused
+    pausedRemaining?: number   // NEW: Seconds remaining when paused
   }
 }
 
