@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/button'
 import AppHeader from '@/components/ui/AppHeader'
 import GameStateRenderer from '@/components/games/GameStateRenderer'
 import TeamSelectionModal from '@/components/games/TeamSelectionModal'
+import GameTimer from '@/components/games/GameTimer'
 import { gamesService, gameTeamsService, gamePlayersService } from '@/lib/games'
 import { gameAnswersService } from '@/lib/gameAnswers'
 import pb from '@/lib/pocketbase'
@@ -429,6 +430,9 @@ export default function GamePage() {
           </div>
         )}
       </div>
+
+      {/* Timer Display - Fixed to bottom when active */}
+      {gameData?.timer && <GameTimer timer={gameData.timer} />}
 
       {/* Team Selection Modal */}
       {game && showTeamModal && (
