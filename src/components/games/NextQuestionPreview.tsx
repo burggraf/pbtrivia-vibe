@@ -384,8 +384,8 @@ export default function NextQuestionPreview({ gameId, gameData, rounds }: NextQu
 
                     // Correct answer styling (green)
                     const answerClasses = isCorrect
-                      ? 'p-3 md:p-4 rounded-lg border-2 bg-green-100 border-green-500 text-green-800 dark:bg-green-900 dark:text-green-200 flex justify-between items-start'
-                      : 'p-3 md:p-4 rounded-lg border-2 bg-slate-50 border-slate-300 text-slate-700 dark:bg-slate-800 dark:border-slate-700 dark:text-slate-400 flex justify-between items-start'
+                      ? 'p-3 md:p-4 rounded-lg border-2 bg-green-100 border-green-500 text-green-800 dark:bg-green-900 dark:text-green-200 flex justify-between items-start relative'
+                      : 'p-3 md:p-4 rounded-lg border-2 bg-slate-50 border-slate-300 text-slate-700 dark:bg-slate-800 dark:border-slate-700 dark:text-slate-400 flex justify-between items-start relative'
 
                     return (
                       <div key={answer.label} className={answerClasses}>
@@ -393,8 +393,8 @@ export default function NextQuestionPreview({ gameId, gameData, rounds }: NextQu
                           <span className="font-medium">{answer.label}.</span> {answer.text}
                         </div>
                         {isCorrect && (
-                          <div className="flex-shrink-0 ml-2">
-                            <span className="text-green-600 dark:text-green-400">✓</span>
+                          <div className="absolute top-3 md:top-4 right-3 md:right-4">
+                            <span className="text-green-600 dark:text-green-400 leading-none">✓</span>
                           </div>
                         )}
                       </div>

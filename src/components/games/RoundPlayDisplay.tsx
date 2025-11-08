@@ -250,16 +250,16 @@ export default function RoundPlayDisplay({ gameData, mode = 'controller', onAnsw
                   return (
                     <div
                       key={answer.label}
-                      className={`${answerClasses} flex justify-between items-start`}
+                      className={`${answerClasses} flex justify-between items-start relative`}
                     >
                       <div className={textSizeClasses.answer}>
                         <span className="font-medium">{answer.label}.</span> {answer.text}
                       </div>
-                      <div className="flex-shrink-0 ml-2">
-                        {isCorrectAnswer && (
-                          <span className="text-green-600 dark:text-green-400">✓</span>
-                        )}
-                      </div>
+                      {isCorrectAnswer && (
+                        <div className="absolute top-3 md:top-4 right-3 md:right-4">
+                          <span className="text-green-600 dark:text-green-400 leading-none">✓</span>
+                        </div>
+                      )}
                     </div>
                   )
                 } else {
@@ -271,24 +271,26 @@ export default function RoundPlayDisplay({ gameData, mode = 'controller', onAnsw
                   return (
                     <div
                       key={answer.label}
-                      className={`${answerClasses} flex justify-between items-start`}
+                      className={`${answerClasses} flex justify-between items-start relative`}
                       onClick={(e) => !isDisabled && handleAnswerClick(answer.label, e)}
                       tabIndex={-1}
                     >
                       <div className={textSizeClasses.answer}>
                         <span className="font-medium">{answer.label}.</span> {answer.text}
                       </div>
-                      <div className="flex-shrink-0 ml-2">
-                        {showGoldStar && (
-                          <span className="text-green-600 text-xl">★</span>
-                        )}
-                        {showCheckmark && (
-                          <span className="text-green-600 dark:text-green-400">✓</span>
-                        )}
-                        {showXMark && (
-                          <span className="text-red-600 dark:text-red-400 text-xl">✗</span>
-                        )}
-                      </div>
+                      {(showGoldStar || showCheckmark || showXMark) && (
+                        <div className="absolute top-3 md:top-4 right-3 md:right-4">
+                          {showGoldStar && (
+                            <span className="text-green-600 leading-none">★</span>
+                          )}
+                          {showCheckmark && (
+                            <span className="text-green-600 dark:text-green-400 leading-none">✓</span>
+                          )}
+                          {showXMark && (
+                            <span className="text-red-600 dark:text-red-400 leading-none">✗</span>
+                          )}
+                        </div>
+                      )}
                     </div>
                   )
                 }
@@ -328,17 +330,17 @@ export default function RoundPlayDisplay({ gameData, mode = 'controller', onAnsw
                       if (isCorrect) {
                         bgColor = 'bg-green-100 border-green-500 dark:bg-green-900 dark:border-green-600'
                         badgeColor = 'bg-green-600 text-white dark:bg-green-700 dark:text-green-100'
-                        statusIcon = <span className="text-green-600 dark:text-green-400">✓</span>
+                        statusIcon = <span className="text-green-600 dark:text-green-400 leading-none">✓</span>
                       } else {
                         bgColor = 'bg-red-100 border-red-500 dark:bg-red-900 dark:border-red-600'
                         badgeColor = 'bg-red-600 text-white dark:bg-red-700 dark:text-red-100'
-                        statusIcon = <span className="text-red-600 dark:text-red-400 text-xl">✗</span>
+                        statusIcon = <span className="text-red-600 dark:text-red-400 leading-none">✗</span>
                       }
                     } else {
                       // Answer not revealed yet - show blue box and dot (matching selected answer styling)
                       bgColor = 'bg-blue-100 border-blue-500 dark:bg-blue-900 dark:border-blue-600'
                       badgeColor = 'bg-blue-600 text-white dark:bg-blue-700 dark:text-blue-100'
-                      statusIcon = <span className="text-blue-600 dark:text-blue-400 text-2xl leading-none">•</span>
+                      statusIcon = <span className="text-blue-600 dark:text-blue-400 leading-none">•</span>
                     }
                   }
 
