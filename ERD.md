@@ -1,7 +1,7 @@
 # PocketBase Database Entity Relationship Diagram (ERD)
 
 ## Overview
-This document describes the database schema for the PB Trivia Vibe application, which is built on PocketBase. The database supports a multiplayer trivia game system with hosts, players, teams, games, rounds, questions, and game answers.
+This document describes the database schema for the Trivia Party application, which is built on PocketBase. The database supports a multiplayer trivia game system with hosts, players, teams, games, rounds, questions, and game answers.
 
 ## Collections (Tables)
 
@@ -33,6 +33,7 @@ This document describes the database schema for the PB Trivia Vibe application, 
 | status | select | Required | Game status: `setup`, `ready`, `in-progress`, `completed` |
 | scoreboard | json | Optional | Real-time scoreboard data structure |
 | data | json | Optional | Game state and configuration data |
+| metadata | json | Optional | Game settings including timer configuration |
 | created | autodate | Auto | Creation timestamp |
 | updated | autodate | Auto | Last update timestamp |
 
@@ -81,11 +82,27 @@ This document describes the database schema for the PB Trivia Vibe application, 
 }
 ```
 
+**Metadata Structure (`metadata` field)**:
+```json
+{
+  "question_timer": number | null,      // Timer for round-play state (seconds)
+  "answer_timer": number | null,        // Timer for round-end state (seconds)
+  "game_start_timer": number | null,    // Timer for game-start state (seconds)
+  "round_start_timer": number | null,   // Timer for round-start state (seconds)
+  "game_end_timer": number | null,      // Timer for game-end state (seconds)
+  "thanks_timer": number | null         // Timer for thanks state (seconds)
+}
+```
+
 **Indexes**:
 - `idx_games_host` - For finding games by host
 - `idx_games_startdate` - For chronological queries
 - `idx_games_status` - For filtering by status
 - `idx_games_code` - Unique game code lookup
+- `idx_games_code_status` - Composite index for player joins (code + status lookup)
+- `idx_games_host_startdate` - Composite index for host dashboard queries (host + startdate sorting)
+
+**Cascade Deletes**: Enabled for host relation
 
 ---
 
@@ -109,6 +126,8 @@ This document describes the database schema for the PB Trivia Vibe application, 
 - `idx_rounds_host` - For rounds by host
 - `idx_rounds_sequence` - For ordering within game
 - `idx_rounds_created` - For chronological queries
+
+**Cascade Deletes**: Enabled for host and game relations
 
 **Access Rules**: Only the round host can view, create, update, and delete their own rounds.
 
@@ -141,7 +160,7 @@ This document describes the database schema for the PB Trivia Vibe application, 
 
 ---
 
-### 5. `round_questions`
+### 5. `game_questions`
 **Purpose**: Questions assigned to specific rounds (junction table)
 
 | Field | Type | Constraints | Description |
@@ -157,15 +176,17 @@ This document describes the database schema for the PB Trivia Vibe application, 
 | updated | autodate | Auto | Last update timestamp |
 
 **Indexes**:
-- `idx_round_questions_host` - For host queries
-- `idx_round_questions_game` - For game queries
-- `idx_round_questions_round` - For round queries
-- `idx_round_questions_question` - For question reference
-- `idx_round_questions_sequence` - For ordering within round
-- `idx_round_questions_host_game` - Composite host-game index
-- `idx_round_questions_created` - For chronological queries
+- `idx_game_questions_host` - For host queries
+- `idx_game_questions_game` - For game queries
+- `idx_game_questions_round` - For round queries
+- `idx_game_questions_question` - For question reference
+- `idx_game_questions_sequence` - For ordering within round
+- `idx_game_questions_host_game` - Composite host-game index
+- `idx_game_questions_created` - For chronological queries
 
-**Access Rules**: Only the assignment creator can view, create, update, and delete their own round questions.
+**Cascade Deletes**: Enabled for host, game, question, and round relations
+
+**Access Rules**: Only the assignment creator can view, create, update, and delete their own game questions.
 
 ---
 
@@ -182,6 +203,12 @@ This document describes the database schema for the PB Trivia Vibe application, 
 | created | autodate | Auto | Creation timestamp |
 | updated | autodate | Auto | Last update timestamp |
 
+**Indexes**:
+- `idx_game_teams_game` - For fetching all teams in a game
+- `idx_game_teams_host_game` - Composite index for host + game lookups
+
+**Cascade Deletes**: Enabled for host and game relations
+
 ---
 
 ### 7. `game_players`
@@ -197,6 +224,12 @@ This document describes the database schema for the PB Trivia Vibe application, 
 | created | autodate | Auto | Creation timestamp |
 | updated | autodate | Auto | Last update timestamp |
 
+**Indexes**:
+- `idx_game_players_game_player` - Composite index for checking if player is already in game
+- `idx_game_players_game` - For listing all players in a game
+
+**Cascade Deletes**: Enabled for host, game, player, and team relations
+
 ---
 
 ### 8. `game_answers` (NEW)
@@ -207,7 +240,7 @@ This document describes the database schema for the PB Trivia Vibe application, 
 | id | text | PK, auto-generated | Unique answer identifier |
 | host | relation → _pb_users_auth_ | Required | Answer creator |
 | game | relation → games | Required | Parent game |
-| game_questions_id | relation → round_questions | Required | Specific question reference |
+| game_questions_id | relation → game_questions | Required | Specific question reference |
 | team | relation → game_teams | Required | Answering team |
 | answer | text | Optional | Submitted answer (A, B, C, D) |
 | is_correct | bool | Optional | Whether answer was correct |
@@ -217,10 +250,14 @@ This document describes the database schema for the PB Trivia Vibe application, 
 **Indexes**:
 - `idx_game_answers_host` - For host queries
 - `idx_game_answers_game` - For game queries
-- `idx_game_answers_game_questions` - For question reference
+- `idx_game_answers_game_questions_id` - For question reference
 - `idx_game_answers_team` - For team queries
 - `idx_game_answers_created` - For chronological queries
+- `idx_game_answers_game_team` - Composite index for scoring queries
+- `idx_game_answers_game_question_team` - Composite index for answer submission validation
 - `idx_game_answers_questions_team_unique` - **UNIQUE** on (`game_questions_id`, `team`) - prevents duplicate answers from same team for same question
+
+**Cascade Deletes**: Enabled for host, game, game_questions_id, and team relations
 
 **Business Rule**: Each team can only submit one answer per question due to the unique constraint on (`game_questions_id`, `team`).
 
@@ -232,15 +269,15 @@ This document describes the database schema for the PB Trivia Vibe application, 
 _pb_users_auth_ (Users)
 ├─ host ──> games (1:N)
 │          ├─ host ──> rounds (1:N)
-│          │          └─ host ──> round_questions (1:N)
+│          │          └─ host ──> game_questions (1:N)
 │          ├─ host ──> game_teams (1:N)
 │          ├─ host ──> game_players (1:N)
 │          └─ host ──> game_answers (1:N)
 │
 ├─ host ──> rounds (1:N)
-│          └─ round ──> round_questions (1:N)
+│          └─ round ──> game_questions (1:N)
 │
-├─ host ──> round_questions (1:N)
+├─ host ──> game_questions (1:N)
 │          ├─ game ──> games (N:1)
 │          ├─ round ──> rounds (N:1)
 │          └─ question ──> questions (N:1)
@@ -255,17 +292,17 @@ _pb_users_auth_ (Users)
 │
 ├─ host ──> game_answers (1:N)
 │          ├─ game ──> games (N:1)
-│          ├─ game_questions_id ──> round_questions (N:1)
+│          ├─ game_questions_id ──> game_questions (N:1)
 │          └─ team ──> game_teams (N:1)
 │
 └─ player ──> game_players (1:N)
            └─ game ──> games (N:1)
 
 questions (Standalone, no incoming relations)
-└─ question ──> round_questions (1:N)
+└─ question ──> game_questions (1:N)
 
-round_questions
-└─ round_questions_id ──> game_answers (1:N)
+game_questions
+└─ game_questions_id ──> game_answers (1:N)
 
 game_teams
 └─ team ──> game_players (N:1) [optional]
@@ -284,13 +321,13 @@ game_teams
    - A game can have multiple rounds
    - Each round belongs to exactly one game
 
-3. **Round → Round_Questions (1:N)**
+3. **Round → Game_Questions (1:N)**
    - A round can have multiple questions assigned
-   - Each round_question belongs to exactly one round
+   - Each game_question belongs to exactly one round
 
-4. **Question → Round_Questions (1:N)**
+4. **Question → Game_Questions (1:N)**
    - A question can be assigned to multiple rounds
-   - Each round_question references exactly one question
+   - Each game_question references exactly one question
 
 5. **Game → Game_Teams (1:N)**
    - A game can have multiple teams
@@ -308,9 +345,9 @@ game_teams
    - A team can have multiple players (optional relationship)
    - Each game_player can optionally reference a team
 
-9. **Round_Question → Game_Answers (1:N)**
-   - A round_question can have multiple answers from different teams
-   - Each game_answer references exactly one round_question
+9. **Game_Question → Game_Answers (1:N)**
+   - A game_question can have multiple answers from different teams
+   - Each game_answer references exactly one game_question
 
 10. **Game_Team → Game_Answers (1:N)**
     - A team can submit multiple answers
@@ -318,7 +355,7 @@ game_teams
 
 ### Junction Tables
 
-- **round_questions**: Many-to-many relationship between rounds and questions
+- **game_questions**: Many-to-many relationship between rounds and questions
 - **game_players**: Many-to-many relationship between games and users (as players)
 - **game_answers**: Tracks team answers for specific questions in games
 
@@ -326,7 +363,7 @@ game_teams
 
 1. **Game Creation Flow**:
    ```
-   User (host) → Game → Round(s) → Round_Questions → Questions
+   User (host) → Game → Round(s) → Game_Questions → Questions
    ```
 
 2. **Team Management Flow**:
@@ -336,7 +373,7 @@ game_teams
 
 3. **Game Play Flow**:
    ```
-   Round_Question → Game_Answers (from Teams)
+   Game_Question → Game_Answers (from Teams)
    ```
 
 4. **Scoreboard Updates**:
@@ -381,9 +418,13 @@ The `games.data` JSON field stores the current game state and progresses through
 
 ## Recent Updates
 
+- **Collection renamed**: `round_questions` → `game_questions` for clearer semantics
 - **Added `data` field to games collection**: Stores game state and configuration
 - **Added `scoreboard` field to games collection**: Real-time scoreboard data structure
+- **Added `metadata` field to games collection**: Stores timer configuration and other game settings
 - **Created `game_answers` collection**: Tracks team answers during gameplay
 - **Enhanced game state management**: Comprehensive state machine with 7 distinct states
 - **Improved real-time functionality**: Live updates for scoreboard and game state changes
 - **Added unique constraint to game_answers**: Prevents teams from submitting multiple answers to the same question (`game_questions_id` + `team` combination)
+- **Added cascade deletes**: Enabled for all critical foreign key relationships to ensure data integrity
+- **Added performance indexes**: Composite indexes added for optimizing player joins, game creation, and gameplay queries

@@ -1,11 +1,11 @@
 #!/bin/bash
 
-# Development script for pbtrivia-vibe
+# Development script for Trivia Party
 # This script sets up the complete development environment
 
 set -e  # Exit on any error
 
-echo "🚀 Setting up pbtrivia-vibe development environment..."
+echo "🚀 Setting up Trivia Party development environment..."
 
 # Kill any existing PocketBase server on port 8090
 echo "🔄 Stopping any existing PocketBase server on port 8090..."

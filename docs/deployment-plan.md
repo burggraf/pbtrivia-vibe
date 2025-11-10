@@ -1,7 +1,7 @@
-# PocketBase Trivia Application - Production Deployment Plan
+# Trivia Party - Production Deployment Plan
 
 ## Overview
-Deploy pbtrivia-vibe to Ubuntu 18 server at trivia.azabab.com with:
+Deploy Trivia Party to Ubuntu 18 server at trivia.azabab.com with:
 - PocketBase x64 Linux binary running on port 8090
 - React frontend served from pb_public/
 - Systemd service for auto-start/restart
@@ -42,7 +42,7 @@ mkdir -p pb_migrations pb_public pb_data/storage
 ### 2.1 Build Frontend Locally
 ```bash
 # On local machine
-cd ~/dev/pbtrivia-vibe
+cd ~/dev/trivia-party
 pnpm run build  # Outputs to dist/
 ```
 
@@ -101,7 +101,7 @@ node import-questions-efficient.js
 Create `/etc/systemd/system/pocketbase.service`:
 ```ini
 [Unit]
-Description=PocketBase Trivia Application
+Description=Trivia Party
 After=network.target
 
 [Service]

@@ -116,7 +116,7 @@ import { Toaster } from '@/components/ui/sonner'
 Add `<Toaster />` inside the ThemeProvider, outside the Router. The structure should look like:
 
 ```tsx
-<ThemeProvider defaultTheme="system" storageKey="pbtrivia-theme">
+<ThemeProvider defaultTheme="system" storageKey="trivia-party-theme">
   <Toaster />
   <Router>
     {/* existing routes */}

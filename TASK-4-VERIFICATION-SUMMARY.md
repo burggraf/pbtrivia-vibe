@@ -3,7 +3,7 @@
 **Date:** 2025-11-02
 **Task:** Manual Testing and Verification (Task 4)
 **Implementation Plan:** `docs/plans/2025-11-02-host-rejoin-state-restore-implementation.md`
-**Working Directory:** `/Users/markb/dev/pbtrivia-vibe/.worktrees/host-rejoin-state-restore`
+**Working Directory:** `/Users/markb/dev/trivia-party/.worktrees/host-rejoin-state-restore`
 
 ---
 
@@ -64,7 +64,7 @@ Result: Matches pre-existing baseline (62 warnings accepted per implementation p
 
 ### Task 1: HostPage.tsx - Conditional Game Data Initialization
 
-**File:** `/Users/markb/dev/pbtrivia-vibe/.worktrees/host-rejoin-state-restore/src/pages/HostPage.tsx`
+**File:** `/Users/markb/dev/trivia-party/.worktrees/host-rejoin-state-restore/src/pages/HostPage.tsx`
 **Lines:** 330-359
 **Status:** VERIFIED
 
@@ -114,7 +114,7 @@ const handlePlayGame = async (gameId: string) => {
 
 ### Task 2: ControllerPage.tsx - Status Update to 'in-progress'
 
-**File:** `/Users/markb/dev/pbtrivia-vibe/.worktrees/host-rejoin-state-restore/src/pages/ControllerPage.tsx`
+**File:** `/Users/markb/dev/trivia-party/.worktrees/host-rejoin-state-restore/src/pages/ControllerPage.tsx`
 **Lines:** 184-187
 **Status:** VERIFIED
 
@@ -135,7 +135,7 @@ if (gameData.status === 'ready') {
 
 ### Task 3: ControllerPage.tsx - Status Update to 'completed'
 
-**File:** `/Users/markb/dev/pbtrivia-vibe/.worktrees/host-rejoin-state-restore/src/pages/ControllerPage.tsx`
+**File:** `/Users/markb/dev/trivia-party/.worktrees/host-rejoin-state-restore/src/pages/ControllerPage.tsx`
 **Lines:** 543-544
 **Status:** VERIFIED
 
@@ -189,7 +189,7 @@ rm -rf pb_data/data.db*
 
 ## Test Documentation Created
 
-**File Created:** `/Users/markb/dev/pbtrivia-vibe/.worktrees/host-rejoin-state-restore/docs/testing/2025-11-02-state-restoration-test-results.md`
+**File Created:** `/Users/markb/dev/trivia-party/.worktrees/host-rejoin-state-restore/docs/testing/2025-11-02-state-restoration-test-results.md`
 
 **Contents:**
 - 7 core test scenarios
@@ -354,13 +354,13 @@ All of the following must be verified:
 
 ## Files Modified
 
-1. `/Users/markb/dev/pbtrivia-vibe/.worktrees/host-rejoin-state-restore/src/pages/HostPage.tsx`
-2. `/Users/markb/dev/pbtrivia-vibe/.worktrees/host-rejoin-state-restore/src/pages/ControllerPage.tsx`
+1. `/Users/markb/dev/trivia-party/.worktrees/host-rejoin-state-restore/src/pages/HostPage.tsx`
+2. `/Users/markb/dev/trivia-party/.worktrees/host-rejoin-state-restore/src/pages/ControllerPage.tsx`
 
 ## Files Created
 
-1. `/Users/markb/dev/pbtrivia-vibe/.worktrees/host-rejoin-state-restore/docs/testing/2025-11-02-state-restoration-test-results.md`
-2. `/Users/markb/dev/pbtrivia-vibe/.worktrees/host-rejoin-state-restore/TASK-4-VERIFICATION-SUMMARY.md` (this file)
+1. `/Users/markb/dev/trivia-party/.worktrees/host-rejoin-state-restore/docs/testing/2025-11-02-state-restoration-test-results.md`
+2. `/Users/markb/dev/trivia-party/.worktrees/host-rejoin-state-restore/TASK-4-VERIFICATION-SUMMARY.md` (this file)
 
 ---
 
