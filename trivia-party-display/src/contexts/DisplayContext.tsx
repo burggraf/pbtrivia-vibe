@@ -175,6 +175,11 @@ export function DisplayProvider({ children }: { children: ReactNode }) {
 
         // Check if game is already completed
         if (game.status === 'completed') {
+          // Set gameId to null FIRST to prevent display subscription from triggering
+          setGameId(null)
+          setGameRecord(null)
+          setCurrentScreen('code')
+
           // Return to code screen
           if (displayRecord) {
             const newCode = generateDisplayCode()
@@ -187,9 +192,6 @@ export function DisplayProvider({ children }: { children: ReactNode }) {
             setDisplayRecord(updated)
             setCode(newCode)
           }
-          setGameId(null)
-          setGameRecord(null)
-          setCurrentScreen('code')
           return
         }
 
@@ -199,6 +201,11 @@ export function DisplayProvider({ children }: { children: ReactNode }) {
 
           // Check if game completed
           if (e.record.status === 'completed') {
+            // Set gameId to null FIRST to prevent display subscription from triggering
+            setGameId(null)
+            setGameRecord(null)
+            setCurrentScreen('code')
+
             // Return to code screen
             if (displayRecord) {
               const newCode = generateDisplayCode()
@@ -212,9 +219,6 @@ export function DisplayProvider({ children }: { children: ReactNode }) {
                 setCode(newCode)
               })
             }
-            setGameId(null)
-            setGameRecord(null)
-            setCurrentScreen('code')
           }
         })
       } catch (err) {
