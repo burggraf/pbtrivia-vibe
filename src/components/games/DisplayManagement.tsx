@@ -1,6 +1,13 @@
 import { useState, useEffect } from 'react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select'
 import pb from '@/lib/pocketbase'
 import type { DisplaysRecord } from '@/types/pocketbase-types'
 import { Loader2 } from 'lucide-react'
@@ -118,6 +125,24 @@ export default function DisplayManagement({ gameId }: DisplayManagementProps) {
     }
   }
 
+  const handleThemeChange = async (displayId: string, theme: 'light' | 'dark') => {
+    try {
+      const display = displays.find((d) => d.id === displayId)
+      if (!display) return
+
+      await pb.collection('displays').update<DisplaysRecord>(displayId, {
+        metadata: {
+          ...(display.metadata || {}),
+          theme,
+        },
+      })
+      toast.success(`Theme changed to ${theme}`)
+    } catch (err) {
+      console.error('Failed to update theme:', err)
+      toast.error('Failed to update theme')
+    }
+  }
+
   if (loading) {
     return (
       <div className="flex items-center justify-center py-8">
@@ -184,13 +209,27 @@ export default function DisplayManagement({ gameId }: DisplayManagementProps) {
                     Code: {display.code}
                   </span>
                 </div>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => handleRelease(display.id)}
-                >
-                  Release
-                </Button>
+                <div className="flex items-center gap-2">
+                  <Select
+                    value={display.metadata?.theme || 'dark'}
+                    onValueChange={(value) => handleThemeChange(display.id, value as 'light' | 'dark')}
+                  >
+                    <SelectTrigger className="w-[100px]">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="light">Light</SelectItem>
+                      <SelectItem value="dark">Dark</SelectItem>
+                    </SelectContent>
+                  </Select>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => handleRelease(display.id)}
+                  >
+                    Release
+                  </Button>
+                </div>
               </div>
             ))}
           </div>

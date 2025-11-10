@@ -32,6 +32,7 @@ interface DisplayState {
   currentScreen: DisplayScreen
   connectionStatus: ConnectionStatus
   error: string | null
+  theme: 'light' | 'dark'
 
   // Actions
   initialize: () => Promise<void>
@@ -52,6 +53,7 @@ export function DisplayProvider({ children }: { children: ReactNode }) {
   const [currentScreen, setCurrentScreen] = useState<DisplayScreen>('code')
   const [connectionStatus, setConnectionStatus] = useState<ConnectionStatus>('disconnected')
   const [error, setError] = useState<string | null>(null)
+  const [theme, setTheme] = useState<'light' | 'dark'>('dark')
 
   const clearError = useCallback(() => setError(null), [])
 
@@ -107,6 +109,7 @@ export function DisplayProvider({ children }: { children: ReactNode }) {
           host: null,
           game: null,
           code: newCode,
+          metadata: records[0].metadata || { theme: 'dark' },
         })
       } else {
         // Create new record
@@ -116,6 +119,7 @@ export function DisplayProvider({ children }: { children: ReactNode }) {
           host: null,
           game: null,
           code: newCode,
+          metadata: { theme: 'dark' },
         })
       }
 
@@ -161,6 +165,24 @@ export function DisplayProvider({ children }: { children: ReactNode }) {
       setTimeout(initialize, 5000)
     }
   }, [gameId])
+
+  // Apply theme from displayRecord metadata
+  useEffect(() => {
+    if (displayRecord?.metadata?.theme) {
+      const newTheme = displayRecord.metadata.theme
+      setTheme(newTheme)
+
+      if (newTheme === 'dark') {
+        document.documentElement.classList.add('dark')
+      } else {
+        document.documentElement.classList.remove('dark')
+      }
+    } else {
+      // Default to dark theme
+      setTheme('dark')
+      document.documentElement.classList.add('dark')
+    }
+  }, [displayRecord?.metadata?.theme])
 
   // Subscribe to game when gameId changes
   useEffect(() => {
@@ -268,6 +290,7 @@ export function DisplayProvider({ children }: { children: ReactNode }) {
     currentScreen,
     connectionStatus,
     error,
+    theme,
     initialize,
     clearError,
   }

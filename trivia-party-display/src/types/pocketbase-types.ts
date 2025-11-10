@@ -24,6 +24,9 @@ export interface DisplaysRecord extends BaseRecord {
   host: string | null  // relation to users (host who claimed)
   game: string | null  // relation to games
   code: string  // 6-digit numeric code
+  metadata?: {
+    theme?: 'light' | 'dark'
+  } | null
 }
 
 // Games collection
