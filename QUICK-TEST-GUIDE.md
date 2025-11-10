@@ -39,13 +39,9 @@ Open browser console (F12) and test:
    - Game starts: status → 'in-progress'
    - Return to lobby: status → 'completed'
 
-## Full Test Details
+## Full Test Details & Verification
 
 See: `docs/testing/2025-11-02-state-restoration-test-results.md`
-
-## Verification Summary
-
-See: `TASK-4-VERIFICATION-SUMMARY.md`
 
 ## Report Issues
 
