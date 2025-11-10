@@ -144,16 +144,22 @@ export function DisplayProvider({ children }: { children: ReactNode }) {
           setGameRecord(null)
           setCurrentScreen('code')
 
-          // Generate new code and update display
-          const newCode = generateDisplayCode()
-          pb.collection('displays').update<DisplaysRecord>(record.id, {
-            code: newCode,
-            available: true,
-            host: null,
-          }).then((updated) => {
-            setDisplayRecord(updated)
-            setCode(newCode)
-          })
+          // Only update if not already available (prevents duplicate updates)
+          if (!e.record.available) {
+            // Generate new code and update display
+            const newCode = generateDisplayCode()
+            pb.collection('displays').update<DisplaysRecord>(record.id, {
+              code: newCode,
+              available: true,
+              host: null,
+            }).then((updated) => {
+              setDisplayRecord(updated)
+              setCode(newCode)
+            })
+          } else {
+            // Already updated by game completion handler, just set the code
+            setCode(e.record.code || generateDisplayCode())
+          }
         }
       })
     } catch (err) {
