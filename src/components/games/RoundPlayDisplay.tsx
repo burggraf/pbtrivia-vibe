@@ -252,7 +252,7 @@ export default function RoundPlayDisplay({ gameData, mode = 'controller', onAnsw
                       key={answer.label}
                       className={`${answerClasses} flex justify-between items-start relative`}
                     >
-                      <div className={textSizeClasses.answer}>
+                      <div className={`${textSizeClasses.answer} text-left`}>
                         <span className="font-medium">{answer.label}.</span> {answer.text}
                       </div>
                       {isCorrectAnswer && (
@@ -275,7 +275,7 @@ export default function RoundPlayDisplay({ gameData, mode = 'controller', onAnsw
                       onClick={(e) => !isDisabled && handleAnswerClick(answer.label, e)}
                       tabIndex={-1}
                     >
-                      <div className={textSizeClasses.answer}>
+                      <div className={`${textSizeClasses.answer} text-left`}>
                         <span className="font-medium">{answer.label}.</span> {answer.text}
                       </div>
                       {(showGoldStar || showCheckmark || showXMark) && (
