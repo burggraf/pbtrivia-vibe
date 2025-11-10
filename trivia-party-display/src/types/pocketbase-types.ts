@@ -55,6 +55,7 @@ export interface GamesRecord extends BaseRecord {
       rounds: number
       question_count: number
       title: string
+      categories?: string[]
     }
     question?: {
       id: string
