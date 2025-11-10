@@ -46,6 +46,7 @@ export function GameDisplay() {
           gameData={{ state: 'game-start' }}
           gameId={gameRecord.id}
           gameStatus={gameRecord.status}
+          gameCode={gameRecord.code}
         />
       )}
       {state === 'round-start' && (

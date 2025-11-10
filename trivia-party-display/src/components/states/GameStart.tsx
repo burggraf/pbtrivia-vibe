@@ -2,6 +2,8 @@ import { useState } from 'react'
 import { Button } from '@/components/ui/button'
 import { gamePlayersService } from '@/lib/games'
 import pb from '@/lib/pocketbase'
+import QRCode from 'react-qr-code'
+import { getMainAppUrl } from '@/lib/networkUrl'
 
 interface GameStartProps {
   gameData: {
@@ -11,9 +13,10 @@ interface GameStartProps {
   gameStatus?: 'setup' | 'ready' | 'in-progress' | 'completed'
   currentTeamId?: string | null
   onChangeTeam?: () => void
+  gameCode?: string
 }
 
-export default function GameStart({ gameData: _gameData, gameId, gameStatus, currentTeamId, onChangeTeam }: GameStartProps) {
+export default function GameStart({ gameData: _gameData, gameId, gameStatus, currentTeamId, onChangeTeam, gameCode }: GameStartProps) {
   const [isChangingTeam, setIsChangingTeam] = useState(false)
 
   const handleChangeTeam = async () => {
@@ -54,12 +57,33 @@ export default function GameStart({ gameData: _gameData, gameId, gameStatus, cur
 
   return (
     <div className="text-center mb-4 md:mb-8">
-      <h2 className="text-2xl md:text-3xl font-bold text-slate-800 dark:text-slate-100 mb-4">
+      <h2 className="text-4xl md:text-5xl font-bold text-slate-800 dark:text-slate-100 mb-6">
         Welcome to Trivia!
       </h2>
-      <p className="text-lg text-slate-600 dark:text-slate-400 font-medium mb-4">
+      <p className="text-xl text-slate-600 dark:text-slate-400 font-medium mb-4">
         Get ready to play!
       </p>
+
+      {gameCode && (
+        <div className="mb-8">
+          <p className="text-2xl text-slate-700 dark:text-slate-300 mb-6">
+            Game Code: <span className="font-mono font-bold text-3xl">{gameCode}</span>
+          </p>
+          <div className="flex justify-center mb-6">
+            <div className="bg-white p-6 rounded-lg shadow-lg">
+              <QRCode
+                value={`${getMainAppUrl()}/join?code=${gameCode}`}
+                size={300}
+                level="M"
+                aria-label={`QR code to join game ${gameCode}`}
+              />
+              <p className="text-center text-lg text-slate-600 dark:text-slate-700 mt-4">
+                Scan to join
+              </p>
+            </div>
+          </div>
+        </div>
+      )}
 
       {showChangeTeamButton && (
         <Button
