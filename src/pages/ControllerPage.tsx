@@ -14,6 +14,7 @@ import { questionsService } from '@/lib/questions'
 import { scoreboardService } from '@/lib/scoreboard'
 import pb from '@/lib/pocketbase'
 import { Game, GameMetadata } from '@/types/games'
+import DisplayManagement from '@/components/games/DisplayManagement'
 
 type GameState = 'game-start' | 'round-start' | 'round-play' | 'round-end' | 'game-end' | 'thanks' | 'return-to-lobby'
 
@@ -1004,11 +1005,21 @@ export default function ControllerPage() {
 
         {/* Teams and Players Section */}
         {(!gameData || gameData.state === 'game-start') && (
-          <TeamDisplay
-            scoreboard={game?.scoreboard}
-            isLoading={isLoading}
-            className="mb-8"
-          />
+          <>
+            <TeamDisplay
+              scoreboard={game?.scoreboard}
+              isLoading={isLoading}
+              className="mb-8"
+            />
+            {id && (
+              <div className="mb-8 p-6 bg-white dark:bg-slate-800 rounded-lg border border-slate-200 dark:border-slate-700">
+                <h2 className="text-xl font-semibold mb-4 text-slate-800 dark:text-slate-100">
+                  Display Management
+                </h2>
+                <DisplayManagement gameId={id} />
+              </div>
+            )}
+          </>
         )}
 
         {/* Next Question Preview - Show during gameplay */}
