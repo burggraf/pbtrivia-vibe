@@ -13,7 +13,7 @@ function AppContent() {
           message={error}
           onDismiss={clearError}
           onRetry={error.includes('Failed to initialize') ? initialize : undefined}
-          autoDissmiss={!error.includes('Failed to initialize')}
+          autoDismiss={!error.includes('Failed to initialize')}
         />
       )}
 
