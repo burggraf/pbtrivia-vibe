@@ -5,21 +5,21 @@ interface ErrorBannerProps {
   message: string
   onDismiss: () => void
   onRetry?: () => void
-  autoDissmiss?: boolean
+  autoDismiss?: boolean
 }
 
 export function ErrorBanner({
   message,
   onDismiss,
   onRetry,
-  autoDissmiss = true,
+  autoDismiss = true,
 }: ErrorBannerProps) {
   useEffect(() => {
-    if (autoDissmiss && !onRetry) {
+    if (autoDismiss && !onRetry) {
       const timer = setTimeout(onDismiss, 5000)
       return () => clearTimeout(timer)
     }
-  }, [autoDissmiss, onRetry, onDismiss])
+  }, [autoDismiss, onRetry, onDismiss])
 
   return (
     <div className="fixed top-0 left-0 right-0 z-50 bg-red-600/90 text-white px-6 py-4 flex items-center justify-center gap-4">

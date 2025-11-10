@@ -232,7 +232,7 @@ This document describes the database schema for the Trivia Party application, wh
 
 ---
 
-### 8. `game_answers` (NEW)
+### 8. `game_answers`
 **Purpose**: Team answers submitted during game rounds
 
 | Field | Type | Constraints | Description |
@@ -263,6 +263,40 @@ This document describes the database schema for the Trivia Party application, wh
 
 ---
 
+### 9. `displays`
+**Purpose**: External display devices for projecting game state to TVs/large screens
+
+| Field | Type | Constraints | Description |
+|-------|------|-------------|-------------|
+| id | text(15) | PK, auto-generated | Unique display identifier |
+| display_user | relation → _pb_users_auth_ | Required | Auto-generated user account for this display |
+| host | relation → _pb_users_auth_ | Optional | Host who claimed this display |
+| available | bool | Optional | Whether display is available to be claimed |
+| code | text | Optional | 6-digit code for claiming the display |
+| game | relation → games | Optional | Current game being displayed |
+| metadata | json | Optional | Display configuration data |
+| created | autodate | Auto | Creation timestamp |
+| updated | autodate | Auto | Last update timestamp |
+
+**Cascade Deletes**: Enabled for display_user and host relations
+
+**Access Rules**:
+- **Create**: Only the display_user can create their own record (`@request.auth.id = display_user`)
+- **View**: Public read access (open)
+- **Update**: Display owner or anyone if display is available (`@request.auth.id = display_user || available = true`)
+- **Delete**: Only the display_user can delete their own record (`@request.auth.id = display_user`)
+
+**Business Rules**:
+- Each display device has its own auto-generated user account in format `<id>@trivia-party-displays.com`
+- Display credentials are stored in localStorage for persistent device identity
+- Displays show a 6-digit code when available for hosts to claim
+- Hosts can claim available displays by entering the code
+- When claimed, display subscribes to game updates and shows game state in real-time
+- Display automatically releases (resets to available) when game completes
+- Display marks itself unavailable when app closes
+
+---
+
 ## Relationship Diagram
 
 ```
@@ -272,7 +306,8 @@ _pb_users_auth_ (Users)
 │          │          └─ host ──> game_questions (1:N)
 │          ├─ host ──> game_teams (1:N)
 │          ├─ host ──> game_players (1:N)
-│          └─ host ──> game_answers (1:N)
+│          ├─ host ──> game_answers (1:N)
+│          └─ game ──> displays (N:1) [optional]
 │
 ├─ host ──> rounds (1:N)
 │          └─ round ──> game_questions (1:N)
@@ -295,6 +330,9 @@ _pb_users_auth_ (Users)
 │          ├─ game_questions_id ──> game_questions (N:1)
 │          └─ team ──> game_teams (N:1)
 │
+├─ display_user ──> displays (1:1)
+│          └─ host ──> _pb_users_auth_ (N:1) [optional]
+│
 └─ player ──> game_players (1:N)
            └─ game ──> games (N:1)
 
@@ -307,6 +345,9 @@ game_questions
 game_teams
 └─ team ──> game_players (N:1) [optional]
 └─ team ──> game_answers (1:N)
+
+games
+└─ game ──> displays (1:N) [optional]
 ```
 
 ## Relationship Summary
@@ -353,6 +394,18 @@ game_teams
     - A team can submit multiple answers
     - Each game_answer references exactly one team
 
+11. **User → Displays (1:1)**
+    - Each display has exactly one auto-generated display_user account
+    - Each display_user account corresponds to exactly one display
+
+12. **User → Displays (1:N)**
+    - A host can claim multiple displays
+    - Each display can optionally be claimed by one host
+
+13. **Game → Displays (1:N)**
+    - A game can be shown on multiple displays
+    - Each display can optionally show one game at a time
+
 ### Junction Tables
 
 - **game_questions**: Many-to-many relationship between rounds and questions
@@ -379,6 +432,12 @@ game_teams
 4. **Scoreboard Updates**:
    ```
    Game_Answers → Game.scoreboard (real-time updates)
+   ```
+
+5. **Display Management Flow**:
+   ```
+   Display Device → Auto-register with display_user account → Create displays record →
+   Host claims display → Display subscribes to game → Real-time game state updates
    ```
 
 ## Game State Management
@@ -423,8 +482,10 @@ The `games.data` JSON field stores the current game state and progresses through
 - **Added `scoreboard` field to games collection**: Real-time scoreboard data structure
 - **Added `metadata` field to games collection**: Stores timer configuration and other game settings
 - **Created `game_answers` collection**: Tracks team answers during gameplay
+- **Created `displays` collection**: External display devices for projecting game state to TVs and large screens
 - **Enhanced game state management**: Comprehensive state machine with 7 distinct states
 - **Improved real-time functionality**: Live updates for scoreboard and game state changes
 - **Added unique constraint to game_answers**: Prevents teams from submitting multiple answers to the same question (`game_questions_id` + `team` combination)
 - **Added cascade deletes**: Enabled for all critical foreign key relationships to ensure data integrity
 - **Added performance indexes**: Composite indexes added for optimizing player joins, game creation, and gameplay queries
+- **Display device management**: Displays auto-register with unique accounts, can be claimed by hosts via 6-digit codes, and show real-time game state

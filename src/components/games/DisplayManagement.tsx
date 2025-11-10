@@ -4,6 +4,7 @@ import { Input } from '@/components/ui/input'
 import pb from '@/lib/pocketbase'
 import type { DisplaysRecord } from '@/types/pocketbase-types'
 import { Loader2 } from 'lucide-react'
+import { toast } from 'sonner'
 
 interface DisplayManagementProps {
   gameId: string
@@ -62,7 +63,7 @@ export default function DisplayManagement({ gameId }: DisplayManagementProps) {
 
   const handleClaim = async () => {
     if (!code.trim() || code.length !== 6) {
-      alert('Please enter a valid 6-digit code')
+      toast.error('Please enter a valid 6-digit code')
       return
     }
 
@@ -70,7 +71,7 @@ export default function DisplayManagement({ gameId }: DisplayManagementProps) {
     try {
       const userId = pb.authStore.model?.id
       if (!userId) {
-        alert('Not authenticated')
+        toast.error('Not authenticated')
         return
       }
 
@@ -80,7 +81,7 @@ export default function DisplayManagement({ gameId }: DisplayManagementProps) {
       })
 
       if (records.length === 0) {
-        alert('Display not found or already claimed')
+        toast.error('Display not found or already claimed')
         setCode('')
         return
       }
@@ -92,11 +93,11 @@ export default function DisplayManagement({ gameId }: DisplayManagementProps) {
         available: false,
       })
 
-      alert('Display claimed successfully')
+      toast.success('Display claimed successfully')
       setCode('')
     } catch (err) {
       console.error('Failed to claim display:', err)
-      alert('Failed to claim display. It may already be claimed.')
+      toast.error('Failed to claim display. It may already be claimed.')
       setCode('')
     } finally {
       setClaiming(false)
@@ -110,10 +111,10 @@ export default function DisplayManagement({ gameId }: DisplayManagementProps) {
         game: null,
         available: true,
       })
-      alert('Display released')
+      toast.success('Display released')
     } catch (err) {
       console.error('Failed to release display:', err)
-      alert('Failed to release display')
+      toast.error('Failed to release display')
     }
   }
 
