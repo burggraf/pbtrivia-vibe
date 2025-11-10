@@ -14,12 +14,6 @@ export function getPublicUrl(): string {
       return `${protocol}//${networkIp}${port ? `:${port}` : ''}`
     }
 
-    // Fallback: check for full URL in .env.local (manual override)
-    const networkUrl = import.meta.env.VITE_NETWORK_URL
-    if (networkUrl) {
-      return networkUrl
-    }
-
     // Last resort: warn and use localhost
     console.warn('Using localhost for QR code. In dev mode, ensure Vite config has network detection enabled.')
   }
