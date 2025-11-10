@@ -99,20 +99,32 @@ export function DisplayProvider({ children }: { children: ReactNode }) {
           filter: `display_user = "${authData.record.id}"`,
         })
 
-      const newCode = generateDisplayCode()
-
       let record: DisplaysRecord
       if (records.length > 0) {
-        // Update existing record
-        record = await pb.collection('displays').update<DisplaysRecord>(records[0].id, {
-          available: true,
-          host: null,
-          game: null,
-          code: newCode,
-          metadata: records[0].metadata || { theme: 'dark' },
-        })
+        // Update existing record only if it's not currently claimed
+        record = records[0]
+        if (record.available && !record.game) {
+          // Display is available and not claimed, just use it as-is
+          console.log('📺 Using existing available display record')
+        } else if (record.game) {
+          // Display is claimed - don't reset it!
+          console.log('📺 Display is already claimed, keeping claim')
+        } else {
+          // Display exists but is unavailable (not claimed) - reset it
+          console.log('📺 Resetting unavailable display record')
+          const newCode = generateDisplayCode()
+          record = await pb.collection('displays').update<DisplaysRecord>(records[0].id, {
+            available: true,
+            host: null,
+            game: null,
+            code: newCode,
+            metadata: records[0].metadata || { theme: 'dark' },
+          })
+        }
       } else {
         // Create new record
+        console.log('📺 Creating new display record')
+        const newCode = generateDisplayCode()
         record = await pb.collection('displays').create<DisplaysRecord>({
           display_user: authData.record.id,
           available: true,
@@ -124,22 +136,38 @@ export function DisplayProvider({ children }: { children: ReactNode }) {
       }
 
       setDisplayRecord(record)
-      setCode(newCode)
-      setCurrentScreen('code')
+      setCode(record.code || generateDisplayCode())
+
+      // Set screen based on whether display is claimed
+      if (record.game) {
+        setCurrentScreen('game')
+        setGameId(record.game)
+      } else {
+        setCurrentScreen('code')
+      }
+
       setConnectionStatus('connected')
 
       // Subscribe to display record changes
       pb.collection('displays').subscribe<DisplaysRecord>(record.id, (e) => {
+        console.log('🖥️ Display subscription update:', {
+          hasGame: !!e.record.game,
+          currentGameId: gameId,
+          available: e.record.available,
+          status: e.action
+        })
         setDisplayRecord(e.record)
 
         // Check if display was claimed (game assigned)
         if (e.record.game && !gameId) {
+          console.log('✅ Display claimed, game assigned:', e.record.game)
           setGameId(e.record.game)
           setCurrentScreen('game')
         }
 
         // Check if display was released (game removed)
         if (!e.record.game && gameId) {
+          console.log('❌ Display released, game removed')
           setGameId(null)
           setGameRecord(null)
           setCurrentScreen('code')
@@ -170,7 +198,7 @@ export function DisplayProvider({ children }: { children: ReactNode }) {
       // Retry after 5 seconds
       setTimeout(initialize, 5000)
     }
-  }, [gameId])
+  }, [])
 
   // Apply theme from displayRecord metadata
   useEffect(() => {
@@ -198,11 +226,14 @@ export function DisplayProvider({ children }: { children: ReactNode }) {
 
     const subscribeToGame = async () => {
       try {
+        console.log('🎮 Fetching game:', gameId)
         const game = await pb.collection('games').getOne<GamesRecord>(gameId)
+        console.log('🎮 Game fetched:', { id: game.id, status: game.status, state: game.data?.state })
         setGameRecord(game)
 
         // Check if game is already completed
         if (game.status === 'completed') {
+          console.log('🏁 Game already completed, releasing display')
           // Set gameId to null FIRST to prevent display subscription from triggering
           setGameId(null)
           setGameRecord(null)
@@ -223,12 +254,15 @@ export function DisplayProvider({ children }: { children: ReactNode }) {
           return
         }
 
+        console.log('✅ Game active, subscribing to updates')
         // Subscribe to game updates
         unsubscribe = await pb.collection('games').subscribe<GamesRecord>(gameId, (e) => {
+          console.log('🎮 Game update received:', { status: e.record.status, state: e.record.data?.state })
           setGameRecord(e.record)
 
           // Check if game completed
           if (e.record.status === 'completed') {
+            console.log('🏁 Game completed, releasing display')
             // Set gameId to null FIRST to prevent display subscription from triggering
             setGameId(null)
             setGameRecord(null)
@@ -264,10 +298,11 @@ export function DisplayProvider({ children }: { children: ReactNode }) {
     }
   }, [gameId, displayRecord])
 
-  // Initialize on mount
+  // Initialize once on mount
   useEffect(() => {
     initialize()
-  }, [initialize])
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
 
   // Handle beforeunload to mark display unavailable
   useEffect(() => {

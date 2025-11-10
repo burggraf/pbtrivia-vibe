@@ -347,6 +347,11 @@ export default function ControllerPage() {
           const parsedData = typeof gameData.data === 'string' ? JSON.parse(gameData.data) : gameData.data
           setGameData(parsedData)
 
+          // Reset status to 'ready' if we're at game-start (allows restarting completed games)
+          if (parsedData.state === 'game-start' && gameData.status === 'completed') {
+            await gamesService.updateGame(id, { status: 'ready' })
+          }
+
           // Update status to 'in-progress' only if resuming actual gameplay (not at game-start)
           if (gameData.status === 'ready' && parsedData.state && parsedData.state !== 'game-start') {
             await gamesService.updateGame(id, { status: 'in-progress' })
@@ -680,11 +685,7 @@ export default function ControllerPage() {
           if (timer) newGameData.timer = timer
 
           await updateGameDataClean(newGameData)
-          // Update game status to completed
-          if (game) {
-            await gamesService.updateGame(game.id, { status: 'completed' })
-            console.log('🏁 Game status updated to completed')
-          }
+          // Don't set status='completed' yet - wait until after 'thanks' state
         }
         break
       }
@@ -702,12 +703,13 @@ export default function ControllerPage() {
       }
 
       case 'thanks': {
-        const newGameData: GameData = {
-          state: 'return-to-lobby'
+        // Mark game as completed before returning to lobby
+        if (game) {
+          await gamesService.updateGame(game.id, { status: 'completed' })
+          console.log('🏁 Game status updated to completed')
         }
-        // No timer for return-to-lobby
-        await updateGameDataClean(newGameData)
-        break
+        navigate('/host')
+        return
       }
 
       case 'return-to-lobby': {
@@ -972,7 +974,7 @@ export default function ControllerPage() {
                 <Button
                   className="h-[44px] bg-blue-600 hover:bg-blue-700 dark:bg-blue-700 dark:hover:bg-blue-600 text-white"
                   onClick={handleNextState}
-                  disabled={gameData.state === 'return-to-lobby' || gameData.state === 'thanks'}
+                  disabled={gameData.state === 'return-to-lobby'}
                 >
                   {(() => {
                     const isAnswerRevealed = !!gameData.question?.correct_answer
@@ -982,6 +984,8 @@ export default function ControllerPage() {
                       ? 'Next'
                       : gameData.state === 'game-end'
                       ? 'Thanks'
+                      : gameData.state === 'thanks'
+                      ? 'End'
                       : 'Next'
                   })()}
                   <ChevronRight className="h-4 w-4 ml-1" />
