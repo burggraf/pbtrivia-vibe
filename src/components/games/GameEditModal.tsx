@@ -197,6 +197,7 @@ export default function GameEditModal({ game, isOpen, onClose, onSave, onDelete,
         g.metadata?.answer_timer !== undefined ||
         g.metadata?.game_start_timer !== undefined ||
         g.metadata?.round_start_timer !== undefined ||
+        g.metadata?.round_end_timer !== undefined ||
         g.metadata?.game_end_timer !== undefined ||
         g.metadata?.thanks_timer !== undefined
       )
@@ -222,6 +223,7 @@ export default function GameEditModal({ game, isOpen, onClose, onSave, onDelete,
         answer_timer: previousGameWithTimers.metadata?.answer_timer || null,
         game_start_timer: previousGameWithTimers.metadata?.game_start_timer || null,
         round_start_timer: previousGameWithTimers.metadata?.round_start_timer || null,
+        round_end_timer: previousGameWithTimers.metadata?.round_end_timer || null,
         game_end_timer: previousGameWithTimers.metadata?.game_end_timer || null,
         thanks_timer: previousGameWithTimers.metadata?.thanks_timer || null
       }))
