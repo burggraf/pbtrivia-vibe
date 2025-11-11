@@ -51,6 +51,10 @@ This is a trivia game application built with React + TypeScript frontend and Poc
 - **Context-based theme system** with dark/light mode support
 - **Real-time PocketBase subscriptions** for live game updates
 
+### Display App
+
+The **display app** (also called **display screen**) is a separate standalone application located in `./trivia-party-display/` with its own `package.json`. It is used for presenting the game on a shared screen/projector during gameplay.
+
 ### UI/UX Standards
 
 **IMPORTANT**: When creating or modifying UI components, always reference the UI Style Guide:
