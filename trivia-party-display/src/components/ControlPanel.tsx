@@ -38,7 +38,6 @@ export function ControlPanel() {
   async function handleToggleFullscreen() {
     try {
       await toggleFullscreen();
-      // Update state after a short delay to allow window to transition
       setTimeout(() => checkFullscreen(), 100);
     } catch (error) {
       console.error('Failed to toggle fullscreen:', error);
@@ -58,7 +57,19 @@ export function ControlPanel() {
     return (
       <button
         onClick={() => setVisible(true)}
-        className="fixed top-4 right-4 z-50 bg-gray-800/80 hover:bg-gray-800 text-white p-2 rounded shadow-lg"
+        style={{
+          position: 'fixed',
+          bottom: '10px',
+          right: '10px',
+          zIndex: 9999,
+          backgroundColor: '#1f2937',
+          color: 'white',
+          padding: '12px',
+          borderRadius: '8px',
+          border: '2px solid #4b5563',
+          cursor: 'pointer',
+          fontSize: '20px'
+        }}
         title="Show controls"
       >
         ⚙️
@@ -67,37 +78,70 @@ export function ControlPanel() {
   }
 
   return (
-    <div className="fixed top-4 right-4 z-50 bg-white dark:bg-gray-800 p-4 rounded-lg shadow-lg space-y-3 min-w-[250px]">
-      <div className="flex items-center justify-between">
-        <h3 className="font-semibold text-sm">Display Controls</h3>
+    <div style={{
+      position: 'fixed',
+      bottom: '10px',
+      right: '10px',
+      zIndex: 9999,
+      backgroundColor: 'white',
+      padding: '16px',
+      borderRadius: '12px',
+      boxShadow: '0 10px 25px rgba(0,0,0,0.3)',
+      minWidth: '280px',
+      border: '2px solid #e5e7eb'
+    }}>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px' }}>
+        <h3 style={{ fontWeight: '600', fontSize: '16px', margin: 0 }}>Display Controls</h3>
         <button
           onClick={() => setVisible(false)}
-          className="text-gray-500 hover:text-gray-700 dark:hover:text-gray-300"
+          style={{
+            backgroundColor: 'transparent',
+            border: 'none',
+            fontSize: '18px',
+            cursor: 'pointer',
+            color: '#6b7280',
+            padding: '4px'
+          }}
           title="Hide controls"
         >
           ✕
         </button>
       </div>
 
-      {/* Fullscreen toggle */}
-      <div>
+      <div style={{ marginBottom: '12px' }}>
         <button
           onClick={handleToggleFullscreen}
-          className="w-full px-4 py-2 bg-blue-500 hover:bg-blue-600 text-white rounded font-medium transition-colors"
+          style={{
+            width: '100%',
+            padding: '12px 16px',
+            backgroundColor: '#3b82f6',
+            color: 'white',
+            border: 'none',
+            borderRadius: '8px',
+            fontWeight: '500',
+            cursor: 'pointer',
+            fontSize: '14px'
+          }}
         >
           {fullscreen ? '⊡ Exit Fullscreen' : '⛶ Enter Fullscreen'}
         </button>
-        <div className="text-xs text-gray-500 dark:text-gray-400 mt-1 text-center">
+        <div style={{ fontSize: '12px', color: '#6b7280', marginTop: '6px', textAlign: 'center' }}>
           Shortcut: Cmd+F
         </div>
       </div>
 
-      {/* Display selector */}
       {displays.length > 1 && (
         <div>
-          <label className="text-sm font-medium block mb-1">Display:</label>
+          <label style={{ fontSize: '14px', fontWeight: '500', display: 'block', marginBottom: '6px' }}>Display:</label>
           <select
-            className="w-full px-3 py-2 border rounded text-sm dark:bg-gray-700 dark:border-gray-600"
+            style={{
+              width: '100%',
+              padding: '10px 12px',
+              border: '1px solid #d1d5db',
+              borderRadius: '6px',
+              fontSize: '14px',
+              backgroundColor: 'white'
+            }}
             value={currentDisplay?.name ?? ''}
             onChange={(e) => {
               const monitor = displays.find(d => d.name === e.target.value);
@@ -114,7 +158,7 @@ export function ControlPanel() {
       )}
 
       {displays.length === 1 && (
-        <div className="text-xs text-gray-500 dark:text-gray-400">
+        <div style={{ fontSize: '12px', color: '#6b7280' }}>
           Single display detected
         </div>
       )}
