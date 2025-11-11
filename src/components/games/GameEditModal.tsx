@@ -32,6 +32,7 @@ export default function GameEditModal({ game, isOpen, onClose, onSave, onDelete,
     answer_timer?: number | null;
     game_start_timer?: number | null;
     round_start_timer?: number | null;
+    round_end_timer?: number | null;
     game_end_timer?: number | null;
     thanks_timer?: number | null;
   }>({
@@ -46,6 +47,7 @@ export default function GameEditModal({ game, isOpen, onClose, onSave, onDelete,
     answer_timer: null,
     game_start_timer: null,
     round_start_timer: null,
+    round_end_timer: null,
     game_end_timer: null,
     thanks_timer: null
   })
@@ -67,6 +69,7 @@ export default function GameEditModal({ game, isOpen, onClose, onSave, onDelete,
         answer_timer: game.metadata?.answer_timer || null,
         game_start_timer: game.metadata?.game_start_timer || null,
         round_start_timer: game.metadata?.round_start_timer || null,
+        round_end_timer: game.metadata?.round_end_timer || null,
         game_end_timer: game.metadata?.game_end_timer || null,
         thanks_timer: game.metadata?.thanks_timer || null
       })
@@ -105,6 +108,7 @@ export default function GameEditModal({ game, isOpen, onClose, onSave, onDelete,
         answer_timer: null,
         game_start_timer: null,
         round_start_timer: null,
+        round_end_timer: null,
         game_end_timer: null,
         thanks_timer: null
       })
@@ -120,6 +124,7 @@ export default function GameEditModal({ game, isOpen, onClose, onSave, onDelete,
       answer_timer: ('answer_timer' in formData ? formData.answer_timer : null) || null,
       game_start_timer: ('game_start_timer' in formData ? formData.game_start_timer : null) || null,
       round_start_timer: ('round_start_timer' in formData ? formData.round_start_timer : null) || null,
+      round_end_timer: ('round_end_timer' in formData ? formData.round_end_timer : null) || null,
       game_end_timer: ('game_end_timer' in formData ? formData.game_end_timer : null) || null,
       thanks_timer: ('thanks_timer' in formData ? formData.thanks_timer : null) || null
     }
@@ -136,7 +141,7 @@ export default function GameEditModal({ game, isOpen, onClose, onSave, onDelete,
 
   const handleInputChange = (
     field: keyof (UpdateGameData | CreateGameData) | 'rounds' | 'questionsPerRound' | 'categories' |
-           'question_timer' | 'answer_timer' | 'game_start_timer' | 'round_start_timer' | 'game_end_timer' | 'thanks_timer',
+           'question_timer' | 'answer_timer' | 'game_start_timer' | 'round_start_timer' | 'round_end_timer' | 'game_end_timer' | 'thanks_timer',
     value: string | number | string[] | null | undefined
   ) => {
     setFormData(prev => ({ ...prev, [field]: value }))
