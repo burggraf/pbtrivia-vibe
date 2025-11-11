@@ -58,6 +58,26 @@ export default function GameTimer({ timer }: GameTimerProps) {
 
   const secondsText = remainingSeconds === 1 ? 'second' : 'seconds'
 
+  // Render notification popover for early-advance
+  if (timer.showAsNotification) {
+    return (
+      <div
+        role="status"
+        aria-live="polite"
+        className="
+          fixed bottom-20 left-1/2 -translate-x-1/2 z-50
+          bg-blue-500 dark:bg-blue-600 text-white
+          px-6 py-3 rounded-lg shadow-lg
+          transition-opacity duration-300 opacity-100
+        "
+      >
+        <div className="text-center font-medium">
+          All teams have answered.
+        </div>
+      </div>
+    )
+  }
+
   return (
     <div className="fixed bottom-0 left-0 right-0 z-50 bg-white dark:bg-slate-800 border-t border-slate-200 dark:border-slate-700 px-4 py-3">
       <div className="max-w-6xl mx-auto">
