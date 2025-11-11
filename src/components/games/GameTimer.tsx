@@ -68,7 +68,7 @@ export default function GameTimer({ timer }: GameTimerProps) {
           fixed bottom-20 left-1/2 -translate-x-1/2 z-50
           bg-blue-500 dark:bg-blue-600 text-white
           px-6 py-3 rounded-lg shadow-lg
-          transition-opacity duration-300 opacity-100
+          animate-[slideDown_0.5s_ease-out,pulse_2s_ease-in-out_0.5s_infinite]
         "
       >
         <div className="text-center font-medium">

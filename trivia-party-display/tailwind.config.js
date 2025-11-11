@@ -41,6 +41,19 @@ export default {
   				to: {
   					height: '0'
   				}
+  			},
+  			slideDown: {
+  				'0%': {
+  					transform: 'translateY(-100%) translateX(-50%)',
+  					opacity: '0'
+  				},
+  				'50%': {
+  					transform: 'translateY(10px) translateX(-50%)',
+  				},
+  				'100%': {
+  					transform: 'translateY(0) translateX(-50%)',
+  					opacity: '1'
+  				}
   			}
   		},
   		animation: {
