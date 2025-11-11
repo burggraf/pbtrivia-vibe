@@ -474,7 +474,7 @@ export default function GameEditModal({ game, isOpen, onClose, onSave, onDelete,
                               />
                               <span className="text-sm text-slate-500">seconds</span>
                             </div>
-                            <p className="text-xs text-slate-500">(round-end state)</p>
+                            <p className="text-xs text-slate-500">(round-play state after reveal)</p>
                           </div>
 
                           {/* Round Start Timer */}
