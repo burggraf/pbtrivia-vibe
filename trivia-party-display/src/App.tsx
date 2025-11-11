@@ -4,7 +4,7 @@ import { CodeDisplay } from '@/components/CodeDisplay'
 import { GameDisplay } from '@/components/GameDisplay'
 import { ErrorBanner } from '@/components/ErrorBanner'
 import { toggleFullscreen } from './lib/window';
-import { DisplaySelector } from './components/DisplaySelector';
+import { ControlPanel } from './components/ControlPanel';
 import { UpdateNotification } from './components/UpdateNotification';
 
 function AppContent() {
@@ -13,11 +13,7 @@ function AppContent() {
   return (
     <>
       {/* Display controls - only visible in Tauri environment */}
-      {window.__TAURI__ && (
-        <div className="fixed top-4 right-4 z-50 bg-white dark:bg-gray-800 p-2 rounded shadow-lg">
-          <DisplaySelector />
-        </div>
-      )}
+      {window.__TAURI__ && <ControlPanel />}
 
       {error && (
         <ErrorBanner
