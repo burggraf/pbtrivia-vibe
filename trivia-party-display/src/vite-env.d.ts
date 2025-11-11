@@ -7,3 +7,10 @@ interface ImportMetaEnv {
 interface ImportMeta {
   readonly env: ImportMetaEnv
 }
+
+// Tauri global type augmentation
+interface Window {
+  __TAURI__?: {
+    [key: string]: unknown;
+  };
+}
