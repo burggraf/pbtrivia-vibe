@@ -1,7 +1,7 @@
 {
   "$schema": "../node_modules/@tauri-apps/cli/config.schema.json",
   "productName": "Trivia Party Display",
-  "version": "0.1.0",
+  "version": "1.0.0",
   "identifier": "com.triviaparty.display",
   "build": {
     "frontendDist": "../dist",
@@ -29,6 +29,7 @@
   "bundle": {
     "active": true,
     "targets": "all",
+    "createUpdaterArtifacts": true,
     "publisher": "Trivia Party",
     "icon": [
       "icons/32x32.png",
@@ -44,6 +45,7 @@
     "longDescription": "Display application for Trivia Party trivia game system. Shows questions, answers, and scores on a projector or TV during gameplay.",
     "macOS": {
       "minimumSystemVersion": "10.13",
+      "frameworks": [],
       "exceptionDomain": ""
     }
   },
