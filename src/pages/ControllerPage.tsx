@@ -2,6 +2,12 @@ import { useParams, useNavigate } from 'react-router-dom'
 import { useState, useEffect, useCallback } from 'react'
 import { ArrowLeft, ChevronLeft, ChevronRight, Pause, Play } from 'lucide-react'
 import { Button } from '@/components/ui/button'
+import {
+  Accordion,
+  AccordionContent,
+  AccordionItem,
+  AccordionTrigger,
+} from '@/components/ui/accordion'
 import AppHeader from '@/components/ui/AppHeader'
 import TeamDisplay from '@/components/games/TeamDisplay'
 import GameStateDisplay from '@/components/games/GameStateDisplay'
@@ -1023,23 +1029,31 @@ export default function ControllerPage() {
           />
         )}
 
+        {/* Display Management - Always visible throughout game */}
+        {id && (
+          <div className="mb-8">
+            <Accordion type="single" collapsible className="bg-white dark:bg-slate-800 rounded-lg border border-slate-200 dark:border-slate-700">
+              <AccordionItem value="display-management" className="border-none">
+                <AccordionTrigger className="px-6 py-4 hover:no-underline">
+                  <h2 className="text-xl font-semibold text-slate-800 dark:text-slate-100">
+                    Display Management
+                  </h2>
+                </AccordionTrigger>
+                <AccordionContent className="px-6 pb-6">
+                  <DisplayManagement gameId={id} />
+                </AccordionContent>
+              </AccordionItem>
+            </Accordion>
+          </div>
+        )}
+
         {/* Teams and Players Section */}
         {(!gameData || gameData.state === 'game-start') && (
-          <>
-            <TeamDisplay
-              scoreboard={game?.scoreboard}
-              isLoading={isLoading}
-              className="mb-8"
-            />
-            {id && (
-              <div className="mb-8 p-6 bg-white dark:bg-slate-800 rounded-lg border border-slate-200 dark:border-slate-700">
-                <h2 className="text-xl font-semibold mb-4 text-slate-800 dark:text-slate-100">
-                  Display Management
-                </h2>
-                <DisplayManagement gameId={id} />
-              </div>
-            )}
-          </>
+          <TeamDisplay
+            scoreboard={game?.scoreboard}
+            isLoading={isLoading}
+            className="mb-8"
+          />
         )}
 
         {/* Next Question Preview - Show during gameplay */}

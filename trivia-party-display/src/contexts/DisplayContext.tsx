@@ -1,4 +1,4 @@
-import { createContext, useContext, useEffect, useState, useCallback } from 'react'
+import { createContext, useContext, useEffect, useState, useCallback, useRef } from 'react'
 import type { ReactNode } from 'react'
 import pb from '@/lib/pocketbase'
 import {
@@ -54,6 +54,9 @@ export function DisplayProvider({ children }: { children: ReactNode }) {
   const [connectionStatus, setConnectionStatus] = useState<ConnectionStatus>('disconnected')
   const [error, setError] = useState<string | null>(null)
   const [theme, setTheme] = useState<'light' | 'dark'>('dark')
+
+  // Use ref to avoid stale closure in display subscription
+  const gameIdRef = useRef<string | null>(null)
 
   const clearError = useCallback(() => setError(null), [])
 
@@ -142,6 +145,7 @@ export function DisplayProvider({ children }: { children: ReactNode }) {
       if (record.game) {
         setCurrentScreen('game')
         setGameId(record.game)
+        gameIdRef.current = record.game
       } else {
         setCurrentScreen('code')
       }
@@ -152,23 +156,25 @@ export function DisplayProvider({ children }: { children: ReactNode }) {
       pb.collection('displays').subscribe<DisplaysRecord>(record.id, (e) => {
         console.log('🖥️ Display subscription update:', {
           hasGame: !!e.record.game,
-          currentGameId: gameId,
+          currentGameId: gameIdRef.current,
           available: e.record.available,
           status: e.action
         })
         setDisplayRecord(e.record)
 
         // Check if display was claimed (game assigned)
-        if (e.record.game && !gameId) {
+        if (e.record.game && !gameIdRef.current) {
           console.log('✅ Display claimed, game assigned:', e.record.game)
           setGameId(e.record.game)
+          gameIdRef.current = e.record.game
           setCurrentScreen('game')
         }
 
         // Check if display was released (game removed)
-        if (!e.record.game && gameId) {
+        if (!e.record.game && gameIdRef.current) {
           console.log('❌ Display released, game removed')
           setGameId(null)
+          gameIdRef.current = null
           setGameRecord(null)
           setCurrentScreen('code')
 
@@ -236,6 +242,7 @@ export function DisplayProvider({ children }: { children: ReactNode }) {
           console.log('🏁 Game already completed, releasing display')
           // Set gameId to null FIRST to prevent display subscription from triggering
           setGameId(null)
+          gameIdRef.current = null
           setGameRecord(null)
           setCurrentScreen('code')
 
@@ -265,6 +272,7 @@ export function DisplayProvider({ children }: { children: ReactNode }) {
             console.log('🏁 Game completed, releasing display')
             // Set gameId to null FIRST to prevent display subscription from triggering
             setGameId(null)
+            gameIdRef.current = null
             setGameRecord(null)
             setCurrentScreen('code')
 

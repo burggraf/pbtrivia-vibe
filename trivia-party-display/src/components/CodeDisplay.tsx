@@ -31,7 +31,7 @@ export function CodeDisplay() {
 
         {/* Instructions */}
         <p className="text-[32px] text-slate-700 dark:text-slate-300 text-center max-w-3xl">
-          Display Code: {code}
+          Enter this code in the controller to connect to this display
         </p>
       </div>
 
