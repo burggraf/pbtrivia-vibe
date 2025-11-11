@@ -322,20 +322,33 @@ export default function ControllerPage() {
         )
 
         if (hasTimersConfigured) {
-          console.log('🎉 All teams answered! Triggering early advance in 3 seconds')
+          // Check remaining time on question timer
+          const questionTimerExpiresAt = gameData.timer?.expiresAt
+          const remainingMs = questionTimerExpiresAt
+            ? new Date(questionTimerExpiresAt).getTime() - Date.now()
+            : Infinity
 
-          // Create 3-second early-advance timer
-          const timer = {
-            startedAt: new Date().toISOString(),
-            duration: 3,
-            expiresAt: new Date(Date.now() + 3000).toISOString(),
-            isEarlyAdvance: true
+          // Only trigger 3-second early advance if >3 seconds remain
+          if (remainingMs > 3000) {
+            console.log('🎉 All teams answered! Triggering notification for 3 seconds')
+
+            // Create 3-second early-advance timer WITH notification flag
+            const timer = {
+              startedAt: new Date().toISOString(),
+              duration: 3,
+              expiresAt: new Date(Date.now() + 3000).toISOString(),
+              isEarlyAdvance: true,
+              showAsNotification: true
+            }
+
+            await updateGameDataClean({
+              ...gameData,
+              timer
+            })
+          } else {
+            // Let existing question timer expire naturally
+            console.log('👥 All teams answered with ≤3s remaining, letting timer expire naturally')
           }
-
-          await updateGameDataClean({
-            ...gameData,
-            timer
-          })
         } else {
           console.log('🎉 All teams answered! Waiting for manual advance (no timers configured)')
         }
