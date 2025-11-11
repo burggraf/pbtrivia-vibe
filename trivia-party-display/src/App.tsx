@@ -5,6 +5,7 @@ import { GameDisplay } from '@/components/GameDisplay'
 import { ErrorBanner } from '@/components/ErrorBanner'
 import { toggleFullscreen } from './lib/window';
 import { DisplaySelector } from './components/DisplaySelector';
+import { UpdateNotification } from './components/UpdateNotification';
 
 function AppContent() {
   const { currentScreen, error, clearError, initialize } = useDisplay()
@@ -29,6 +30,9 @@ function AppContent() {
 
       {currentScreen === 'code' && <CodeDisplay />}
       {currentScreen === 'game' && <GameDisplay />}
+
+      {/* Update notification - only in Tauri environment */}
+      {window.__TAURI__ && <UpdateNotification />}
     </>
   )
 }
