@@ -126,3 +126,38 @@ export interface CreateGameAnswerData {
   translated_answer?: string; // Answer translated from shuffled to original position
   is_correct?: boolean;
 }
+
+export type GameState = 'game-start' | 'round-start' | 'round-play' | 'round-end' | 'game-end' | 'thanks' | 'return-to-lobby'
+
+export interface GameData {
+  state: GameState
+  round?: {
+    round_number: number
+    rounds: number
+    question_count: number
+    title: string
+    categories?: string[]
+  }
+  question?: {
+    id: string
+    question_number: number
+    category: string
+    question: string
+    difficulty: string
+    a: string
+    b: string
+    c: string
+    d: string
+    correct_answer?: string
+    submitted_answer?: string
+  }
+  timer?: {
+    startedAt: string
+    duration: number
+    expiresAt: string
+    isEarlyAdvance?: boolean
+    isPaused?: boolean
+    pausedAt?: string
+    pausedRemaining?: number
+  }
+}

@@ -1,4 +1,3 @@
-import QRCode from 'react-qr-code'
 import { useDisplay } from '@/contexts/DisplayContext'
 
 export function CodeDisplay() {
@@ -32,13 +31,8 @@ export function CodeDisplay() {
 
         {/* Instructions */}
         <p className="text-[32px] text-slate-700 dark:text-slate-300 text-center max-w-3xl">
-          Enter this code on your host screen to claim this display
+          Display Code: {code}
         </p>
-
-        {/* QR Code */}
-        <div className="bg-white p-6 rounded-lg shadow-lg">
-          <QRCode value={code} size={300} level="M" />
-        </div>
       </div>
 
       {/* Display ID - bottom left */}

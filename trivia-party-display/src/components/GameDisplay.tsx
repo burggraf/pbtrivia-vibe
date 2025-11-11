@@ -5,14 +5,8 @@ import RoundPlayDisplay from '@/components/RoundPlayDisplay'
 import RoundEnd from '@/components/states/RoundEnd'
 import GameEnd from '@/components/states/GameEnd'
 import Thanks from '@/components/states/Thanks'
-
-type GameState =
-  | 'game-start'
-  | 'round-start'
-  | 'round-play'
-  | 'round-end'
-  | 'game-end'
-  | 'thanks'
+import GameTimer from '@/components/GameTimer'
+import { GameData } from '@/types/games'
 
 export function GameDisplay() {
   const { gameRecord } = useDisplay()
@@ -27,7 +21,8 @@ export function GameDisplay() {
     )
   }
 
-  const state = gameRecord.data?.state as GameState | undefined
+  const gameData = gameRecord.data as GameData | undefined
+  const state = gameData?.state
 
   if (!state) {
     return (
@@ -40,39 +35,44 @@ export function GameDisplay() {
   }
 
   return (
-    <div className="min-h-screen bg-slate-50 dark:bg-slate-900 p-8">
-      {state === 'game-start' && (
-        <GameStart
-          gameData={{ state: 'game-start' }}
-          gameId={gameRecord.id}
-          gameStatus={gameRecord.status}
-          gameCode={gameRecord.code}
-        />
-      )}
-      {state === 'round-start' && (
-        <RoundStartDisplay
-          round={gameRecord.data?.round}
-        />
-      )}
-      {state === 'round-play' && (
-        <RoundPlayDisplay
-          gameData={gameRecord.data as any}
-          gameId={gameRecord.id}
-        />
-      )}
-      {state === 'round-end' && (
-        <RoundEnd
-          gameData={gameRecord.data as any}
-          scoreboard={gameRecord.scoreboard as any}
-        />
-      )}
-      {state === 'game-end' && (
-        <GameEnd
-          gameData={gameRecord.data as any}
-          scoreboard={gameRecord.scoreboard as any}
-        />
-      )}
-      {state === 'thanks' && <Thanks />}
-    </div>
+    <>
+      <div className="min-h-screen bg-slate-50 dark:bg-slate-900 p-8">
+        {state === 'game-start' && (
+          <GameStart
+            gameData={{ state: 'game-start' }}
+            gameId={gameRecord.id}
+            gameStatus={gameRecord.status}
+            gameCode={gameRecord.code}
+          />
+        )}
+        {state === 'round-start' && (
+          <RoundStartDisplay
+            round={gameData?.round}
+          />
+        )}
+        {state === 'round-play' && (
+          <RoundPlayDisplay
+            gameData={gameData as any}
+            gameId={gameRecord.id}
+          />
+        )}
+        {state === 'round-end' && (
+          <RoundEnd
+            gameData={gameData as any}
+            scoreboard={gameRecord.scoreboard as any}
+          />
+        )}
+        {state === 'game-end' && (
+          <GameEnd
+            gameData={gameData as any}
+            scoreboard={gameRecord.scoreboard as any}
+          />
+        )}
+        {state === 'thanks' && <Thanks />}
+      </div>
+
+      {/* Timer Display - Fixed to bottom when active */}
+      {gameData?.timer && <GameTimer timer={gameData.timer} />}
+    </>
   )
 }
