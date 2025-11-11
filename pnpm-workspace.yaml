@@ -1,2 +1,5 @@
+packages:
+  - 'trivia-party-display'
+
 onlyBuiltDependencies:
   - esbuild
