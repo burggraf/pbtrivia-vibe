@@ -55,6 +55,30 @@ This is a trivia game application built with React + TypeScript frontend and Poc
 
 The **display app** (also called **display screen**) is a separate standalone application located in `./trivia-party-display/` with its own `package.json`. It is used for presenting the game on a shared screen/projector during gameplay.
 
+**Technology:** Built with Tauri 2.0 for native macOS distribution (Windows/Android TV/Apple TV planned).
+
+**Key Features:**
+- Native macOS application (not browser-based)
+- Borderless window mode for clean projector display
+- Fullscreen support (Cmd+F to toggle)
+- Multi-monitor support with display selection
+- Auto-update system (GitHub Releases)
+- Connects to remote PocketBase server (same as web version)
+
+**Development:**
+```bash
+cd trivia-party-display
+pnpm tauri:dev
+```
+
+**Production Build:**
+```bash
+cd trivia-party-display
+pnpm tauri:build
+```
+
+See `trivia-party-display/BUILD.md` for detailed build instructions.
+
 ### UI/UX Standards
 
 **IMPORTANT**: When creating or modifying UI components, always reference the UI Style Guide:
