@@ -18,11 +18,12 @@ export interface GameScoreboard {
 export interface GameMetadata {
   // Key timers (descriptive names for primary gameplay)
   question_timer?: number | null;        // round-play state
-  answer_timer?: number | null;          // round-end state
+  answer_timer?: number | null;          // round-play state (after reveal)
 
   // Transition timers (state-based names)
   game_start_timer?: number | null;      // game-start state
   round_start_timer?: number | null;     // round-start state
+  round_end_timer?: number | null;       // round-end state
   game_end_timer?: number | null;        // game-end state
   thanks_timer?: number | null;          // thanks state
 }
