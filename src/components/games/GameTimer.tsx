@@ -62,6 +62,8 @@ export default function GameTimer({ timer }: GameTimerProps) {
   if (timer.showAsNotification) {
     return (
       <div
+        role="status"
+        aria-live="polite"
         className="
           fixed bottom-20 left-1/2 -translate-x-1/2 z-50
           bg-blue-500 dark:bg-blue-600 text-white
