@@ -496,6 +496,27 @@ export default function GameEditModal({ game, isOpen, onClose, onSave, onDelete,
                             <p className="text-xs text-slate-500">(round-start state)</p>
                           </div>
 
+                          {/* Round End Timer */}
+                          <div className="space-y-2">
+                            <Label htmlFor="round_end_timer" className="text-sm font-medium">
+                              Round End Timer
+                            </Label>
+                            <div className="flex items-center gap-2">
+                              <Input
+                                id="round_end_timer"
+                                type="number"
+                                min="0"
+                                max="600"
+                                value={('round_end_timer' in formData ? formData.round_end_timer : null) ?? ''}
+                                onChange={(e) => handleInputChange('round_end_timer', e.target.value ? parseInt(e.target.value) : null)}
+                                placeholder="No limit"
+                                className="flex-1"
+                              />
+                              <span className="text-sm text-slate-500">seconds</span>
+                            </div>
+                            <p className="text-xs text-slate-500">(round-end state)</p>
+                          </div>
+
                           {/* Game Start Timer */}
                           <div className="space-y-2">
                             <Label htmlFor="game_start_timer" className="text-sm font-medium">
