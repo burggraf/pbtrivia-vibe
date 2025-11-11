@@ -305,20 +305,30 @@ export default function ControllerPage() {
 
       // If all answered and no early-advance timer exists yet and timer not paused
       if (teamsAnswered >= teamsWithPlayers && !gameData.timer?.isEarlyAdvance && !gameData.timer?.isPaused) {
-        console.log('🎉 All teams answered! Triggering early advance in 3 seconds')
+        // Only trigger early advance if timers are configured
+        const hasTimersConfigured = game?.metadata && (
+          (game.metadata.question_timer && game.metadata.question_timer > 0) ||
+          (game.metadata.answer_timer && game.metadata.answer_timer > 0)
+        )
 
-        // Create 3-second early-advance timer
-        const timer = {
-          startedAt: new Date().toISOString(),
-          duration: 3,
-          expiresAt: new Date(Date.now() + 3000).toISOString(),
-          isEarlyAdvance: true
+        if (hasTimersConfigured) {
+          console.log('🎉 All teams answered! Triggering early advance in 3 seconds')
+
+          // Create 3-second early-advance timer
+          const timer = {
+            startedAt: new Date().toISOString(),
+            duration: 3,
+            expiresAt: new Date(Date.now() + 3000).toISOString(),
+            isEarlyAdvance: true
+          }
+
+          await updateGameDataClean({
+            ...gameData,
+            timer
+          })
+        } else {
+          console.log('🎉 All teams answered! Waiting for manual advance (no timers configured)')
         }
-
-        await updateGameDataClean({
-          ...gameData,
-          timer
-        })
       }
     }, { filter: `game = "${id}"` })
 
@@ -326,7 +336,7 @@ export default function ControllerPage() {
       console.log('👥 Cleaning up answer subscription for question:', gameData.question?.id)
       unsubscribe.then(unsub => unsub())
     }
-  }, [gameData?.question?.id, gameData?.question?.correct_answer, id, game?.scoreboard, updateGameDataClean])
+  }, [gameData?.question?.id, gameData?.question?.correct_answer, id, game?.scoreboard, game?.metadata, updateGameDataClean])
 
   // Fetch game data
   const fetchGameData = async () => {
