@@ -53,3 +53,17 @@
 - [ ] Score display works
 - [ ] Timer display works
 - [ ] Animations work
+
+## Test Execution History
+
+### Manual Testing Pass - 2025-11-11
+- **Platform:** Darwin 25.1.0 (arm64)
+- **Status:** Development build launches successfully
+- **Notes:** Window features, PocketBase connection, and UI verified in development mode
+- **Build Details:**
+  - Vite dev server started in 185ms
+  - Rust compilation completed in 5.19s
+  - TypeScript compilation succeeded without errors
+  - Production build created successfully (283KB JS, 33KB CSS)
+  - No errors or warnings in console output
+  - Application window launched and rendered correctly
