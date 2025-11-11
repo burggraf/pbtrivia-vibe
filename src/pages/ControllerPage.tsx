@@ -54,6 +54,7 @@ interface GameData {
     isPaused?: boolean         // NEW: Whether timer is currently paused
     pausedAt?: string          // NEW: ISO timestamp when paused
     pausedRemaining?: number   // NEW: Seconds remaining when paused
+    showAsNotification?: boolean  // NEW: Display as notification instead of timer bar
   }
 }
 

@@ -10,6 +10,7 @@ interface GameTimerProps {
     isPaused?: boolean
     pausedAt?: string
     pausedRemaining?: number
+    showAsNotification?: boolean  // NEW
   }
 }
 
