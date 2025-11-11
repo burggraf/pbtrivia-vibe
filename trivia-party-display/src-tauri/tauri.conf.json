@@ -46,5 +46,17 @@
       "minimumSystemVersion": "10.13",
       "exceptionDomain": ""
     }
+  },
+  "plugins": {
+    "updater": {
+      "active": true,
+      "endpoints": [
+        "https://github.com/burggraf/trivia-party/releases/latest/download/latest.json"
+      ],
+      "pubkey": "dW50cnVzdGVkIGNvbW1lbnQ6IG1pbmlzaWduIHB1YmxpYyBrZXk6IDY3QkQ1MTEzMkE1REQ4QTIKUldTaTJGMHFFMUc5WjhJZ2J5dXVCb09BNStJMGxiWUxISXhYbDYzTmtsSGxXMVM4RkZSV1hlM2MK",
+      "windows": {
+        "installMode": "passive"
+      }
+    }
   }
 }
