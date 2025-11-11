@@ -4,12 +4,20 @@ import { CodeDisplay } from '@/components/CodeDisplay'
 import { GameDisplay } from '@/components/GameDisplay'
 import { ErrorBanner } from '@/components/ErrorBanner'
 import { toggleFullscreen } from './lib/window';
+import { DisplaySelector } from './components/DisplaySelector';
 
 function AppContent() {
   const { currentScreen, error, clearError, initialize } = useDisplay()
 
   return (
     <>
+      {/* Display controls - only visible in Tauri environment */}
+      {window.__TAURI__ && (
+        <div className="fixed top-4 right-4 z-50 bg-white dark:bg-gray-800 p-2 rounded shadow-lg">
+          <DisplaySelector />
+        </div>
+      )}
+
       {error && (
         <ErrorBanner
           message={error}
