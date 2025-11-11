@@ -79,6 +79,9 @@ const createTimerForState = (state: GameState, isAnswerRevealed: boolean, metada
       // Use question_timer before reveal, answer_timer after reveal
       timerSeconds = isAnswerRevealed ? metadata.answer_timer : metadata.question_timer
       break
+    case 'round-end':
+      timerSeconds = metadata.round_end_timer
+      break
     case 'game-end':
       timerSeconds = metadata.game_end_timer
       break
