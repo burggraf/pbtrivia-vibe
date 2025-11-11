@@ -595,7 +595,10 @@ export default function ControllerPage() {
             state: 'round-end',
             round: gameData.round
           }
-          // No timer for round-end state
+          // Add timer if configured
+          const timer = createTimerForState('round-end', false, game?.metadata)
+          if (timer) newGameData.timer = timer
+
           await updateGameDataClean(newGameData)
           return
         }
