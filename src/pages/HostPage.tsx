@@ -6,6 +6,7 @@ import AppHeader from '@/components/ui/AppHeader'
 import GameEditModal from '@/components/games/GameEditModal'
 import RoundEditModal from '@/components/games/RoundEditModal'
 import QuestionsList from '@/components/games/QuestionsList'
+import ConnectedDisplays from '@/components/games/ConnectedDisplays'
 import CategoryIcon, { getAvailableCategories } from '@/components/ui/CategoryIcon'
 import { Info, Plus, Play, User } from 'lucide-react'
 import ProfileModal from '@/components/ProfileModal'
@@ -602,8 +603,22 @@ export default function HostPage() {
             </div>
           </div>
 
-        
-  
+        {/* Connected Displays Section */}
+        <div className="bg-white dark:bg-slate-900 border border-[#e5e5e5] dark:border-slate-800 rounded-lg overflow-hidden mt-6">
+          <Accordion type="single" collapsible>
+            <AccordionItem value="displays" className="border-none">
+              <AccordionTrigger className="px-5 py-4 hover:no-underline">
+                <h2 className="text-[15px] font-semibold tracking-tight text-[#0a0a0a] dark:text-white">
+                  Displays
+                </h2>
+              </AccordionTrigger>
+              <AccordionContent className="px-5 pb-4">
+                <ConnectedDisplays />
+              </AccordionContent>
+            </AccordionItem>
+          </Accordion>
+        </div>
+
         {/* Modals */}
         <GameEditModal
           game={isCreateMode ? null : editingGame}
