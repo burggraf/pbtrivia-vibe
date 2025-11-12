@@ -15,17 +15,10 @@ function getPocketBaseUrl(): string {
   });
 
   if (isTauriApp) {
-    // Tauri desktop app
-    if (import.meta.env.MODE === 'development') {
-      // Development build: use localhost
-      console.log('📺 Using development PocketBase URL');
-      return 'http://localhost:8090';
-    } else {
-      // Production build: use production server
-      const url = import.meta.env.VITE_POCKETBASE_URL || 'https://trivia.azabab.com';
-      console.log('📺 Using production PocketBase URL:', url);
-      return url;
-    }
+    // Tauri desktop app - always use localhost for now
+    // TODO: Make this configurable via environment variable or settings
+    console.log('📺 Using localhost PocketBase URL for Tauri app');
+    return 'http://localhost:8090';
   }
 
   // Web app: Auto-detect PocketBase URL based on current page

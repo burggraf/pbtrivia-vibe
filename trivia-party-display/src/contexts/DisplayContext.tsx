@@ -63,32 +63,39 @@ export function DisplayProvider({ children }: { children: ReactNode }) {
   // Initialize display: check credentials, register/login, create/update display record
   const initialize = useCallback(async () => {
     try {
+      console.log('🔄 Starting display initialization...')
       setConnectionStatus('reconnecting')
 
       // Check localStorage for existing credentials
       let storedId = localStorage.getItem(STORAGE_KEYS.DISPLAY_ID)
       let storedPassword = localStorage.getItem(STORAGE_KEYS.DISPLAY_PASSWORD)
+      console.log('💾 Stored credentials:', { hasId: !!storedId, hasPassword: !!storedPassword })
 
       // If no credentials, generate new ones
       if (!storedId || !storedPassword) {
+        console.log('🆕 Generating new credentials...')
         storedId = generateDisplayId()
         storedPassword = generateDisplayPassword()
         localStorage.setItem(STORAGE_KEYS.DISPLAY_ID, storedId)
         localStorage.setItem(STORAGE_KEYS.DISPLAY_PASSWORD, storedPassword)
 
         // Register new user
+        console.log('📝 Registering new user:', getDisplayEmail(storedId))
         await pb.collection('users').create({
           email: getDisplayEmail(storedId),
           password: storedPassword,
           passwordConfirm: storedPassword,
         })
+        console.log('✅ User registered successfully')
       }
 
       // Login
+      console.log('🔑 Logging in:', getDisplayEmail(storedId))
       const authData = await pb.collection('users').authWithPassword(
         getDisplayEmail(storedId),
         storedPassword
       )
+      console.log('✅ Logged in successfully, userId:', authData.record.id)
 
       setDisplayId(storedId)
       setDisplayPassword(storedPassword)
@@ -96,16 +103,24 @@ export function DisplayProvider({ children }: { children: ReactNode }) {
       setUserId(authData.record.id)
 
       // Query for existing display record
+      console.log('🔍 Querying for existing display records...')
       const records = await pb
         .collection('displays')
         .getFullList<DisplaysRecord>({
           filter: `display_user = "${authData.record.id}"`,
         })
+      console.log('📋 Found', records.length, 'existing display record(s)')
 
       let record: DisplaysRecord
       if (records.length > 0) {
         // Update existing record only if it's not currently claimed
         record = records[0]
+        console.log('📺 Existing record state:', {
+          available: record.available,
+          hasGame: !!record.game,
+          code: record.code
+        })
+
         if (record.available && !record.game) {
           // Display is available and not claimed, just use it as-is
           console.log('📺 Using existing available display record')
@@ -123,6 +138,7 @@ export function DisplayProvider({ children }: { children: ReactNode }) {
             code: newCode,
             metadata: records[0].metadata || { theme: 'dark' },
           })
+          console.log('✅ Display record reset with new code:', newCode)
         }
       } else {
         // Create new record
@@ -136,6 +152,7 @@ export function DisplayProvider({ children }: { children: ReactNode }) {
           code: newCode,
           metadata: { theme: 'dark' },
         })
+        console.log('✅ Display record created with code:', newCode)
       }
 
       setDisplayRecord(record)
@@ -152,8 +169,9 @@ export function DisplayProvider({ children }: { children: ReactNode }) {
 
       setConnectionStatus('connected')
 
+      console.log('🎧 Subscribing to display record changes:', record.id)
       // Subscribe to display record changes
-      pb.collection('displays').subscribe<DisplaysRecord>(record.id, (e) => {
+      await pb.collection('displays').subscribe<DisplaysRecord>(record.id, (e) => {
         console.log('🖥️ Display subscription update:', {
           hasGame: !!e.record.game,
           currentGameId: gameIdRef.current,
@@ -196,9 +214,19 @@ export function DisplayProvider({ children }: { children: ReactNode }) {
           }
         }
       })
+      console.log('✅ Display initialization complete!')
     } catch (err) {
-      console.error('Initialization error:', err)
-      setError('Failed to initialize display. Retrying...')
+      console.error('❌ Initialization error:', err)
+      const errorMessage = err instanceof Error ? err.message : String(err)
+      const errorDetails = err instanceof Error && 'data' in err ? (err as any).data : null
+
+      console.error('Error details:', {
+        message: errorMessage,
+        data: errorDetails,
+        type: err instanceof Error ? err.constructor.name : typeof err
+      })
+
+      setError(`Failed to initialize display: ${errorMessage}. Retrying...`)
       setConnectionStatus('disconnected')
 
       // Retry after 5 seconds
