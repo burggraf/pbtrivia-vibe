@@ -1,7 +1,19 @@
 import PocketBase from 'pocketbase';
 
 function getPocketBaseUrl(): string {
-  // Auto-detect PocketBase URL based on current page
+  // Check if running in Tauri (desktop app)
+  if (window.__TAURI__) {
+    // Tauri desktop app
+    if (import.meta.env.DEV) {
+      // Development build: use localhost
+      return 'http://localhost:8090';
+    } else {
+      // Production build: use production server
+      return import.meta.env.VITE_POCKETBASE_URL || 'https://trivia.azabab.com';
+    }
+  }
+
+  // Web app: Auto-detect PocketBase URL based on current page
   // Development: Direct access to PocketBase on port 8090
   // Production: Same origin via Nginx reverse proxy
   const protocol = window.location.protocol;
@@ -23,7 +35,9 @@ function getPocketBaseUrl(): string {
   return `${protocol}//${hostname}`;
 }
 
-const pb = new PocketBase(getPocketBaseUrl());
+const pbUrl = getPocketBaseUrl();
+console.log('📺 PocketBase URL:', pbUrl);
+const pb = new PocketBase(pbUrl);
 
 // Disable auto-cancellation for better experience in React
 pb.autoCancellation(false);
