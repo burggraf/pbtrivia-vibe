@@ -66,6 +66,19 @@ export function DisplayProvider({ children }: { children: ReactNode }) {
       console.log('🔄 Starting display initialization...')
       setConnectionStatus('reconnecting')
 
+      // Check if PocketBase URL has changed - if so, clear credentials
+      const storedUrl = localStorage.getItem('pbUrl')
+      const currentUrl = pb.baseUrl
+      if (storedUrl && storedUrl !== currentUrl) {
+        console.log('🔄 PocketBase URL changed, clearing credentials', {
+          old: storedUrl,
+          new: currentUrl
+        })
+        localStorage.removeItem(STORAGE_KEYS.DISPLAY_ID)
+        localStorage.removeItem(STORAGE_KEYS.DISPLAY_PASSWORD)
+      }
+      localStorage.setItem('pbUrl', currentUrl)
+
       // Check localStorage for existing credentials
       let storedId = localStorage.getItem(STORAGE_KEYS.DISPLAY_ID)
       let storedPassword = localStorage.getItem(STORAGE_KEYS.DISPLAY_PASSWORD)
@@ -217,16 +230,29 @@ export function DisplayProvider({ children }: { children: ReactNode }) {
       console.log('✅ Display initialization complete!')
     } catch (err) {
       console.error('❌ Initialization error:', err)
-      const errorMessage = err instanceof Error ? err.message : String(err)
-      const errorDetails = err instanceof Error && 'data' in err ? (err as any).data : null
 
-      console.error('Error details:', {
-        message: errorMessage,
-        data: errorDetails,
-        type: err instanceof Error ? err.constructor.name : typeof err
-      })
+      // Extract detailed error information from PocketBase ClientResponseError
+      let errorMessage = 'Unknown error'
+      let errorCode = 0
+      let errorData: any = null
 
-      setError(`Failed to initialize display: ${errorMessage}. Retrying...`)
+      if (err && typeof err === 'object') {
+        const pbError = err as any
+        errorMessage = pbError.message || pbError.toString()
+        errorCode = pbError.status || pbError.code || 0
+        errorData = pbError.data || pbError.response || null
+
+        console.error('Full error object:', {
+          message: errorMessage,
+          status: errorCode,
+          data: errorData,
+          url: pbError.url,
+          isAbort: pbError.isAbort,
+          originalError: pbError.originalError
+        })
+      }
+
+      setError(`Failed to initialize display: ${errorMessage} (${errorCode}). Retrying...`)
       setConnectionStatus('disconnected')
 
       // Retry after 5 seconds
