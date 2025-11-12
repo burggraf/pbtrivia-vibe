@@ -55,7 +55,7 @@
       "endpoints": [
         "https://github.com/burggraf/trivia-party/releases/latest/download/latest.json"
       ],
-      "pubkey": "dW50cnVzdGVkIGNvbW1lbnQ6IG1pbmlzaWduIHB1YmxpYyBrZXk6IDY3QkQ1MTEzMkE1REQ4QTIKUldTaTJGMHFFMUc5WjhJZ2J5dXVCb09BNStJMGxiWUxISXhYbDYzTmtsSGxXMVM4RkZSV1hlM2MK",
+      "pubkey": "dW50cnVzdGVkIGNvbW1lbnQ6IG1pbmlzaWduIHB1YmxpYyBrZXk6IEY1NkU5QkEzQTZDN0VBODMKUldTRDZzZW1vNXR1OWFmU2kySjN3c1VtSUF3amVXR2luZXRuZTFTYjdrS3Z6QzlKWEM4SEQzcksK",
       "windows": {
         "installMode": "passive"
       }

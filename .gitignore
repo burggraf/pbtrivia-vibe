@@ -55,3 +55,4 @@ playwright-report/
 e2e/.auth/
 
 __pycache__
+~/.tauri/
