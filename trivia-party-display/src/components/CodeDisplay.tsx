@@ -1,4 +1,5 @@
 import { useDisplay } from '@/contexts/DisplayContext'
+import pb from '@/lib/pocketbase'
 
 export function CodeDisplay() {
   const { code, displayId } = useDisplay()
@@ -6,6 +7,7 @@ export function CodeDisplay() {
   // Get device info
   const browserInfo = navigator.userAgent.split(' ').slice(-2).join(' ')
   const ipAddress = 'N/A' // IP not available from browser
+  const pbUrl = pb.baseUrl
 
   if (!code || !displayId) {
     return (
@@ -20,6 +22,11 @@ export function CodeDisplay() {
       {/* Device info - top left */}
       <div className="absolute top-4 left-4 text-xs text-slate-500 dark:text-slate-600">
         {ipAddress} | {browserInfo}
+      </div>
+
+      {/* PocketBase URL - top right */}
+      <div className="absolute top-4 right-4 text-xs text-slate-500 dark:text-slate-600">
+        PB: {pbUrl}
       </div>
 
       {/* Main content - centered */}
