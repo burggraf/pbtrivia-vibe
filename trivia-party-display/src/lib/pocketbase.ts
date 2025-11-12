@@ -3,24 +3,28 @@ import PocketBase from 'pocketbase';
 function getPocketBaseUrl(): string {
   // Check if running in Tauri (desktop app)
   // window.location.protocol will be "tauri:" in Tauri apps
-  const isTauriApp = window.location.protocol === 'tauri:' || window.__TAURI__;
+  const isTauriApp = window.location.protocol === 'tauri:' || !!window.__TAURI__;
 
   console.log('🔍 URL Detection:', {
     protocol: window.location.protocol,
     hasTauriGlobal: !!window.__TAURI__,
     isTauriApp,
     isDev: import.meta.env.DEV,
-    mode: import.meta.env.MODE
+    mode: import.meta.env.MODE,
+    viteUrl: import.meta.env.VITE_POCKETBASE_URL
   });
 
   if (isTauriApp) {
     // Tauri desktop app
-    if (import.meta.env.DEV) {
+    if (import.meta.env.MODE === 'development') {
       // Development build: use localhost
+      console.log('📺 Using development PocketBase URL');
       return 'http://localhost:8090';
     } else {
       // Production build: use production server
-      return import.meta.env.VITE_POCKETBASE_URL || 'https://trivia.azabab.com';
+      const url = import.meta.env.VITE_POCKETBASE_URL || 'https://trivia.azabab.com';
+      console.log('📺 Using production PocketBase URL:', url);
+      return url;
     }
   }
 
