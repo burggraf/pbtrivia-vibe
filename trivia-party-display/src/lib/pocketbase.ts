@@ -2,7 +2,18 @@ import PocketBase from 'pocketbase';
 
 function getPocketBaseUrl(): string {
   // Check if running in Tauri (desktop app)
-  if (window.__TAURI__) {
+  // window.location.protocol will be "tauri:" in Tauri apps
+  const isTauriApp = window.location.protocol === 'tauri:' || window.__TAURI__;
+
+  console.log('🔍 URL Detection:', {
+    protocol: window.location.protocol,
+    hasTauriGlobal: !!window.__TAURI__,
+    isTauriApp,
+    isDev: import.meta.env.DEV,
+    mode: import.meta.env.MODE
+  });
+
+  if (isTauriApp) {
     // Tauri desktop app
     if (import.meta.env.DEV) {
       // Development build: use localhost
@@ -42,4 +53,6 @@ const pb = new PocketBase(pbUrl);
 // Disable auto-cancellation for better experience in React
 pb.autoCancellation(false);
 
+// Export both the client and the URL
 export default pb;
+export { pbUrl };
