@@ -250,6 +250,16 @@ export function DisplayProvider({ children }: { children: ReactNode }) {
           isAbort: pbError.isAbort,
           originalError: pbError.originalError
         })
+
+        // If we get a 400 (Bad Request) on authentication, clear credentials
+        // This happens when cached credentials are invalid for the current server
+        if (errorCode === 400) {
+          console.log('🧹 Clearing invalid credentials due to 400 error')
+          localStorage.removeItem(STORAGE_KEYS.DISPLAY_ID)
+          localStorage.removeItem(STORAGE_KEYS.DISPLAY_PASSWORD)
+          // Also clear the stored URL so the URL change detection works next time
+          localStorage.removeItem('pbUrl')
+        }
       }
 
       setError(`Failed to initialize display: ${errorMessage} (${errorCode}). Retrying...`)
