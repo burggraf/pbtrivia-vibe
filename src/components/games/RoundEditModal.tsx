@@ -144,33 +144,37 @@ export default function RoundEditModal({ round, isOpen, onClose, onSave, onDelet
                   required
                 />
               </div>
-              <div className="grid grid-cols-4 items-center gap-4">
-                <Label htmlFor="question_count" className="text-right">
-                  Question Count
-                </Label>
-                <Input
-                  id="question_count"
-                  type="number"
-                  min="1"
-                  value={formData.question_count}
-                  onChange={(e) => handleInputChange('question_count', parseInt(e.target.value))}
-                  className="col-span-3"
-                  required
-                />
-              </div>
-              <div className="grid grid-cols-4 items-center gap-4">
-                <Label htmlFor="sequence_number" className="text-right">
-                  Sequence
-                </Label>
-                <Input
-                  id="sequence_number"
-                  type="number"
-                  min="1"
-                  value={formData.sequence_number}
-                  onChange={(e) => handleInputChange('sequence_number', parseInt(e.target.value))}
-                  className="col-span-3"
-                  required
-                />
+              <div className="flex items-center gap-4">
+                <div className="flex items-center gap-2 flex-1">
+                  <Label htmlFor="question_count" className="whitespace-nowrap">
+                    Question Count
+                  </Label>
+                  <Input
+                    id="question_count"
+                    type="number"
+                    min="1"
+                    max="999"
+                    value={formData.question_count}
+                    onChange={(e) => handleInputChange('question_count', parseInt(e.target.value))}
+                    className="w-16"
+                    required
+                  />
+                </div>
+                <div className="flex items-center gap-2 flex-1">
+                  <Label htmlFor="sequence_number" className="whitespace-nowrap">
+                    Sequence
+                  </Label>
+                  <Input
+                    id="sequence_number"
+                    type="number"
+                    min="1"
+                    max="999"
+                    value={formData.sequence_number}
+                    onChange={(e) => handleInputChange('sequence_number', parseInt(e.target.value))}
+                    className="w-16"
+                    required
+                  />
+                </div>
               </div>
             </div>
 
