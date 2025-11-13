@@ -49,7 +49,7 @@ export default function TimersAccordion({ timers, onTimersChange, onCopyFromPrev
             <Switch
               id="auto_reveal"
               checked={timers.auto_reveal_on_all_answered ?? false}
-              onCheckedChange={(checked) => {
+              onCheckedChange={(checked: boolean) => {
                 onTimersChange({
                   ...timers,
                   auto_reveal_on_all_answered: checked
