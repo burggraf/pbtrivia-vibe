@@ -413,24 +413,22 @@ export default function GameEditModal({ game, isOpen, onClose, onSave, onDelete,
                   </AccordionItem>
                 )}
 
-                {/* Timers Section - Create mode only */}
-                {!isEdit && (
-                  <TimersAccordion
-                    timers={{
-                      question_timer: 'question_timer' in formData ? formData.question_timer : null,
-                      answer_timer: 'answer_timer' in formData ? formData.answer_timer : null,
-                      game_start_timer: 'game_start_timer' in formData ? formData.game_start_timer : null,
-                      round_start_timer: 'round_start_timer' in formData ? formData.round_start_timer : null,
-                      round_end_timer: 'round_end_timer' in formData ? formData.round_end_timer : null,
-                      game_end_timer: 'game_end_timer' in formData ? formData.game_end_timer : null,
-                      thanks_timer: 'thanks_timer' in formData ? formData.thanks_timer : null
-                    }}
-                    onTimersChange={(timers) => {
-                      setFormData(prev => ({ ...prev, ...timers }))
-                    }}
-                    onCopyFromPrevious={handleCopyTimersFromPreviousGame}
-                  />
-                )}
+                {/* Timers Section */}
+                <TimersAccordion
+                  timers={{
+                    question_timer: 'question_timer' in formData ? formData.question_timer : null,
+                    answer_timer: 'answer_timer' in formData ? formData.answer_timer : null,
+                    game_start_timer: 'game_start_timer' in formData ? formData.game_start_timer : null,
+                    round_start_timer: 'round_start_timer' in formData ? formData.round_start_timer : null,
+                    round_end_timer: 'round_end_timer' in formData ? formData.round_end_timer : null,
+                    game_end_timer: 'game_end_timer' in formData ? formData.game_end_timer : null,
+                    thanks_timer: 'thanks_timer' in formData ? formData.thanks_timer : null
+                  }}
+                  onTimersChange={(timers) => {
+                    setFormData(prev => ({ ...prev, ...timers }))
+                  }}
+                  onCopyFromPrevious={handleCopyTimersFromPreviousGame}
+                />
               </Accordion>
             </div>
             <DialogFooter>
