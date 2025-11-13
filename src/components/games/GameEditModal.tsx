@@ -11,6 +11,7 @@ import { gamesService } from '@/lib/games'
 import { Checkbox } from '@/components/ui/checkbox'
 import { getAvailableCategories } from '@/components/ui/CategoryIcon'
 import CategoryIcon from '@/components/ui/CategoryIcon'
+import TimersAccordion from './TimersAccordion'
 
 interface GameEditModalProps {
   game: Game | null
@@ -412,155 +413,22 @@ export default function GameEditModal({ game, isOpen, onClose, onSave, onDelete,
                   </AccordionItem>
                 )}
 
-                {/* Timers Section - Create mode only */}
-                {!isEdit && (
-                  <AccordionItem value="timers">
-                    <AccordionTrigger className="text-base font-semibold">
-                      Timers
-                    </AccordionTrigger>
-                    <AccordionContent>
-                      <div className="grid gap-4 pt-4">
-                        {/* Timer Inputs - 3 columns on large screens, 2 on medium, 1 on mobile */}
-                        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-                          {/* Question Timer */}
-                          <div className="space-y-2">
-                            <Label htmlFor="question_timer" className="text-sm font-medium">
-                              Question
-                            </Label>
-                            <Input
-                              id="question_timer"
-                              type="number"
-                              min="0"
-                              max="300"
-                              value={('question_timer' in formData ? formData.question_timer : null) ?? ''}
-                              onChange={(e) => handleInputChange('question_timer', e.target.value ? parseInt(e.target.value) : null)}
-                              placeholder="No limit"
-                              className="w-32"
-                            />
-                          </div>
-
-                          {/* Answer Display Timer */}
-                          <div className="space-y-2">
-                            <Label htmlFor="answer_timer" className="text-sm font-medium">
-                              Answer Display
-                            </Label>
-                            <Input
-                              id="answer_timer"
-                              type="number"
-                              min="0"
-                              max="600"
-                              value={('answer_timer' in formData ? formData.answer_timer : null) ?? ''}
-                              onChange={(e) => handleInputChange('answer_timer', e.target.value ? parseInt(e.target.value) : null)}
-                              placeholder="No limit"
-                              className="w-32"
-                            />
-                          </div>
-
-                          {/* Round Start Timer */}
-                          <div className="space-y-2">
-                            <Label htmlFor="round_start_timer" className="text-sm font-medium">
-                              Round Start
-                            </Label>
-                            <Input
-                              id="round_start_timer"
-                              type="number"
-                              min="0"
-                              max="600"
-                              value={('round_start_timer' in formData ? formData.round_start_timer : null) ?? ''}
-                              onChange={(e) => handleInputChange('round_start_timer', e.target.value ? parseInt(e.target.value) : null)}
-                              placeholder="No limit"
-                              className="w-32"
-                            />
-                          </div>
-
-                          {/* Round End Timer */}
-                          <div className="space-y-2">
-                            <Label htmlFor="round_end_timer" className="text-sm font-medium">
-                              Round End
-                            </Label>
-                            <Input
-                              id="round_end_timer"
-                              type="number"
-                              min="0"
-                              max="600"
-                              value={('round_end_timer' in formData ? formData.round_end_timer : null) ?? ''}
-                              onChange={(e) => handleInputChange('round_end_timer', e.target.value ? parseInt(e.target.value) : null)}
-                              placeholder="No limit"
-                              className="w-32"
-                            />
-                          </div>
-
-                          {/* Game Start Timer */}
-                          <div className="space-y-2">
-                            <Label htmlFor="game_start_timer" className="text-sm font-medium">
-                              Game Start
-                            </Label>
-                            <Input
-                              id="game_start_timer"
-                              type="number"
-                              min="0"
-                              max="600"
-                              value={('game_start_timer' in formData ? formData.game_start_timer : null) ?? ''}
-                              onChange={(e) => handleInputChange('game_start_timer', e.target.value ? parseInt(e.target.value) : null)}
-                              placeholder="No limit"
-                              className="w-32"
-                            />
-                          </div>
-
-                          {/* Game End Timer */}
-                          <div className="space-y-2">
-                            <Label htmlFor="game_end_timer" className="text-sm font-medium">
-                              Game End
-                            </Label>
-                            <Input
-                              id="game_end_timer"
-                              type="number"
-                              min="0"
-                              max="600"
-                              value={('game_end_timer' in formData ? formData.game_end_timer : null) ?? ''}
-                              onChange={(e) => handleInputChange('game_end_timer', e.target.value ? parseInt(e.target.value) : null)}
-                              placeholder="No limit"
-                              className="w-32"
-                            />
-                          </div>
-
-                          {/* Thanks Screen Timer */}
-                          <div className="space-y-2 lg:col-span-3">
-                            <Label htmlFor="thanks_timer" className="text-sm font-medium">
-                              Thanks Screen
-                            </Label>
-                            <div className="flex items-center gap-2 lg:grid lg:grid-cols-3 lg:gap-4">
-                              <Input
-                                id="thanks_timer"
-                                type="number"
-                                min="0"
-                                max="600"
-                                value={('thanks_timer' in formData ? formData.thanks_timer : null) ?? ''}
-                                onChange={(e) => handleInputChange('thanks_timer', e.target.value ? parseInt(e.target.value) : null)}
-                                placeholder="No limit"
-                                className="w-32"
-                              />
-                              <Button
-                                type="button"
-                                variant="outline"
-                                size="sm"
-                                onClick={handleCopyTimersFromPreviousGame}
-                                className="text-xs whitespace-nowrap lg:col-start-2"
-                              >
-                                Copy from Previous Game
-                              </Button>
-                            </div>
-                          </div>
-                        </div>
-
-                        {/* Helper Note */}
-                        <p className="text-xs text-slate-500 italic mt-2">
-                          Leave blank or enter 0 for no time limit (manual advance)
-                        </p>
-                      </div>
-                    </AccordionContent>
-                  </AccordionItem>
-                )}
+                {/* Timers Section */}
+                <TimersAccordion
+                  timers={{
+                    question_timer: 'question_timer' in formData ? formData.question_timer : null,
+                    answer_timer: 'answer_timer' in formData ? formData.answer_timer : null,
+                    game_start_timer: 'game_start_timer' in formData ? formData.game_start_timer : null,
+                    round_start_timer: 'round_start_timer' in formData ? formData.round_start_timer : null,
+                    round_end_timer: 'round_end_timer' in formData ? formData.round_end_timer : null,
+                    game_end_timer: 'game_end_timer' in formData ? formData.game_end_timer : null,
+                    thanks_timer: 'thanks_timer' in formData ? formData.thanks_timer : null
+                  }}
+                  onTimersChange={(timers) => {
+                    setFormData(prev => ({ ...prev, ...timers }))
+                  }}
+                  onCopyFromPrevious={handleCopyTimersFromPreviousGame}
+                />
               </Accordion>
             </div>
             <DialogFooter>
