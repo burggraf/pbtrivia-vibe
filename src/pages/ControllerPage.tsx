@@ -315,13 +315,10 @@ export default function ControllerPage() {
 
       // If all answered and no early-advance timer exists yet and timer not paused
       if (teamsAnswered >= teamsWithPlayers && !gameData.timer?.isEarlyAdvance && !gameData.timer?.isPaused) {
-        // Only trigger early advance if timers are configured
-        const hasTimersConfigured = game?.metadata && (
-          (game.metadata.question_timer && game.metadata.question_timer > 0) ||
-          (game.metadata.answer_timer && game.metadata.answer_timer > 0)
-        )
+        // Check if auto-reveal setting is enabled
+        const autoRevealEnabled = game?.metadata?.auto_reveal_on_all_answered ?? false
 
-        if (hasTimersConfigured) {
+        if (autoRevealEnabled) {
           // Check remaining time on question timer
           const questionTimerExpiresAt = gameData.timer?.expiresAt
           const remainingMs = questionTimerExpiresAt
@@ -350,7 +347,7 @@ export default function ControllerPage() {
             console.log('👥 All teams answered with ≤3s remaining, letting timer expire naturally')
           }
         } else {
-          console.log('🎉 All teams answered! Waiting for manual advance (no timers configured)')
+          console.log('👥 All teams answered! Waiting for manual advance (auto-reveal disabled)')
         }
       }
     }, { filter: `game = "${id}"` })
