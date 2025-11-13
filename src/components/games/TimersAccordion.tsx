@@ -1,6 +1,7 @@
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Button } from '@/components/ui/button'
+import { Switch } from '@/components/ui/switch'
 import { AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion'
 
 export interface TimerValues {
@@ -11,6 +12,7 @@ export interface TimerValues {
   round_end_timer?: number | null;
   game_end_timer?: number | null;
   thanks_timer?: number | null;
+  auto_reveal_on_all_answered?: boolean;
 }
 
 interface TimersAccordionProps {
@@ -34,6 +36,28 @@ export default function TimersAccordion({ timers, onTimersChange, onCopyFromPrev
       </AccordionTrigger>
       <AccordionContent>
         <div className="grid gap-4 pt-4">
+          {/* Auto-reveal setting - appears first */}
+          <div className="flex items-center justify-between p-3 bg-slate-50 dark:bg-slate-800/50 rounded-md">
+            <div className="flex-1">
+              <Label htmlFor="auto_reveal" className="text-sm font-medium cursor-pointer">
+                Automatically reveal answer when all teams have answered
+              </Label>
+              <p className="text-xs text-slate-500 mt-1">
+                Shows 3-second notification then advances to answer reveal
+              </p>
+            </div>
+            <Switch
+              id="auto_reveal"
+              checked={timers.auto_reveal_on_all_answered ?? false}
+              onCheckedChange={(checked) => {
+                onTimersChange({
+                  ...timers,
+                  auto_reveal_on_all_answered: checked
+                })
+              }}
+            />
+          </div>
+
           {/* Timer Inputs - 3 columns on large screens, 2 on medium, 1 on mobile */}
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
             {/* Question Timer */}
