@@ -26,6 +26,9 @@ export interface GameMetadata {
   round_end_timer?: number | null;       // round-end state
   game_end_timer?: number | null;        // game-end state
   thanks_timer?: number | null;          // thanks state
+
+  // Auto-reveal behavior
+  auto_reveal_on_all_answered?: boolean; // Automatically reveal when all teams answer
 }
 
 export interface Game {
