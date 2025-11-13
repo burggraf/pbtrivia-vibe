@@ -36,6 +36,7 @@ export default function GameEditModal({ game, isOpen, onClose, onSave, onDelete,
     round_end_timer?: number | null;
     game_end_timer?: number | null;
     thanks_timer?: number | null;
+    auto_reveal_on_all_answered?: boolean;
   }>({
     name: '',
     startdate: '',
@@ -50,7 +51,8 @@ export default function GameEditModal({ game, isOpen, onClose, onSave, onDelete,
     round_start_timer: null,
     round_end_timer: null,
     game_end_timer: null,
-    thanks_timer: null
+    thanks_timer: null,
+    auto_reveal_on_all_answered: false
   })
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false)
 
@@ -72,7 +74,8 @@ export default function GameEditModal({ game, isOpen, onClose, onSave, onDelete,
         round_start_timer: game.metadata?.round_start_timer || null,
         round_end_timer: game.metadata?.round_end_timer || null,
         game_end_timer: game.metadata?.game_end_timer || null,
-        thanks_timer: game.metadata?.thanks_timer || null
+        thanks_timer: game.metadata?.thanks_timer || null,
+        auto_reveal_on_all_answered: game.metadata?.auto_reveal_on_all_answered ?? false
       })
     } else {
       // Calculate smart default start date/time
@@ -111,7 +114,8 @@ export default function GameEditModal({ game, isOpen, onClose, onSave, onDelete,
         round_start_timer: null,
         round_end_timer: null,
         game_end_timer: null,
-        thanks_timer: null
+        thanks_timer: null,
+        auto_reveal_on_all_answered: false
       })
     }
   }, [game])
@@ -127,7 +131,8 @@ export default function GameEditModal({ game, isOpen, onClose, onSave, onDelete,
       round_start_timer: ('round_start_timer' in formData ? formData.round_start_timer : null) || null,
       round_end_timer: ('round_end_timer' in formData ? formData.round_end_timer : null) || null,
       game_end_timer: ('game_end_timer' in formData ? formData.game_end_timer : null) || null,
-      thanks_timer: ('thanks_timer' in formData ? formData.thanks_timer : null) || null
+      thanks_timer: ('thanks_timer' in formData ? formData.thanks_timer : null) || null,
+      auto_reveal_on_all_answered: ('auto_reveal_on_all_answered' in formData ? formData.auto_reveal_on_all_answered : false)
     }
 
     const submitData = {
@@ -142,8 +147,9 @@ export default function GameEditModal({ game, isOpen, onClose, onSave, onDelete,
 
   const handleInputChange = (
     field: keyof (UpdateGameData | CreateGameData) | 'rounds' | 'questionsPerRound' | 'categories' |
-           'question_timer' | 'answer_timer' | 'game_start_timer' | 'round_start_timer' | 'round_end_timer' | 'game_end_timer' | 'thanks_timer',
-    value: string | number | string[] | null | undefined
+           'question_timer' | 'answer_timer' | 'game_start_timer' | 'round_start_timer' | 'round_end_timer' | 'game_end_timer' | 'thanks_timer' |
+           'auto_reveal_on_all_answered',
+    value: string | number | string[] | null | undefined | boolean
   ) => {
     setFormData(prev => ({ ...prev, [field]: value }))
   }
@@ -226,7 +232,8 @@ export default function GameEditModal({ game, isOpen, onClose, onSave, onDelete,
         round_start_timer: previousGameWithTimers.metadata?.round_start_timer || null,
         round_end_timer: previousGameWithTimers.metadata?.round_end_timer || null,
         game_end_timer: previousGameWithTimers.metadata?.game_end_timer || null,
-        thanks_timer: previousGameWithTimers.metadata?.thanks_timer || null
+        thanks_timer: previousGameWithTimers.metadata?.thanks_timer || null,
+        auto_reveal_on_all_answered: previousGameWithTimers.metadata?.auto_reveal_on_all_answered ?? false
       }))
 
       toast({
@@ -422,7 +429,8 @@ export default function GameEditModal({ game, isOpen, onClose, onSave, onDelete,
                     round_start_timer: 'round_start_timer' in formData ? formData.round_start_timer : null,
                     round_end_timer: 'round_end_timer' in formData ? formData.round_end_timer : null,
                     game_end_timer: 'game_end_timer' in formData ? formData.game_end_timer : null,
-                    thanks_timer: 'thanks_timer' in formData ? formData.thanks_timer : null
+                    thanks_timer: 'thanks_timer' in formData ? formData.thanks_timer : null,
+                    auto_reveal_on_all_answered: 'auto_reveal_on_all_answered' in formData ? formData.auto_reveal_on_all_answered : false
                   }}
                   onTimersChange={(timers) => {
                     setFormData(prev => ({ ...prev, ...timers }))
