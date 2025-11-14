@@ -13,13 +13,13 @@ interface TextSizeContextType {
 }
 
 const TextSizeContext = createContext<TextSizeContextType>({
-  textSize: 'medium', // Default to medium for TV display
+  textSize: 'normal', // Default to normal for TV display
   setTextSize: () => {},
 })
 
 export function TextSizeProvider({ children }: { children: ReactNode }) {
   return (
-    <TextSizeContext.Provider value={{ textSize: 'medium', setTextSize: () => {} }}>
+    <TextSizeContext.Provider value={{ textSize: 'normal', setTextSize: () => {} }}>
       {children}
     </TextSizeContext.Provider>
   )

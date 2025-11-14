@@ -31,12 +31,12 @@ export function CodeDisplay() {
       {/* Main content - centered */}
       <div className="flex flex-col items-center gap-8">
         {/* Large code */}
-        <div className="text-[72px] font-bold text-slate-900 dark:text-slate-100 tracking-wider">
+        <div className="text-[60px] font-bold text-slate-900 dark:text-slate-100 tracking-wider">
           {code}
         </div>
 
         {/* Instructions */}
-        <p className="text-[18px] text-slate-700 dark:text-slate-300 text-center max-w-3xl">
+        <p className="text-[16px] text-slate-700 dark:text-slate-300 text-center max-w-3xl">
           Enter this code in the controller to connect to this display
         </p>
       </div>
