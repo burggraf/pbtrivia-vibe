@@ -8,6 +8,7 @@ import { Input } from '@/components/ui/input'
 import AppHeader from '@/components/ui/AppHeader'
 import TeamSelectionModal from '@/components/games/TeamSelectionModal'
 import { gamesService, gameTeamsService, gamePlayersService } from '@/lib/games'
+import { Game } from '@/types/games'
 import pb from '@/lib/pocketbase'
 
 export default function LobbyPage() {
@@ -18,11 +19,26 @@ export default function LobbyPage() {
   const [currentGame, setCurrentGame] = useState<any>(null)
   const [error, setError] = useState('')
   const [profileModalOpen, setProfileModalOpen] = useState(false)
+  const [activeGames, setActiveGames] = useState<Game[]>([])
   const inputRef = useRef<HTMLInputElement>(null)
 
   useEffect(() => {
     inputRef.current?.focus()
   }, [])
+
+  useEffect(() => {
+    const loadActiveGames = async () => {
+      if (!pb.authStore.model?.id) return
+
+      const games = await gamePlayersService.getActiveGamesForPlayer(pb.authStore.model.id)
+      setActiveGames(games)
+    }
+
+    loadActiveGames()
+  }, [])
+
+  // Temporary: activeGames will be used in Task 4 UI rendering
+  void activeGames
 
   const handleClearCode = () => {
     setGameCode('')
