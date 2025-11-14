@@ -1,31 +1,28 @@
 import PocketBase from 'pocketbase';
 
 function getPocketBaseUrl(): string {
-  // Check if running in Tauri (desktop app)
-  // window.location.protocol will be "tauri:" in Tauri apps
-  const isTauriApp = window.location.protocol === 'tauri:' || !!window.__TAURI__;
+  // Check if running in Tauri (desktop/mobile app)
+  // Check multiple indicators: protocol, __TAURI__, and __TAURI_INTERNALS__
+  const isTauriApp = window.location.protocol === 'tauri:' ||
+                     !!window.__TAURI__ ||
+                     !!(window as any).__TAURI_INTERNALS__;
 
-  console.log('🔍 URL Detection:', {
+  console.log('🔍 URL Detection:', JSON.stringify({
     protocol: window.location.protocol,
     hasTauriGlobal: !!window.__TAURI__,
+    hasTauriInternals: !!(window as any).__TAURI_INTERNALS__,
     isTauriApp,
     isDev: import.meta.env.DEV,
     mode: import.meta.env.MODE,
     viteUrl: import.meta.env.VITE_POCKETBASE_URL
-  });
+  }));
 
   if (isTauriApp) {
-    // Tauri desktop app
-    if (import.meta.env.MODE === 'development') {
-      // Development build: use localhost
-      console.log('📺 Using development PocketBase URL');
-      return 'http://localhost:8090';
-    } else {
-      // Production build: use production server
-      const url = import.meta.env.VITE_POCKETBASE_URL || 'https://trivia.azabab.com';
-      console.log('📺 Using production PocketBase URL:', url);
-      return url;
-    }
+    // Tauri desktop app - TEMPORARILY FORCING PRODUCTION URL FOR ANDROID
+    // TODO: Revert this after Android TV testing
+    const url = import.meta.env.VITE_POCKETBASE_URL || 'https://trivia.azabab.com';
+    console.log('📺 Using production PocketBase URL:', url);
+    return url;
   }
 
   // Web app: Auto-detect PocketBase URL based on current page

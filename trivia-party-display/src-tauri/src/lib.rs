@@ -1,5 +1,5 @@
-use tauri::Manager;
-
+// Monitor commands only available on desktop platforms
+#[cfg(not(any(target_os = "android", target_os = "ios")))]
 #[tauri::command]
 fn get_available_monitors(window: tauri::Window) -> Result<Vec<MonitorInfo>, String> {
     let monitors = window
@@ -17,6 +17,7 @@ fn get_available_monitors(window: tauri::Window) -> Result<Vec<MonitorInfo>, Str
         .collect())
 }
 
+#[cfg(not(any(target_os = "android", target_os = "ios")))]
 #[tauri::command]
 fn move_to_monitor(window: tauri::Window, monitor_name: String) -> Result<(), String> {
     let monitors = window
@@ -36,6 +37,7 @@ fn move_to_monitor(window: tauri::Window, monitor_name: String) -> Result<(), St
     Ok(())
 }
 
+#[cfg(not(any(target_os = "android", target_os = "ios")))]
 #[derive(serde::Serialize)]
 struct MonitorInfo {
     name: String,
@@ -164,10 +166,17 @@ fn setup_desktop_menu(app: &mut tauri::App) -> Result<(), Box<dyn std::error::Er
 
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
-  tauri::Builder::default()
+  let mut builder = tauri::Builder::default()
     .plugin(tauri_plugin_updater::Builder::new().build())
-    .plugin(tauri_plugin_process::init())
-    .invoke_handler(tauri::generate_handler![get_available_monitors, move_to_monitor])
+    .plugin(tauri_plugin_process::init());
+
+  // Register monitor commands only on desktop platforms
+  #[cfg(not(any(target_os = "android", target_os = "ios")))]
+  {
+    builder = builder.invoke_handler(tauri::generate_handler![get_available_monitors, move_to_monitor]);
+  }
+
+  builder
     .setup(|app| {
       if cfg!(debug_assertions) {
         app.handle().plugin(
