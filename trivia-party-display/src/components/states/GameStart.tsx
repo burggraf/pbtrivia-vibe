@@ -14,9 +14,10 @@ interface GameStartProps {
   currentTeamId?: string | null
   onChangeTeam?: () => void
   gameCode?: string
+  gameName?: string
 }
 
-export default function GameStart({ gameData: _gameData, gameId, gameStatus, currentTeamId, onChangeTeam, gameCode }: GameStartProps) {
+export default function GameStart({ gameData: _gameData, gameId, gameStatus, currentTeamId, onChangeTeam, gameCode, gameName }: GameStartProps) {
   const [isChangingTeam, setIsChangingTeam] = useState(false)
 
   const handleChangeTeam = async () => {
@@ -58,10 +59,10 @@ export default function GameStart({ gameData: _gameData, gameId, gameStatus, cur
   return (
     <div className="text-center mb-4 md:mb-8">
       <h2 className="text-2xl md:text-3xl font-bold text-slate-800 dark:text-slate-100 mb-4">
-        Welcome to Trivia!
+        Welcome to Trivia Party!
       </h2>
       <p className="text-base md:text-lg text-slate-600 dark:text-slate-400 font-medium mb-3">
-        Get ready to play!
+        {gameName || 'Get ready to play!'}
       </p>
 
       {gameCode && (

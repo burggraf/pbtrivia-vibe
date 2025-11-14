@@ -43,6 +43,7 @@ export function GameDisplay() {
             gameId={gameRecord.id}
             gameStatus={gameRecord.status}
             gameCode={gameRecord.code}
+            gameName={gameRecord.name}
           />
         )}
         {state === 'round-start' && (
