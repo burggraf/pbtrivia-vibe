@@ -55,7 +55,13 @@ This is a trivia game application built with React + TypeScript frontend and Poc
 
 The **display app** (also called **display screen**) is a separate standalone application located in `./trivia-party-display/` with its own `package.json`. It is used for presenting the game on a shared screen/projector during gameplay.
 
-**Technology:** Built with Tauri 2.0 for native macOS distribution (Windows/Android TV/Apple TV planned).
+**Technology:** Built with Tauri 2.0 for native distribution across multiple platforms.
+
+**Supported Platforms:**
+- **macOS** - Native .dmg installer with menu bar and multi-monitor support
+- **Android TV** - APK with fullscreen display and remote control support
+- **Windows** - Planned (same codebase, Windows-specific build)
+- **Apple TV** - Planned (requires tvOS target configuration)
 
 **Key Features:**
 - Native macOS application (not browser-based)
@@ -76,6 +82,19 @@ pnpm tauri:dev
 cd trivia-party-display
 pnpm tauri:build
 ```
+
+**Android TV Development:**
+```bash
+cd trivia-party-display
+pnpm tauri:android:init     # One-time setup
+pnpm tauri:android:dev      # Deploy to device/emulator
+pnpm tauri:android:build    # Production build
+```
+
+**Platform Differences:**
+- **macOS**: Menu bar (File, View), window decorations, resizable window
+- **Android TV**: No menu bar, fullscreen by default, back button exits app
+- **Code**: Single React codebase with runtime platform detection
 
 See `trivia-party-display/BUILD.md` for detailed build instructions.
 
