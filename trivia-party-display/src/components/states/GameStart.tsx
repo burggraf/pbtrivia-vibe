@@ -57,27 +57,27 @@ export default function GameStart({ gameData: _gameData, gameId, gameStatus, cur
 
   return (
     <div className="text-center mb-4 md:mb-8">
-      <h2 className="text-4xl md:text-5xl font-bold text-slate-800 dark:text-slate-100 mb-6">
+      <h2 className="text-2xl md:text-3xl font-bold text-slate-800 dark:text-slate-100 mb-4">
         Welcome to Trivia!
       </h2>
-      <p className="text-xl text-slate-600 dark:text-slate-400 font-medium mb-4">
+      <p className="text-base md:text-lg text-slate-600 dark:text-slate-400 font-medium mb-3">
         Get ready to play!
       </p>
 
       {gameCode && (
-        <div className="mb-8">
-          <p className="text-2xl text-slate-700 dark:text-slate-300 mb-6">
-            Game Code: <span className="font-mono font-bold text-3xl">{gameCode}</span>
+        <div className="mb-6">
+          <p className="text-lg md:text-xl text-slate-700 dark:text-slate-300 mb-4">
+            Game Code: <span className="font-mono font-bold text-xl md:text-2xl">{gameCode}</span>
           </p>
-          <div className="flex justify-center mb-6">
-            <div className="bg-white p-6 rounded-lg shadow-lg">
+          <div className="flex justify-center mb-4">
+            <div className="bg-white p-4 rounded-lg shadow-lg">
               <QRCode
                 value={`${getMainAppUrl()}/join?code=${gameCode}`}
-                size={300}
+                size={256}
                 level="M"
                 aria-label={`QR code to join game ${gameCode}`}
               />
-              <p className="text-center text-lg text-slate-600 dark:text-slate-700 mt-4">
+              <p className="text-center text-base text-slate-600 dark:text-slate-700 mt-3">
                 Scan to join
               </p>
             </div>
