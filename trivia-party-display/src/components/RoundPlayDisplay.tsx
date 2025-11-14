@@ -184,24 +184,22 @@ export default function RoundPlayDisplay({ gameData, mode = 'controller', onAnsw
   const questionNumber = gameData.question?.question_number || 1
 
   return (
-    <div className="text-center mb-8">
-      {/* Round Progress - Consistent header showing round and question info */}
-      <div className="mb-4 md:mb-6">
-        <h2 className="text-lg md:text-2xl font-bold text-slate-800 dark:text-slate-100 mb-2">
+    <div className="text-center mb-4">
+      {/* Single line header: category - title - difficulty */}
+      <div className="flex items-center justify-between mb-2 px-2">
+        <Badge variant="secondary" className="text-xs px-2 py-0.5">
+          {gameData.question.category}
+        </Badge>
+        <h2 className="text-xs md:text-sm font-bold text-slate-800 dark:text-slate-100">
           Round {roundNumber} of {totalRounds} - Question {questionNumber}
         </h2>
-        <div className="flex flex-row items-center justify-between px-4">
-          <Badge variant="secondary" className="text-xs md:text-sm px-2 py-1 md:px-3 md:py-1">
-            {gameData.question.category}
-          </Badge>
-          <Badge variant="outline" className="text-xs md:text-sm px-2 py-1 md:px-3 md:py-1">
-            {gameData.question.difficulty}
-          </Badge>
-        </div>
+        <Badge variant="outline" className="text-xs px-2 py-0.5">
+          {gameData.question.difficulty}
+        </Badge>
       </div>
 
       {/* Question Card */}
-      <Card className="max-w-3xl mx-auto mb-4 md:mb-6">
+      <Card className="max-w-3xl mx-auto mb-2 md:mb-3">
         <CardHeader>
           <CardTitle className={textSizeClasses.question}>
             {gameData.question.question}

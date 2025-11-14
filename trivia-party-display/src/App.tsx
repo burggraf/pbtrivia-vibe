@@ -1,4 +1,4 @@
-import { useEffect } from 'react'
+import { useEffect, useState } from 'react'
 import { listen } from '@tauri-apps/api/event'
 import { exit } from '@tauri-apps/plugin-process'
 import { DisplayProvider, useDisplay } from '@/contexts/DisplayContext'
@@ -6,10 +6,24 @@ import { CodeDisplay } from '@/components/CodeDisplay'
 import { GameDisplay } from '@/components/GameDisplay'
 import { ErrorBanner } from '@/components/ErrorBanner'
 import { UpdateNotification } from './components/UpdateNotification'
+import { TextSizeTest } from '@/components/TextSizeTest'
+import { TextSizeProvider } from '@/contexts/TextSizeContext'
 import { isAndroid } from '@/lib/platform'
 
 function AppContent() {
   const { currentScreen, error, clearError, initialize } = useDisplay()
+  // TEMPORARY: Force test mode to be on for font size testing
+  const [isTestMode] = useState(false)
+
+  // Check for test mode in URL hash
+  // useEffect(() => {
+  //   const checkTestMode = () => {
+  //     setIsTestMode(window.location.hash === '#test')
+  //   }
+  //   checkTestMode()
+  //   window.addEventListener('hashchange', checkTestMode)
+  //   return () => window.removeEventListener('hashchange', checkTestMode)
+  // }, [])
 
   // Android TV: Back button exits app
   useEffect(() => {
@@ -36,6 +50,15 @@ function AppContent() {
       }
     };
   }, []);
+
+  // Show test mode if hash is #test
+  if (isTestMode) {
+    return (
+      <TextSizeProvider>
+        <TextSizeTest />
+      </TextSizeProvider>
+    )
+  }
 
   return (
     <>
