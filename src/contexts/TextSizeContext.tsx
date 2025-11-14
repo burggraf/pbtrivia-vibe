@@ -11,9 +11,9 @@ const TextSizeContext = createContext<TextSizeContextType | undefined>(undefined
 
 export function TextSizeProvider({ children }: { children: ReactNode }) {
   const [textSize, setTextSizeState] = useState<TextSize>(() => {
-    // Get text size from localStorage or default to 'small'
+    // Get text size from localStorage or default to 'xlarge'
     const stored = localStorage.getItem('textSize') as TextSize
-    return stored || 'small'
+    return stored || 'xlarge'
   })
 
   const setTextSize = (newSize: TextSize) => {
