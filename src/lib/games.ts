@@ -214,8 +214,7 @@ export const gamePlayersService = {
       // Query game_players where this player is registered
       const playerRecords = await pb.collection('game_players').getFullList({
         filter: `player = "${playerId}"`,
-        expand: 'game',
-        sort: '-game.startdate,-game.updated'
+        expand: 'game'
       });
 
       // Extract and filter games for ready/in-progress status
@@ -225,6 +224,25 @@ export const gamePlayersService = {
           game != null &&
           (game.status === 'ready' || game.status === 'in-progress')
         );
+
+      // Sort client-side: start_date (desc), then updated (desc)
+      games.sort((a, b) => {
+        // Compare start dates (newest first), treating null/undefined as oldest
+        const aStartDate = a.startdate ? new Date(a.startdate) : new Date('1970-01-01');
+        const bStartDate = b.startdate ? new Date(b.startdate) : new Date('1970-01-01');
+
+        if (aStartDate > bStartDate) return -1;
+        if (aStartDate < bStartDate) return 1;
+
+        // If start dates are equal, sort by updated (newest first)
+        const aUpdated = new Date(a.updated);
+        const bUpdated = new Date(b.updated);
+
+        if (aUpdated > bUpdated) return -1;
+        if (aUpdated < bUpdated) return 1;
+
+        return 0;
+      });
 
       return games;
     } catch (error) {
