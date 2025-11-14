@@ -22,6 +22,15 @@
         "center": true
       }
     ],
+    "android": {
+      "windows": [
+        {
+          "title": "Trivia Party Display",
+          "fullscreen": true,
+          "decorations": false
+        }
+      ]
+    },
     "security": {
       "csp": null
     }
@@ -48,6 +57,12 @@
       "frameworks": [],
       "exceptionDomain": ""
     }
+  },
+  "android": {
+    "minSdkVersion": 24,
+    "targetSdkVersion": 34,
+    "versionCode": 1,
+    "manifestXml": "\n      <application>\n        <intent-filter>\n          <action android:name=\"android.intent.action.MAIN\" />\n          <category android:name=\"android.intent.category.LEANBACK_LAUNCHER\" />\n        </intent-filter>\n      </application>\n    "
   },
   "plugins": {
     "updater": {
