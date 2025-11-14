@@ -129,3 +129,117 @@ Production build verified on Mon Nov 11 11:25:00 PST 2024
 3. **Update Signing**: Configure `TAURI_SIGNING_PRIVATE_KEY` for auto-update support
 4. **GitHub Release**: Upload DMG to GitHub Releases for distribution
 
+## Android TV Build
+
+### Prerequisites
+
+1. **Android SDK & NDK**
+   ```bash
+   # Install via Android Studio or command line tools
+   # Minimum SDK: 24 (Android 7.0)
+   # Target SDK: 34 (Android 14)
+   ```
+
+2. **Java JDK 17+**
+   ```bash
+   # macOS
+   brew install openjdk@17
+
+   # Verify
+   java -version
+   ```
+
+3. **Environment Variables**
+   ```bash
+   export ANDROID_HOME="$HOME/Library/Android/sdk"
+   export NDK_HOME="$ANDROID_HOME/ndk/[version]"
+   export PATH="$PATH:$ANDROID_HOME/platform-tools"
+   ```
+
+### One-Time Setup
+
+Initialize Android project:
+
+```bash
+cd trivia-party-display
+pnpm tauri:android:init
+```
+
+This creates Android project files in `src-tauri/gen/android/` (git-ignored).
+
+### Development Build
+
+**Option 1: Android TV Emulator**
+
+1. Create Android TV emulator in Android Studio (API 24+, 1080p)
+2. Start emulator
+3. Run dev build:
+   ```bash
+   pnpm tauri:android:dev
+   ```
+
+**Option 2: Physical Android TV Device**
+
+1. Enable Developer Mode on Android TV
+2. Enable ADB debugging
+3. Connect via ADB:
+   ```bash
+   adb connect <TV_IP_ADDRESS>:5555
+   ```
+4. Run dev build:
+   ```bash
+   pnpm tauri:android:dev
+   ```
+
+### Production Build
+
+**Build APK:**
+
+```bash
+pnpm tauri:android:build-apk
+```
+
+Output: `src-tauri/gen/android/app/build/outputs/apk/release/app-release.apk`
+
+**Build AAB (Google Play):**
+
+```bash
+pnpm tauri:android:build
+```
+
+Output: `src-tauri/gen/android/app/build/outputs/bundle/release/app-release.aab`
+
+### Platform Differences
+
+- **macOS**: Menu bar (File, View), window controls, Cmd+F fullscreen
+- **Android TV**: No menu bar, fullscreen by default, back button exits
+
+### Testing Checklist
+
+- [ ] App launches fullscreen
+- [ ] Code display renders correctly
+- [ ] Game display updates in real-time
+- [ ] Back button exits app
+- [ ] PocketBase connection works
+- [ ] All game states function correctly
+- [ ] No crashes during transitions
+
+### Troubleshooting
+
+**Error: "Android SDK not found"**
+- Set ANDROID_HOME environment variable
+- Install Android SDK via Android Studio
+
+**Error: "NDK not found"**
+- Install NDK via Android Studio SDK Manager
+- Set NDK_HOME environment variable
+
+**App won't deploy to device**
+- Check `adb devices` shows device
+- Enable Developer Mode and ADB on TV
+- Check TV and computer on same network
+
+**Back button doesn't work**
+- Verify Android event listener in App.tsx
+- Check console logs for "Android back button pressed"
+
