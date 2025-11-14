@@ -193,13 +193,38 @@ This creates Android project files in `src-tauri/gen/android/` (git-ignored).
 
 ### Production Build
 
-**Build APK:**
+**Signed Release APK (Recommended):**
+
+```bash
+pnpm run tauri:android:build-release
+```
+
+This script automatically:
+- Creates keystore if it doesn't exist (`~/.tauri/trivia-party-display.keystore`)
+- Adds signing configuration to build.gradle.kts
+- Builds signed release APK
+
+Output: `src-tauri/gen/android/app/build/outputs/apk/universal/release/app-universal-release.apk`
+
+**Custom Keystore Location:**
+
+Set environment variables before running the build:
+
+```bash
+export ANDROID_KEYSTORE_PATH="/path/to/your.keystore"
+export ANDROID_KEYSTORE_PASSWORD="your-store-password"
+export ANDROID_KEY_ALIAS="your-key-alias"
+export ANDROID_KEY_PASSWORD="your-key-password"
+pnpm run tauri:android:build-release
+```
+
+**Manual Build (Unsigned):**
 
 ```bash
 pnpm tauri:android:build-apk
 ```
 
-Output: `src-tauri/gen/android/app/build/outputs/apk/release/app-release.apk`
+Output: `src-tauri/gen/android/app/build/outputs/apk/universal/release/app-universal-release.apk`
 
 **Build AAB (Google Play):**
 

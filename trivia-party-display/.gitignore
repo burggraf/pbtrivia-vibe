@@ -20,6 +20,7 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
+*.bak
 
 # Logs
 *.log
@@ -31,3 +32,6 @@ pnpm-debug.log*
 # Android build artifacts
 *.apk
 *.idsig
+*.keystore
+*.jks
+key.properties

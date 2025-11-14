@@ -1,3 +1,5 @@
+use tauri::Manager;
+
 // Monitor commands only available on desktop platforms
 #[cfg(not(any(target_os = "android", target_os = "ios")))]
 #[tauri::command]
