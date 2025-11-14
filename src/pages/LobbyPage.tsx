@@ -37,9 +37,6 @@ export default function LobbyPage() {
     loadActiveGames()
   }, [])
 
-  // Temporary: activeGames will be used in Task 4 UI rendering
-  void activeGames
-
   const handleClearCode = () => {
     setGameCode('')
     setError('')
@@ -116,9 +113,6 @@ export default function LobbyPage() {
       return date.toLocaleDateString(undefined, { month: 'short', day: 'numeric' })
     }
   }
-
-  // Temporary: formatDate will be used in Task 4 UI rendering
-  void formatDate
 
   const handleTeamSelected = async (teamId: string | null, newTeamName?: string) => {
     if (!currentGame || !pb.authStore.model?.id) return
@@ -198,6 +192,36 @@ export default function LobbyPage() {
       />
 
       <div className="w-full max-w-4xl mx-auto px-6 py-4 md:p-6 lg:p-8">
+        {/* Active Games Section */}
+        {activeGames.length > 0 && (
+          <Card className="mx-4 sm:mx-auto max-w-sm mb-4 bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700">
+            <CardHeader className="pb-4">
+              <CardTitle className="text-xl font-bold text-slate-800 dark:text-slate-100">
+                Your Active Games
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="px-6 pb-6 space-y-3">
+              {activeGames.map(game => (
+                <div key={game.id} className="flex items-center justify-between p-3 bg-slate-50 dark:bg-slate-700 rounded-lg">
+                  <div className="flex-1">
+                    <h3 className="font-semibold text-slate-900 dark:text-slate-100">{game.name}</h3>
+                    <p className="text-sm text-slate-600 dark:text-slate-400">
+                      Code: {game.code}
+                      {game.startdate && ` • ${formatDate(game.startdate)}`}
+                    </p>
+                  </div>
+                  <Button
+                    onClick={() => navigate(`/game/${game.id}`)}
+                    size="sm"
+                    className="ml-3 bg-green-600 hover:bg-green-700 dark:bg-green-500 dark:hover:bg-green-600"
+                  >
+                    Rejoin
+                  </Button>
+                </div>
+              ))}
+            </CardContent>
+          </Card>
+        )}
 
       {/* Join Game Section */}
       <Card className="mx-4 sm:mx-auto max-w-sm bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700">
