@@ -208,6 +208,30 @@ export const gamePlayersService = {
       throw error;
     }
   },
+
+  async getActiveGamesForPlayer(playerId: string): Promise<Game[]> {
+    try {
+      // Query game_players where this player is registered
+      const playerRecords = await pb.collection('game_players').getFullList({
+        filter: `player = "${playerId}"`,
+        expand: 'game',
+        sort: '-game.startdate,-game.updated'
+      });
+
+      // Extract and filter games for ready/in-progress status
+      const games = playerRecords
+        .map(record => record.expand?.game)
+        .filter((game): game is Game =>
+          game != null &&
+          (game.status === 'ready' || game.status === 'in-progress')
+        );
+
+      return games;
+    } catch (error) {
+      console.error('Failed to fetch active games for player:', error);
+      return []; // Return empty array on error to avoid breaking UI
+    }
+  },
 };
 
 function generateGameCode(): string {
