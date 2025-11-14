@@ -3,6 +3,7 @@ import { Label } from '@/components/ui/label'
 import { Button } from '@/components/ui/button'
 import { Switch } from '@/components/ui/switch'
 import { AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion'
+import { Copy } from 'lucide-react'
 
 export interface TimerValues {
   question_timer?: number | null;
@@ -163,40 +164,42 @@ export default function TimersAccordion({ timers, onTimersChange, onCopyFromPrev
             </div>
 
             {/* Thanks Screen Timer */}
-            <div className="space-y-2 lg:col-span-3">
+            <div className="space-y-2">
               <Label htmlFor="thanks_timer" className="text-sm font-medium">
                 Thanks Screen
               </Label>
-              <div className="flex items-center gap-2 lg:grid lg:grid-cols-3 lg:gap-4">
-                <Input
-                  id="thanks_timer"
-                  type="number"
-                  min="0"
-                  max="600"
-                  value={timers.thanks_timer ?? ''}
-                  onChange={(e) => handleTimerChange('thanks_timer', e.target.value)}
-                  placeholder="No limit"
-                  className="w-32"
-                />
-                {onCopyFromPrevious && (
-                  <Button
-                    type="button"
-                    variant="outline"
-                    size="sm"
-                    onClick={onCopyFromPrevious}
-                    className="text-xs whitespace-nowrap lg:col-start-2"
-                  >
-                    Copy from Previous Game
-                  </Button>
-                )}
-              </div>
+              <Input
+                id="thanks_timer"
+                type="number"
+                min="0"
+                max="600"
+                value={timers.thanks_timer ?? ''}
+                onChange={(e) => handleTimerChange('thanks_timer', e.target.value)}
+                placeholder="No limit"
+                className="w-32"
+              />
             </div>
           </div>
 
           {/* Helper Note */}
-          <p className="text-xs text-slate-500 italic mt-2">
+          <p className="text-xs text-slate-500 dark:text-slate-400 italic mt-2">
             Leave blank or enter 0 for no time limit (manual advance)
           </p>
+
+          {/* Copy from Previous Game Button */}
+          {onCopyFromPrevious && (
+            <div className="pt-4 border-t border-slate-200 dark:border-slate-700">
+              <Button
+                type="button"
+                variant="outline"
+                onClick={onCopyFromPrevious}
+                className="w-full justify-center gap-2 text-sm font-medium"
+              >
+                <Copy className="h-4 w-4" />
+                Copy Timer Settings from Previous Game
+              </Button>
+            </div>
+          )}
         </div>
       </AccordionContent>
     </AccordionItem>
