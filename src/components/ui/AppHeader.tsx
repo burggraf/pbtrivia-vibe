@@ -1,6 +1,5 @@
 import { ReactNode } from 'react'
 import ThemeToggle from '@/components/ThemeToggle'
-import TextSizeToggle from '@/components/TextSizeToggle'
 
 interface AppHeaderProps {
   title: string
@@ -12,7 +11,7 @@ interface AppHeaderProps {
  * iPhone-style header component with three-column layout:
  * - Left: back button or action button
  * - Center: title (always centered)
- * - Right: text size toggle and theme toggle
+ * - Right: theme toggle
  */
 export default function AppHeader({ title, leftButton, className = '' }: AppHeaderProps) {
   return (
@@ -29,9 +28,8 @@ export default function AppHeader({ title, leftButton, className = '' }: AppHead
         </h1>
       </div>
 
-      {/* Right section - text size toggle and theme toggle */}
+      {/* Right section - theme toggle */}
       <div className="flex items-center justify-end gap-2 w-auto">
-        <TextSizeToggle />
         <ThemeToggle />
       </div>
     </header>
