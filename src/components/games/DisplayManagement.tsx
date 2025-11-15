@@ -203,9 +203,10 @@ export default function DisplayManagement({ gameId }: DisplayManagementProps) {
               {displays.map((display) => (
                 <div
                   key={display.id}
-                  className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 p-3 border border-slate-200 dark:border-slate-700 rounded-md"
+                  className="flex flex-col gap-2 p-3 border border-slate-200 dark:border-slate-700 rounded-md"
                 >
-                  <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-3">
+                  {/* Line 1: Status and Code */}
+                  <div className="flex items-center gap-3">
                     <div className="flex items-center gap-2">
                       <div className={`h-2 w-2 rounded-full ${display.available ? 'bg-red-500' : 'bg-green-500'}`} />
                       <span className="text-sm font-medium">
@@ -216,7 +217,8 @@ export default function DisplayManagement({ gameId }: DisplayManagementProps) {
                       Code: {display.code}
                     </span>
                   </div>
-                  <div className="flex items-center gap-2 justify-end sm:justify-start">
+                  {/* Line 2: Theme and Release button */}
+                  <div className="flex items-center gap-2">
                     <Select
                       value={display.metadata?.theme || 'dark'}
                       onValueChange={(value) => handleThemeChange(display.id, value as 'light' | 'dark')}
