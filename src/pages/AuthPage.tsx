@@ -203,12 +203,12 @@ export default function AuthPage() {
       </div>
       <Card className="w-full max-w-md bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700">
         <CardHeader className="space-y-1 pb-4 sm:pb-6">
-          <CardTitle className="text-xl sm:text-2xl font-semibold text-slate-800 dark:text-slate-100">
+          <CardTitle className="text-xl sm:text-2xl font-semibold text-slate-800 dark:text-slate-100 text-center">
             {mode === 'login' ? 'Welcome to Trivia Party' : mode === 'register' ? 'Create Account' : 'Reset Password'}
           </CardTitle>
-          <CardDescription className="text-sm text-slate-600 dark:text-slate-400 hidden sm:block">
+          <CardDescription className="text-sm text-slate-600 dark:text-slate-400 text-center">
             {mode === 'login'
-              ? ''
+              ? 'Let\'s have fun — together!'
               : mode === 'register'
               ? 'Enter your details to create a new account'
               : 'Enter your email to receive a password reset link'
