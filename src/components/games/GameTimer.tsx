@@ -79,7 +79,7 @@ export default function GameTimer({ timer }: GameTimerProps) {
   }
 
   return (
-    <div className="fixed bottom-0 left-0 right-0 z-50 bg-white dark:bg-slate-800 border-t border-slate-200 dark:border-slate-700 px-4 py-3">
+    <div className="fixed bottom-[68px] left-0 right-0 z-50 bg-white dark:bg-slate-800 border-t border-slate-200 dark:border-slate-700 px-4 py-3">
       <div className="max-w-6xl mx-auto">
         <div className="text-center text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
           {remainingSeconds} {secondsText}
