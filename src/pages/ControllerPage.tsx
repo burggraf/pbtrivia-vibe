@@ -1053,6 +1053,7 @@ export default function ControllerPage() {
           canGoBack={GAME_STATES.indexOf(gameData.state) > 0}
           nextLabel={getNextButtonLabel()}
           backLabel={getBackButtonLabel()}
+          hasTimer={!!gameData.timer}
         />
       )}
 
