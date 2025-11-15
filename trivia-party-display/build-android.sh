@@ -113,29 +113,7 @@ else
   echo ""
 fi
 
-# Patch SDK versions for Fire TV compatibility
-echo "Patching SDK versions for Fire TV compatibility..."
-PATCHED=false
-
-if grep -q "compileSdk = 36" "$BUILD_GRADLE"; then
-  sed -i.sdk 's/compileSdk = 36/compileSdk = 30/' "$BUILD_GRADLE"
-  PATCHED=true
-fi
-
-if grep -q "targetSdk = 36" "$BUILD_GRADLE"; then
-  sed -i.sdk 's/targetSdk = 36/targetSdk = 30/' "$BUILD_GRADLE"
-  PATCHED=true
-fi
-
-rm -f "$BUILD_GRADLE.sdk"
-
-if [ "$PATCHED" = true ]; then
-  echo -e "${GREEN}✅ SDK versions changed from 36 to 30${NC}"
-  echo ""
-else
-  echo -e "${YELLOW}⚠️  SDK versions already set or not found${NC}"
-  echo ""
-fi
+# Note: SDK patching removed - it breaks AndroidX dependencies
 
 # Build the APK
 echo "Building signed release APK..."
