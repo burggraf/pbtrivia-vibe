@@ -2,8 +2,9 @@ import { ReactNode } from 'react'
 import ThemeToggle from '@/components/ThemeToggle'
 
 interface AppHeaderProps {
-  title: string
+  title: string | ReactNode
   leftButton?: ReactNode
+  rightButton?: ReactNode
   className?: string
 }
 
@@ -11,9 +12,9 @@ interface AppHeaderProps {
  * iPhone-style header component with three-column layout:
  * - Left: back button or action button
  * - Center: title (always centered)
- * - Right: theme toggle
+ * - Right: theme toggle or custom button
  */
-export default function AppHeader({ title, leftButton, className = '' }: AppHeaderProps) {
+export default function AppHeader({ title, leftButton, rightButton, className = '' }: AppHeaderProps) {
   return (
     <header className={`flex items-center justify-between h-[60px] px-4 bg-white dark:bg-slate-800 border-b border-slate-200 dark:border-slate-700 ${className}`}>
       {/* Left section - button or empty */}
@@ -28,9 +29,9 @@ export default function AppHeader({ title, leftButton, className = '' }: AppHead
         </h1>
       </div>
 
-      {/* Right section - theme toggle */}
+      {/* Right section - custom button or theme toggle */}
       <div className="flex items-center justify-end gap-2 w-auto">
-        <ThemeToggle />
+        {rightButton || <ThemeToggle />}
       </div>
     </header>
   )

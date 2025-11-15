@@ -14,7 +14,7 @@ interface TeamCardProps {
   score?: number
 }
 
-export default function TeamCard({ teamId, teamName, players, score }: TeamCardProps) {
+export default function TeamCard({ teamName, players, score }: TeamCardProps) {
   return (
     <Card className="bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700 shadow-lg aspect-square flex flex-col">
       <CardHeader className="pb-2 md:pb-3">
