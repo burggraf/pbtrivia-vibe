@@ -126,33 +126,16 @@ export function DisplayProvider({ children }: { children: ReactNode }) {
 
       let record: DisplaysRecord
       if (records.length > 0) {
-        // Update existing record only if it's not currently claimed
-        record = records[0]
-        console.log('📺 Existing record state:', {
-          available: record.available,
-          hasGame: !!record.game,
-          code: record.code
+        // Update existing record - always release on startup
+        console.log('📺 Existing display found, releasing any claims...')
+        record = await pb.collection('displays').update<DisplaysRecord>(records[0].id, {
+          available: true,
+          host: null,
+          game: null,
+          code: records[0].code || generateDisplayCode(),  // Keep existing code, generate if missing
+          metadata: records[0].metadata || { theme: 'dark' },
         })
-
-        if (record.available && !record.game) {
-          // Display is available and not claimed, just use it as-is
-          console.log('📺 Using existing available display record')
-        } else if (record.game) {
-          // Display is claimed - don't reset it!
-          console.log('📺 Display is already claimed, keeping claim')
-        } else {
-          // Display exists but is unavailable (not claimed) - reset it
-          console.log('📺 Resetting unavailable display record')
-          const newCode = generateDisplayCode()
-          record = await pb.collection('displays').update<DisplaysRecord>(records[0].id, {
-            available: true,
-            host: null,
-            game: null,
-            code: newCode,
-            metadata: records[0].metadata || { theme: 'dark' },
-          })
-          console.log('✅ Display record reset with new code:', newCode)
-        }
+        console.log('✅ Display released and ready, code:', record.code)
       } else {
         // Create new record
         console.log('📺 Creating new display record')
