@@ -206,7 +206,7 @@ export default function AuthPage() {
           <CardTitle className="text-xl sm:text-2xl font-semibold text-slate-800 dark:text-slate-100 text-center">
             {mode === 'login' ? 'Welcome to Trivia Party' : mode === 'register' ? 'Create Account' : 'Reset Password'}
           </CardTitle>
-          <CardDescription className="text-sm text-slate-600 dark:text-slate-400 text-center">
+          <CardDescription className={`text-slate-600 dark:text-slate-400 text-center ${mode === 'login' ? 'text-base italic' : 'text-sm'}`}>
             {mode === 'login'
               ? 'Let\'s have fun — together!'
               : mode === 'register'
