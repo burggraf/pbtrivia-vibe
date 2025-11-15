@@ -27,8 +27,9 @@ export default function AuthPage() {
   const navigate = useNavigate()
   const [searchParams] = useSearchParams()
   const returnTo = searchParams.get('returnTo')
+  const roleParam = searchParams.get('role') as 'host' | 'player' | null
   const [mode, setMode] = useState<'login' | 'register' | 'forgot'>('login')
-  const [userMode, setUserMode] = useState<'host' | 'player'>('player')
+  const [userMode, setUserMode] = useState<'host' | 'player'>(roleParam || 'player')
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
   const [success, setSuccess] = useState('')

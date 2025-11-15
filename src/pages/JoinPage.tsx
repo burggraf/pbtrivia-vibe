@@ -30,7 +30,7 @@ export default function JoinPage() {
       if (!pb.authStore.isValid) {
         // Redirect to auth page with return URL
         const returnUrl = encodeURIComponent(`/join?code=${code}`)
-        navigate(`/?returnTo=${returnUrl}`)
+        navigate(`/login?returnTo=${returnUrl}`)
         return
       }
 

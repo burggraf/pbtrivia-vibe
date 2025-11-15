@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import { Navigate, Route, BrowserRouter as Router, Routes } from 'react-router-dom'
 
 import pb from './lib/pocketbase'
+import LandingPage from './pages/LandingPage'
 import AuthPage from './pages/AuthPage'
 import HostPage from './pages/HostPage'
 import LobbyPage from './pages/LobbyPage'
@@ -76,14 +77,15 @@ function App() {
 			<Toaster />
 			<Router>
 				<Routes>
-					<Route path='/' element={<AuthPage />} />
+					<Route path='/' element={<LandingPage />} />
+					<Route path='/login' element={<AuthPage />} />
 					<Route
 						path='/host'
-						element={isAuthenticated ? <HostPage /> : <Navigate to='/' replace />}
+						element={isAuthenticated ? <HostPage /> : <Navigate to='/login' replace />}
 					/>
 									<Route
 						path='/lobby'
-						element={isAuthenticated ? <LobbyPage /> : <Navigate to='/' replace />}
+						element={isAuthenticated ? <LobbyPage /> : <Navigate to='/login' replace />}
 					/>
 					<Route
 						path='/join'
@@ -99,7 +101,7 @@ function App() {
 					/>
 					<Route
 						path='/controller/:id'
-						element={isAuthenticated ? <ControllerPage /> : <Navigate to='/' replace />}
+						element={isAuthenticated ? <ControllerPage /> : <Navigate to='/login' replace />}
 					/>
 					<Route path='*' element={<Navigate to='/' replace />} />
 				</Routes>

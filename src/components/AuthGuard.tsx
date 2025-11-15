@@ -68,7 +68,7 @@ export default function AuthGuard({ children }: AuthGuardProps) {
 
   if (!isAuthenticated) {
     console.log('🔒 AuthGuard: Redirecting to login - not authenticated')
-    return <Navigate to="/" replace />
+    return <Navigate to="/login" replace />
   }
 
   console.log('🔓 AuthGuard: Authentication verified, rendering children')
