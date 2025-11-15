@@ -10,6 +10,7 @@ interface PlayerDetailsModalProps {
   playerId: string
   playerName: string
   playerAvatar: string
+  teamName: string
   open: boolean
   onOpenChange: (open: boolean) => void
 }
@@ -18,6 +19,7 @@ export default function PlayerDetailsModal({
   playerId,
   playerName,
   playerAvatar,
+  teamName,
   open,
   onOpenChange
 }: PlayerDetailsModalProps) {
@@ -28,8 +30,8 @@ export default function PlayerDetailsModal({
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-md">
-        <DialogHeader>
-          <DialogTitle>Player Details</DialogTitle>
+        <DialogHeader className="text-center">
+          <DialogTitle className="text-center">{playerName}</DialogTitle>
         </DialogHeader>
         <div className="flex flex-col items-center gap-4 py-4">
           {avatarUrl ? (
@@ -45,9 +47,9 @@ export default function PlayerDetailsModal({
           )}
 
           <div className="text-center space-y-2 w-full">
-            <h3 className="text-xl font-semibold text-slate-900 dark:text-slate-100">
-              {playerName}
-            </h3>
+            <p className="text-lg text-slate-700 dark:text-slate-300">
+              Team: {teamName}
+            </p>
           </div>
         </div>
       </DialogContent>

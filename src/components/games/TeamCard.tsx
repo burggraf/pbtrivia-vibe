@@ -78,6 +78,7 @@ export default function TeamCard({ teamId, teamName, players, score }: TeamCardP
           playerId={selectedPlayer.id}
           playerName={selectedPlayer.name}
           playerAvatar={selectedPlayer.avatar}
+          teamName={teamName}
           open={modalOpen}
           onOpenChange={setModalOpen}
         />
