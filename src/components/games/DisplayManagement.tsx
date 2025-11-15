@@ -146,7 +146,7 @@ export default function DisplayManagement({ gameId }: DisplayManagementProps) {
 
   if (loading) {
     return (
-      <Card className="bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700 shadow-lg col-span-full lg:col-span-2">
+      <Card className="bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700 shadow-lg col-span-full sm:col-span-1">
         <CardContent className="flex items-center justify-center py-8">
           <Loader2 className="h-6 w-6 animate-spin text-slate-400" />
         </CardContent>
@@ -155,7 +155,7 @@ export default function DisplayManagement({ gameId }: DisplayManagementProps) {
   }
 
   return (
-    <Card className="bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700 shadow-lg col-span-full lg:col-span-2">
+    <Card className="bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700 shadow-lg col-span-full sm:col-span-1">
       <CardHeader>
         <CardTitle className="text-base md:text-lg">Display Management</CardTitle>
       </CardHeader>
@@ -203,9 +203,9 @@ export default function DisplayManagement({ gameId }: DisplayManagementProps) {
               {displays.map((display) => (
                 <div
                   key={display.id}
-                  className="flex items-center justify-between p-3 border border-slate-200 dark:border-slate-700 rounded-md"
+                  className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 p-3 border border-slate-200 dark:border-slate-700 rounded-md"
                 >
-                  <div className="flex items-center gap-3">
+                  <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-3">
                     <div className="flex items-center gap-2">
                       <div className={`h-2 w-2 rounded-full ${display.available ? 'bg-red-500' : 'bg-green-500'}`} />
                       <span className="text-sm font-medium">
@@ -216,7 +216,7 @@ export default function DisplayManagement({ gameId }: DisplayManagementProps) {
                       Code: {display.code}
                     </span>
                   </div>
-                  <div className="flex items-center gap-2">
+                  <div className="flex items-center gap-2 justify-end sm:justify-start">
                     <Select
                       value={display.metadata?.theme || 'dark'}
                       onValueChange={(value) => handleThemeChange(display.id, value as 'light' | 'dark')}
