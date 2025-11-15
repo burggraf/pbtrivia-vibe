@@ -154,14 +154,8 @@ export function DisplayProvider({ children }: { children: ReactNode }) {
       setDisplayRecord(record)
       setCode(record.code || generateDisplayCode())
 
-      // Set screen based on whether display is claimed
-      if (record.game) {
-        setCurrentScreen('game')
-        setGameId(record.game)
-        gameIdRef.current = record.game
-      } else {
-        setCurrentScreen('code')
-      }
+      // Set screen to code (display was released on startup)
+      setCurrentScreen('code')
 
       setConnectionStatus('connected')
 
