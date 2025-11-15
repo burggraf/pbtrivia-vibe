@@ -1,6 +1,7 @@
 import { ArrowLeft } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import AppHeader from '@/components/ui/AppHeader'
+import ThemeToggle from '@/components/ThemeToggle'
 import ControllerSettings from './ControllerSettings'
 
 interface ControllerHeaderProps {
@@ -44,12 +45,15 @@ export default function ControllerHeader({
         </Button>
       }
       rightButton={
-        <ControllerSettings
-          showQrCode={showQrCode}
-          showJoinLink={showJoinLink}
-          onToggleQrCode={onToggleQrCode}
-          onToggleJoinLink={onToggleJoinLink}
-        />
+        <>
+          <ControllerSettings
+            showQrCode={showQrCode}
+            showJoinLink={showJoinLink}
+            onToggleQrCode={onToggleQrCode}
+            onToggleJoinLink={onToggleJoinLink}
+          />
+          <ThemeToggle />
+        </>
       }
     />
   )
