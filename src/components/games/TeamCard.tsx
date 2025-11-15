@@ -3,6 +3,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { getFileUrl } from '@/lib/pocketbase'
 import PlayerDetailsModal from './PlayerDetailsModal'
+import TeamDetailsModal from './TeamDetailsModal'
 
 interface Player {
   id: string
@@ -20,17 +21,25 @@ interface TeamCardProps {
 
 export default function TeamCard({ teamId, teamName, players, score }: TeamCardProps) {
   const [selectedPlayer, setSelectedPlayer] = useState<Player | null>(null)
-  const [modalOpen, setModalOpen] = useState(false)
+  const [playerModalOpen, setPlayerModalOpen] = useState(false)
+  const [teamModalOpen, setTeamModalOpen] = useState(false)
 
   const handlePlayerClick = (player: Player) => {
     setSelectedPlayer(player)
-    setModalOpen(true)
+    setPlayerModalOpen(true)
+  }
+
+  const handleTeamNameClick = () => {
+    setTeamModalOpen(true)
   }
   return (
     <Card key={teamId} className="bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700 shadow-lg aspect-square flex flex-col">
       <CardHeader className="pb-2 md:pb-3">
         <div className="flex items-start justify-between">
-          <CardTitle className="text-base md:text-lg font-semibold text-slate-800 dark:text-slate-100">
+          <CardTitle
+            onClick={handleTeamNameClick}
+            className="text-base md:text-lg font-semibold text-slate-800 dark:text-slate-100 cursor-pointer hover:text-slate-600 dark:hover:text-slate-300 transition-colors"
+          >
             {teamName}
           </CardTitle>
           {score !== undefined && (
@@ -79,10 +88,17 @@ export default function TeamCard({ teamId, teamName, players, score }: TeamCardP
           playerName={selectedPlayer.name}
           playerAvatar={selectedPlayer.avatar}
           teamName={teamName}
-          open={modalOpen}
-          onOpenChange={setModalOpen}
+          open={playerModalOpen}
+          onOpenChange={setPlayerModalOpen}
         />
       )}
+
+      <TeamDetailsModal
+        teamName={teamName}
+        players={players}
+        open={teamModalOpen}
+        onOpenChange={setTeamModalOpen}
+      />
     </Card>
   )
 }
