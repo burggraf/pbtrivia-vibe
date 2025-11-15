@@ -275,9 +275,9 @@ export default function NextQuestionPreview({ gameId, gameData, rounds }: NextQu
   }
 
   return (
-    <div className="max-w-3xl mx-auto mt-4 md:mt-6">
+    <Card className="bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700 shadow-lg col-span-full lg:col-span-2">
       {/* Header Bar */}
-      <div className="flex items-center justify-between px-4 py-3 bg-slate-100 dark:bg-slate-800 border-b border-slate-200 dark:border-slate-700 rounded-t-lg">
+      <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
         {/* Left: Collapse/Expand Toggle */}
         <Button
           variant="ghost"
@@ -293,9 +293,9 @@ export default function NextQuestionPreview({ gameId, gameData, rounds }: NextQu
         </Button>
 
         {/* Middle: Title */}
-        <h3 className="text-base font-semibold text-slate-800 dark:text-slate-100">
+        <CardTitle className="text-base md:text-lg">
           Next Question
-        </h3>
+        </CardTitle>
 
         {/* Right: Show/Hide Answer Toggle */}
         <Button
@@ -310,103 +310,89 @@ export default function NextQuestionPreview({ gameId, gameData, rounds }: NextQu
             <EyeOff className="h-4 w-4" />
           )}
         </Button>
-      </div>
+      </CardHeader>
 
       {/* Content */}
-      {isExpanded && (
-        <div className="text-center mb-8">
-          {/* Round Progress - outside card */}
-          {nextQuestion && (
-            <div className="mb-4 md:mb-6">
-              <h2 className="text-lg md:text-2xl font-bold text-slate-800 dark:text-slate-100 mb-2">
-                Next Question:  Round {nextQuestion.roundNumber} of {nextQuestion.totalRounds} - Question {nextQuestion.questionNumber}
-              </h2>
-              <div className="space-y-2">
-                <div className="flex flex-row items-center justify-between px-4">
-                  <Badge variant="secondary" className="text-xs md:text-sm px-2 py-1 md:px-3 md:py-1">
-                    {nextQuestion.category}
-                  </Badge>
-                  <Badge variant="outline" className="text-xs md:text-sm px-2 py-1 md:px-3 md:py-1">
-                    {nextQuestion.difficulty}
-                  </Badge>
-                </div>
-                <div className="flex justify-center">
-                  <Button
-                    variant="outline"
-                    onClick={handleReplaceQuestion}
-                    disabled={isReplacing}
-                    className="h-[44px] gap-1 text-xs"
-                  >
-                    {isReplacing ? (
-                      <div className="animate-spin">
-                        <RotateCcw className="h-3 w-3" />
-                      </div>
-                    ) : (
-                      <RotateCcw className="h-3 w-3" />
-                    )}
-                    Replace
-                  </Button>
-                </div>
-              </div>
-            </div>
-          )}
-
-          {/* Question Card */}
-          <Card className="max-w-3xl mx-auto">
-            {isLoading && (
-              <CardContent className="px-3 md:px-6">
-                <div className="text-center py-8">
-                  <p className="text-slate-600 dark:text-slate-400">Loading next question...</p>
-                </div>
-              </CardContent>
-            )}
-
-            {error && (
-              <CardContent className="px-3 md:px-6">
-                <div className="text-center py-8">
-                  <p className="text-red-600 dark:text-red-400">{error}</p>
-                </div>
-              </CardContent>
-            )}
-
-            {nextQuestion && (
-              <>
-                <CardHeader>
-                  <CardTitle className="text-base md:text-xl">
-                    {nextQuestion.question}
-                  </CardTitle>
-                </CardHeader>
-                <CardContent className="px-3 md:px-6">
-                  {/* Answer Options */}
-                  <div className="space-y-2 md:space-y-3">
-                  {nextQuestion.answers.map((answer) => {
-                    const isCorrect = showCorrectAnswer && answer.label === nextQuestion.correctAnswerLabel
-
-                    // Correct answer styling (green)
-                    const answerClasses = isCorrect
-                      ? 'p-3 md:p-4 rounded-lg border-2 bg-green-100 border-green-500 text-green-800 dark:bg-green-900 dark:text-green-200 flex justify-between items-start relative'
-                      : 'p-3 md:p-4 rounded-lg border-2 bg-slate-50 border-slate-300 text-slate-700 dark:bg-slate-800 dark:border-slate-700 dark:text-slate-400 flex justify-between items-start relative'
-
-                    return (
-                      <div key={answer.label} className={answerClasses}>
-                        <div>
-                          <span className="font-medium">{answer.label}.</span> {answer.text}
-                        </div>
-                        {isCorrect && (
-                          <div className="absolute top-3 md:top-4 right-3 md:right-4">
-                            <span className="text-green-600 dark:text-green-400 leading-none">✓</span>
-                          </div>
-                        )}
-                      </div>
-                    )
-                  })}
+      {isExpanded && nextQuestion && (
+        <CardContent className="space-y-4">
+          {/* Round Progress */}
+          <div className="text-center">
+            <h3 className="text-base md:text-lg font-bold text-slate-800 dark:text-slate-100 mb-2">
+              Round {nextQuestion.roundNumber} of {nextQuestion.totalRounds} - Question {nextQuestion.questionNumber}
+            </h3>
+            <div className="flex items-center justify-center gap-2 mb-3">
+              <Badge variant="secondary" className="text-xs md:text-sm">
+                {nextQuestion.category}
+              </Badge>
+              <Badge variant="outline" className="text-xs md:text-sm">
+                {nextQuestion.difficulty}
+              </Badge>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={handleReplaceQuestion}
+                disabled={isReplacing}
+                className="h-[32px] gap-1 text-xs"
+              >
+                {isReplacing ? (
+                  <div className="animate-spin">
+                    <RotateCcw className="h-3 w-3" />
                   </div>
-                </CardContent>
-              </>
-            )}
-          </Card>
-        </div>
+                ) : (
+                  <RotateCcw className="h-3 w-3" />
+                )}
+                Replace
+              </Button>
+            </div>
+          </div>
+
+          {/* Question */}
+          <div className="p-4 bg-slate-50 dark:bg-slate-700 rounded-lg">
+            <p className="text-sm md:text-base font-medium text-slate-800 dark:text-slate-100">
+              {nextQuestion.question}
+            </p>
+          </div>
+
+          {/* Answer Options */}
+          <div className="space-y-2">
+            {nextQuestion.answers.map((answer) => {
+              const isCorrect = showCorrectAnswer && answer.label === nextQuestion.correctAnswerLabel
+
+              const answerClasses = isCorrect
+                ? 'p-3 rounded-lg border-2 bg-green-100 border-green-500 text-green-800 dark:bg-green-900 dark:text-green-200 flex justify-between items-center'
+                : 'p-3 rounded-lg border-2 bg-slate-50 border-slate-300 text-slate-700 dark:bg-slate-800 dark:border-slate-700 dark:text-slate-400 flex justify-between items-center'
+
+              return (
+                <div key={answer.label} className={answerClasses}>
+                  <div>
+                    <span className="font-medium">{answer.label}.</span> {answer.text}
+                  </div>
+                  {isCorrect && (
+                    <span className="text-green-600 dark:text-green-400">✓</span>
+                  )}
+                </div>
+              )
+            })}
+          </div>
+        </CardContent>
       )}
-    </div>
+
+      {/* Loading/Error States */}
+      {isLoading && (
+        <CardContent>
+          <div className="text-center py-8">
+            <p className="text-slate-600 dark:text-slate-400">Loading next question...</p>
+          </div>
+        </CardContent>
+      )}
+
+      {error && (
+        <CardContent>
+          <div className="text-center py-8">
+            <p className="text-red-600 dark:text-red-400">{error}</p>
+          </div>
+        </CardContent>
+      )}
+    </Card>
   )
 }
