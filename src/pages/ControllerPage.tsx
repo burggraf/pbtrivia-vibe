@@ -19,6 +19,7 @@ import ControllerGrid from '@/components/games/ControllerGrid'
 import QrCodeCard from '@/components/games/QrCodeCard'
 import TeamCard from '@/components/games/TeamCard'
 import FloatingActionBar from '@/components/games/FloatingActionBar'
+import { getPublicUrl } from '@/lib/networkUrl'
 
 type GameState = 'game-start' | 'round-start' | 'round-play' | 'round-end' | 'game-end' | 'thanks' | 'return-to-lobby'
 
@@ -967,7 +968,7 @@ export default function ControllerPage() {
   })
 
   // Build join URL for QR code
-  const joinUrl = game?.code ? `${window.location.origin}/join?code=${game.code}` : ''
+  const joinUrl = game?.code ? `${getPublicUrl()}/join?code=${game.code}` : ''
 
   return (
     <div className="min-h-screen bg-slate-50 dark:bg-slate-900 pb-20">
