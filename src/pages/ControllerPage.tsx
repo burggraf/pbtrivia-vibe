@@ -1,15 +1,5 @@
 import { useParams, useNavigate } from 'react-router-dom'
 import { useState, useEffect, useCallback } from 'react'
-import { ArrowLeft, ChevronLeft, ChevronRight, Pause, Play } from 'lucide-react'
-import { Button } from '@/components/ui/button'
-import {
-  Accordion,
-  AccordionContent,
-  AccordionItem,
-  AccordionTrigger,
-} from '@/components/ui/accordion'
-import AppHeader from '@/components/ui/AppHeader'
-import TeamDisplay from '@/components/games/TeamDisplay'
 import GameStateDisplay from '@/components/games/GameStateDisplay'
 import NextQuestionPreview from '@/components/games/NextQuestionPreview'
 import GameTimer from '@/components/games/GameTimer'
@@ -21,6 +11,14 @@ import { scoreboardService } from '@/lib/scoreboard'
 import pb from '@/lib/pocketbase'
 import { Game, GameMetadata } from '@/types/games'
 import DisplayManagement from '@/components/games/DisplayManagement'
+import { useControllerSettings } from '@/hooks/useControllerSettings'
+import { useKeyboardShortcuts } from '@/hooks/useKeyboardShortcuts'
+import ControllerHeader from '@/components/games/ControllerHeader'
+import ControllerStatsLine from '@/components/games/ControllerStatsLine'
+import ControllerGrid from '@/components/games/ControllerGrid'
+import QrCodeCard from '@/components/games/QrCodeCard'
+import TeamCard from '@/components/games/TeamCard'
+import FloatingActionBar from '@/components/games/FloatingActionBar'
 
 type GameState = 'game-start' | 'round-start' | 'round-play' | 'round-end' | 'game-end' | 'thanks' | 'return-to-lobby'
 
@@ -116,12 +114,44 @@ export default function ControllerPage() {
   const { id } = useParams<{ id: string }>()
   const navigate = useNavigate()
   const [game, setGame] = useState<Game | null>(null)
-  const [isLoading, setIsLoading] = useState(true)
   const [rounds, setRounds] = useState<any[]>([])
   const [gameData, setGameData] = useState<GameData | null>(null)
 
   const handleBackToHost = () => {
     navigate('/host')
+  }
+
+  // Controller settings
+  const {
+    showQrCode,
+    showJoinLink,
+    toggleQrCode,
+    toggleJoinLink
+  } = useControllerSettings()
+
+  // Calculate stats for stats line
+  const teamCount = game?.scoreboard ? Object.keys(game.scoreboard.teams).length : 0
+  const roundCount = rounds.length
+  const totalQuestions = rounds.reduce((sum, round) => sum + round.question_count, 0)
+
+  // Helper to get next button label
+  const getNextButtonLabel = (): string => {
+    if (!gameData) return 'Next'
+    const isAnswerRevealed = !!gameData.question?.correct_answer
+    if (gameData.state === 'round-play' && !isAnswerRevealed) return 'Reveal'
+    if (gameData.state === 'round-play' && isAnswerRevealed) return 'Next'
+    if (gameData.state === 'game-end') return 'Thanks'
+    if (gameData.state === 'thanks') return 'End'
+    return 'Next'
+  }
+
+  const getBackButtonLabel = (): string => {
+    if (!gameData) return 'Back'
+    if (gameData.state === 'round-play' && !!gameData.question?.correct_answer) return 'Question'
+    if (gameData.state === 'round-play' && !gameData.question?.correct_answer) {
+      return `Q${Math.max(1, (gameData.question?.question_number || 1) - 1)}`
+    }
+    return 'Back'
   }
 
   // Rebuild scoreboard from database state
@@ -393,8 +423,6 @@ export default function ControllerPage() {
       }
     } catch (error) {
       console.error('Failed to fetch game data:', error)
-    } finally {
-      setIsLoading(false)
     }
   }
 
@@ -930,154 +958,105 @@ export default function ControllerPage() {
     }
   }, [id, navigate, rebuildScoreboard])
 
+  // Keyboard shortcuts (after all event handlers are defined)
+  useKeyboardShortcuts({
+    onNext: handleNextState,
+    onBack: handlePreviousState,
+    onPause: handleTogglePause,
+    enabled: !!gameData && !!game?.scoreboard && Object.keys(game.scoreboard.teams).length > 0
+  })
+
+  // Build join URL for QR code
+  const joinUrl = game?.code ? `${window.location.origin}/join?code=${game.code}` : ''
+
   return (
-    <div className="min-h-screen bg-slate-50 dark:bg-slate-900">
-      {/* Header Bar */}
-      <AppHeader
-        title={game?.name || 'Controller'}
-        leftButton={
-          <Button
-            variant="ghost"
-            size="icon"
-            onClick={handleBackToHost}
-            className="h-[44px] w-[44px] text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700"
-            aria-label="Back to Host"
-          >
-            <ArrowLeft className="h-5 w-5" />
-          </Button>
-        }
+    <div className="min-h-screen bg-slate-50 dark:bg-slate-900 pb-20">
+      {/* Header */}
+      <ControllerHeader
+        gameName={game?.name || 'Controller'}
+        gameCode={game?.code || ''}
+        showQrCode={showQrCode}
+        showJoinLink={showJoinLink}
+        onToggleQrCode={toggleQrCode}
+        onToggleJoinLink={toggleJoinLink}
+        onBack={handleBackToHost}
       />
 
-      {/* Action Bar with Navigation */}
-      <div className="bg-white dark:bg-slate-800 border-b border-slate-200 dark:border-slate-700 px-4 h-[60px]">
-        <div className="max-w-6xl mx-auto flex items-center justify-between h-full">
-          {/* Left: Back Navigation */}
-          <div className="flex items-center gap-2 w-1/3">
-            {game?.scoreboard && Object.keys(game.scoreboard.teams).length > 0 && gameData && (
-              <Button
-                variant="outline"
-                className="h-[44px] border-slate-300 dark:border-slate-600 text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800"
-                onClick={handlePreviousState}
-                disabled={GAME_STATES.indexOf(gameData.state) === 0}
-              >
-                <ChevronLeft className="h-4 w-4 mr-1" />
-                {gameData.state === 'round-play' && !!gameData.question?.correct_answer
-                  ? 'Question'
-                  : gameData.state === 'round-play' && !gameData.question?.correct_answer
-                  ? `Q${Math.max(1, (gameData.question?.question_number || 1) - 1)}`
-                  : 'Back'}
-              </Button>
-            )}
-          </div>
-
-          {/* Center: Game Code */}
-          <div className="flex items-center justify-center w-1/3">
-            {game?.code && (
-              <div className="text-base md:text-lg font-semibold tracking-widest text-slate-800 dark:text-slate-100">
-                {game.code}
-              </div>
-            )}
-          </div>
-
-          {/* Right: Forward Navigation */}
-          <div className="flex items-center justify-end gap-2 w-1/3">
-            {game?.scoreboard && Object.keys(game.scoreboard.teams).length > 0 && gameData && (
-              <>
-                {gameData?.timer && (
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={handleTogglePause}
-                    className="flex items-center gap-2"
-                  >
-                    {gameData.timer.isPaused ? (
-                      <>
-                        <Play className="h-4 w-4" />
-                        Resume
-                      </>
-                    ) : (
-                      <>
-                        <Pause className="h-4 w-4" />
-                        Pause
-                      </>
-                    )}
-                  </Button>
-                )}
-
-                <Button
-                  className="h-[44px] bg-blue-600 hover:bg-blue-700 dark:bg-blue-700 dark:hover:bg-blue-600 text-white"
-                  onClick={handleNextState}
-                  disabled={gameData.state === 'return-to-lobby'}
-                >
-                  {(() => {
-                    const isAnswerRevealed = !!gameData.question?.correct_answer
-                    return gameData.state === 'round-play' && !isAnswerRevealed
-                      ? 'Reveal'
-                      : gameData.state === 'round-play' && isAnswerRevealed
-                      ? 'Next'
-                      : gameData.state === 'game-end'
-                      ? 'Thanks'
-                      : gameData.state === 'thanks'
-                      ? 'End'
-                      : 'Next'
-                  })()}
-                  <ChevronRight className="h-4 w-4 ml-1" />
-                </Button>
-              </>
-            )}
-          </div>
-        </div>
-      </div>
+      {/* Stats Line */}
+      <ControllerStatsLine
+        teamCount={teamCount}
+        roundCount={roundCount}
+        questionCount={totalQuestions}
+      />
 
       {/* Main Content */}
       <div className="max-w-6xl mx-auto p-4 md:p-6 lg:p-8">
-        {/* Game State Display */}
-        {gameData && game && (
-          <GameStateDisplay
-            gameData={gameData}
-            rounds={rounds}
-            game={game}
-          />
-        )}
-
-        {/* Display Management - Always visible throughout game */}
-        {id && (
-          <div className="mb-8">
-            <Accordion type="single" collapsible className="bg-white dark:bg-slate-800 rounded-lg border border-slate-200 dark:border-slate-700">
-              <AccordionItem value="display-management" className="border-none">
-                <AccordionTrigger className="px-6 py-4 hover:no-underline">
-                  <h2 className="text-xl font-semibold text-slate-800 dark:text-slate-100">
-                    Display Management
-                  </h2>
-                </AccordionTrigger>
-                <AccordionContent className="px-6 pb-6">
-                  <DisplayManagement gameId={id} />
-                </AccordionContent>
-              </AccordionItem>
-            </Accordion>
+        {/* Game State Display (for non-game-start states) */}
+        {gameData && gameData.state !== 'game-start' && game && (
+          <div className="mb-6">
+            <GameStateDisplay
+              gameData={gameData}
+              rounds={rounds}
+              game={game}
+            />
           </div>
         )}
 
-        {/* Teams and Players Section */}
-        {(!gameData || gameData.state === 'game-start') && (
-          <TeamDisplay
-            scoreboard={game?.scoreboard}
-            isLoading={isLoading}
-            className="mb-8"
-          />
-        )}
+        {/* Dashboard Grid */}
+        <ControllerGrid>
+          {/* QR Code Card - only if showQrCode is true */}
+          {showQrCode && game?.code && (
+            <QrCodeCard
+              gameCode={game.code}
+              joinUrl={joinUrl}
+              showJoinLink={showJoinLink}
+            />
+          )}
 
-        {/* Next Question Preview - Show during gameplay */}
-        {gameData && game && id && (
-          <NextQuestionPreview
-            gameId={id}
-            gameData={gameData}
-            rounds={rounds}
-          />
-        )}
+          {/* Team Cards - only show at game-start or when no gameData */}
+          {(!gameData || gameData.state === 'game-start') && game?.scoreboard && (
+            <>
+              {Object.entries(game.scoreboard.teams)
+                .filter(([_, teamData]) => teamData.players.length > 0)
+                .map(([teamId, teamData]) => (
+                  <TeamCard
+                    key={teamId}
+                    teamId={teamId}
+                    teamName={teamData.name}
+                    players={teamData.players}
+                  />
+                ))}
+            </>
+          )}
+
+          {/* Display Management Card */}
+          {id && <DisplayManagement gameId={id} />}
+
+          {/* Next Question Preview Card */}
+          {gameData && game && id && (
+            <NextQuestionPreview
+              gameId={id}
+              gameData={gameData}
+              rounds={rounds}
+            />
+          )}
+        </ControllerGrid>
       </div>
 
-      {/* Timer Display - Fixed to bottom when active */}
+      {/* Floating Action Bar - only show when game has teams */}
+      {game?.scoreboard && Object.keys(game.scoreboard.teams).length > 0 && gameData && (
+        <FloatingActionBar
+          onNext={handleNextState}
+          onBack={handlePreviousState}
+          onPause={handleTogglePause}
+          isPaused={gameData.timer?.isPaused || false}
+          canGoBack={GAME_STATES.indexOf(gameData.state) > 0}
+          nextLabel={getNextButtonLabel()}
+          backLabel={getBackButtonLabel()}
+        />
+      )}
+
+      {/* Timer Display - Fixed to top when active */}
       {gameData?.timer && <GameTimer timer={gameData.timer} />}
     </div>
   )
