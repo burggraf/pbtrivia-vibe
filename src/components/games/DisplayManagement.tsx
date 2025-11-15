@@ -8,6 +8,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select'
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import pb from '@/lib/pocketbase'
 import type { DisplaysRecord } from '@/types/pocketbase-types'
 import { Loader2 } from 'lucide-react'
@@ -145,96 +146,103 @@ export default function DisplayManagement({ gameId }: DisplayManagementProps) {
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center py-8">
-        <Loader2 className="h-6 w-6 animate-spin text-slate-400" />
-      </div>
+      <Card className="bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700 shadow-lg col-span-full lg:col-span-2">
+        <CardContent className="flex items-center justify-center py-8">
+          <Loader2 className="h-6 w-6 animate-spin text-slate-400" />
+        </CardContent>
+      </Card>
     )
   }
 
   return (
-    <div className="space-y-6">
-      {/* Claim Display Section */}
-      <div className="space-y-2">
-        <label htmlFor="display-code" className="text-sm font-medium text-slate-700 dark:text-slate-300">
-          Claim Display
-        </label>
-        <div className="flex gap-2">
-          <Input
-            id="display-code"
-            type="text"
-            placeholder="Enter 6-digit code"
-            value={code}
-            onChange={(e) => setCode(e.target.value.replace(/\D/g, '').slice(0, 6))}
-            maxLength={6}
-            className="flex-1"
-          />
-          <Button onClick={handleClaim} disabled={claiming || code.length !== 6}>
-            {claiming ? (
-              <>
-                <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                Claiming...
-              </>
-            ) : (
-              'Claim Display'
-            )}
-          </Button>
+    <Card className="bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700 shadow-lg col-span-full lg:col-span-2">
+      <CardHeader>
+        <CardTitle className="text-base md:text-lg">Display Management</CardTitle>
+      </CardHeader>
+      <CardContent className="space-y-6">
+        {/* Claim Display Section */}
+        <div className="space-y-2">
+          <label htmlFor="display-code" className="text-sm font-medium text-slate-700 dark:text-slate-300">
+            Claim Display
+          </label>
+          <div className="flex gap-2">
+            <Input
+              id="display-code"
+              type="text"
+              placeholder="Enter 6-digit code"
+              value={code}
+              onChange={(e) => setCode(e.target.value.replace(/\D/g, '').slice(0, 6))}
+              maxLength={6}
+              className="flex-1"
+            />
+            <Button onClick={handleClaim} disabled={claiming || code.length !== 6}>
+              {claiming ? (
+                <>
+                  <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                  Claiming...
+                </>
+              ) : (
+                'Claim Display'
+              )}
+            </Button>
+          </div>
         </div>
-      </div>
 
-      {/* Claimed Displays List */}
-      <div className="space-y-2">
-        <h3 className="text-sm font-medium text-slate-700 dark:text-slate-300">
-          Claimed Displays ({displays.length})
-        </h3>
+        {/* Claimed Displays List */}
+        <div className="space-y-2">
+          <h3 className="text-sm font-medium text-slate-700 dark:text-slate-300">
+            Claimed Displays ({displays.length})
+          </h3>
 
-        {displays.length === 0 ? (
-          <p className="text-sm text-slate-500 dark:text-slate-400 py-4 text-center border border-slate-200 dark:border-slate-700 rounded-md">
-            No displays claimed. Enter a code above to claim a display.
-          </p>
-        ) : (
-          <div className="space-y-2">
-            {displays.map((display) => (
-              <div
-                key={display.id}
-                className="flex items-center justify-between p-3 border border-slate-200 dark:border-slate-700 rounded-md"
-              >
-                <div className="flex items-center gap-3">
-                  <div className="flex items-center gap-2">
-                    <div className={`h-2 w-2 rounded-full ${display.available ? 'bg-red-500' : 'bg-green-500'}`} />
-                    <span className="text-sm font-medium">
-                      {display.available ? 'Disconnected' : 'Connected'}
+          {displays.length === 0 ? (
+            <p className="text-sm text-slate-500 dark:text-slate-400 py-4 text-center border border-slate-200 dark:border-slate-700 rounded-md">
+              No displays claimed. Enter a code above to claim a display.
+            </p>
+          ) : (
+            <div className="space-y-2">
+              {displays.map((display) => (
+                <div
+                  key={display.id}
+                  className="flex items-center justify-between p-3 border border-slate-200 dark:border-slate-700 rounded-md"
+                >
+                  <div className="flex items-center gap-3">
+                    <div className="flex items-center gap-2">
+                      <div className={`h-2 w-2 rounded-full ${display.available ? 'bg-red-500' : 'bg-green-500'}`} />
+                      <span className="text-sm font-medium">
+                        {display.available ? 'Disconnected' : 'Connected'}
+                      </span>
+                    </div>
+                    <span className="text-sm text-slate-600 dark:text-slate-400">
+                      Code: {display.code}
                     </span>
                   </div>
-                  <span className="text-sm text-slate-600 dark:text-slate-400">
-                    Code: {display.code}
-                  </span>
+                  <div className="flex items-center gap-2">
+                    <Select
+                      value={display.metadata?.theme || 'dark'}
+                      onValueChange={(value) => handleThemeChange(display.id, value as 'light' | 'dark')}
+                    >
+                      <SelectTrigger className="w-[100px]">
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="light">Light</SelectItem>
+                        <SelectItem value="dark">Dark</SelectItem>
+                      </SelectContent>
+                    </Select>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => handleRelease(display.id)}
+                    >
+                      Release
+                    </Button>
+                  </div>
                 </div>
-                <div className="flex items-center gap-2">
-                  <Select
-                    value={display.metadata?.theme || 'dark'}
-                    onValueChange={(value) => handleThemeChange(display.id, value as 'light' | 'dark')}
-                  >
-                    <SelectTrigger className="w-[100px]">
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="light">Light</SelectItem>
-                      <SelectItem value="dark">Dark</SelectItem>
-                    </SelectContent>
-                  </Select>
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => handleRelease(display.id)}
-                  >
-                    Release
-                  </Button>
-                </div>
-              </div>
-            ))}
-          </div>
-        )}
-      </div>
-    </div>
+              ))}
+            </div>
+          )}
+        </div>
+      </CardContent>
+    </Card>
   )
 }
