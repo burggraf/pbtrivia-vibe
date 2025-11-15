@@ -1,6 +1,8 @@
+import { useState } from 'react'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { getFileUrl } from '@/lib/pocketbase'
+import PlayerDetailsModal from './PlayerDetailsModal'
 
 interface Player {
   id: string
@@ -17,6 +19,13 @@ interface TeamCardProps {
 }
 
 export default function TeamCard({ teamId, teamName, players, score }: TeamCardProps) {
+  const [selectedPlayer, setSelectedPlayer] = useState<Player | null>(null)
+  const [modalOpen, setModalOpen] = useState(false)
+
+  const handlePlayerClick = (player: Player) => {
+    setSelectedPlayer(player)
+    setModalOpen(true)
+  }
   return (
     <Card key={teamId} className="bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700 shadow-lg aspect-square flex flex-col">
       <CardHeader className="pb-2 md:pb-3">
@@ -30,9 +39,6 @@ export default function TeamCard({ teamId, teamName, players, score }: TeamCardP
             </Badge>
           )}
         </div>
-        <Badge variant="outline" className="w-fit">
-          {players.length} {players.length === 1 ? 'player' : 'players'}
-        </Badge>
       </CardHeader>
       <CardContent className="flex-1 overflow-auto pt-0">
         <div className="space-y-1.5 md:space-y-2">
@@ -44,7 +50,8 @@ export default function TeamCard({ teamId, teamName, players, score }: TeamCardP
             return (
               <div
                 key={player.id}
-                className="flex items-center gap-2 p-1.5 md:p-2 rounded bg-slate-50 dark:bg-slate-700"
+                onClick={() => handlePlayerClick(player)}
+                className="flex items-center gap-2 p-1.5 md:p-2 rounded bg-slate-50 dark:bg-slate-700 cursor-pointer hover:bg-slate-100 dark:hover:bg-slate-600 transition-colors"
               >
                 {avatarUrl ? (
                   <img
@@ -65,6 +72,16 @@ export default function TeamCard({ teamId, teamName, players, score }: TeamCardP
           })}
         </div>
       </CardContent>
+
+      {selectedPlayer && (
+        <PlayerDetailsModal
+          playerId={selectedPlayer.id}
+          playerName={selectedPlayer.name}
+          playerAvatar={selectedPlayer.avatar}
+          open={modalOpen}
+          onOpenChange={setModalOpen}
+        />
+      )}
     </Card>
   )
 }
