@@ -1,4 +1,3 @@
-import { useEffect, useState } from 'react'
 import {
   Dialog,
   DialogContent,
@@ -6,7 +5,6 @@ import {
   DialogTitle,
 } from '@/components/ui/dialog'
 import { getFileUrl } from '@/lib/pocketbase'
-import pb from '@/lib/pocketbase'
 
 interface PlayerDetailsModalProps {
   playerId: string
@@ -16,10 +14,6 @@ interface PlayerDetailsModalProps {
   onOpenChange: (open: boolean) => void
 }
 
-interface UserDetails {
-  email: string
-}
-
 export default function PlayerDetailsModal({
   playerId,
   playerName,
@@ -27,28 +21,6 @@ export default function PlayerDetailsModal({
   open,
   onOpenChange
 }: PlayerDetailsModalProps) {
-  const [userDetails, setUserDetails] = useState<UserDetails | null>(null)
-  const [loading, setLoading] = useState(false)
-
-  useEffect(() => {
-    if (open && playerId) {
-      setLoading(true)
-      pb.collection('users').getOne(playerId)
-        .then((user: any) => {
-          setUserDetails({
-            email: user.email || ''
-          })
-        })
-        .catch((error) => {
-          console.error('Failed to fetch user details:', error)
-          setUserDetails({ email: '' })
-        })
-        .finally(() => {
-          setLoading(false)
-        })
-    }
-  }, [open, playerId])
-
   const avatarUrl = playerAvatar && playerId
     ? getFileUrl('_pb_users_auth_', playerId, playerAvatar, { thumb: '400x400' })
     : ''
@@ -76,20 +48,6 @@ export default function PlayerDetailsModal({
             <h3 className="text-xl font-semibold text-slate-900 dark:text-slate-100">
               {playerName}
             </h3>
-
-            {loading ? (
-              <p className="text-sm text-slate-500 dark:text-slate-400">
-                Loading...
-              </p>
-            ) : userDetails?.email ? (
-              <p className="text-sm text-slate-600 dark:text-slate-300 break-all px-4">
-                {userDetails.email}
-              </p>
-            ) : (
-              <p className="text-sm text-slate-500 dark:text-slate-400">
-                No email available
-              </p>
-            )}
           </div>
         </div>
       </DialogContent>
