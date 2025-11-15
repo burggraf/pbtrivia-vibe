@@ -131,7 +131,9 @@ export default function ControllerPage() {
   } = useControllerSettings()
 
   // Calculate stats for stats line
-  const teamCount = game?.scoreboard ? Object.keys(game.scoreboard.teams).length : 0
+  const teamCount = game?.scoreboard
+    ? Object.values(game.scoreboard.teams).filter(team => team.players && team.players.length > 0).length
+    : 0
   const roundCount = rounds.length
   const totalQuestions = rounds.reduce((sum, round) => sum + round.question_count, 0)
 
