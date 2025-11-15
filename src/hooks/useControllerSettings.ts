@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
 
-interface ControllerSettings {
+export interface ControllerSettings {
   showQrCode: boolean
   showJoinLink: boolean
 }
