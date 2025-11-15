@@ -1,5 +1,6 @@
 export interface ScoreboardPlayer {
   id: string;
+  gamePlayerId?: string;  // game_players record ID for avatar URL construction
   name: string;
   avatar: string;
 }

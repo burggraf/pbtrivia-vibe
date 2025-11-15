@@ -1,8 +1,10 @@
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
+import { getFileUrl } from '@/lib/pocketbase'
 
 interface Player {
   id: string
+  gamePlayerId?: string
   name: string
   avatar: string
 }
@@ -34,24 +36,33 @@ export default function TeamCard({ teamId, teamName, players, score }: TeamCardP
       </CardHeader>
       <CardContent className="flex-1 overflow-auto pt-0">
         <div className="space-y-1.5 md:space-y-2">
-          {players.map((player) => (
-            <div
-              key={player.id}
-              className="flex items-center gap-2 p-1.5 md:p-2 rounded bg-slate-50 dark:bg-slate-700"
-            >
-              <div className="w-2 h-2 rounded-full bg-green-500"></div>
-              <div className="flex-1 min-w-0">
-                <p className="text-sm font-medium truncate text-slate-800 dark:text-slate-100">
-                  {player.name}
-                </p>
-                {player.avatar && (
-                  <p className="text-xs text-slate-500 dark:text-slate-400 truncate">
-                    {player.avatar}
-                  </p>
+          {players.map((player) => {
+            const avatarUrl = player.avatar && player.id
+              ? getFileUrl('_pb_users_auth_', player.id, player.avatar, { thumb: '100x100' })
+              : ''
+
+            return (
+              <div
+                key={player.id}
+                className="flex items-center gap-2 p-1.5 md:p-2 rounded bg-slate-50 dark:bg-slate-700"
+              >
+                {avatarUrl ? (
+                  <img
+                    src={avatarUrl}
+                    alt={`${player.name}'s avatar`}
+                    className="w-6 h-6 rounded-full object-cover flex-shrink-0"
+                  />
+                ) : (
+                  <div className="w-2 h-2 rounded-full bg-green-500 flex-shrink-0"></div>
                 )}
+                <div className="flex-1 min-w-0">
+                  <p className="text-sm font-medium truncate text-slate-800 dark:text-slate-100">
+                    {player.name}
+                  </p>
+                </div>
               </div>
-            </div>
-          ))}
+            )
+          })}
         </div>
       </CardContent>
     </Card>

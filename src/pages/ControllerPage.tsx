@@ -163,7 +163,7 @@ export default function ControllerPage() {
 
     try {
       // Start with empty teams structure
-      const teams: Record<string, { name: string; players: Array<{ id: string; name: string; avatar: string }> }> = {
+      const teams: Record<string, { name: string; players: Array<{ id: string; gamePlayerId?: string; name: string; avatar: string }> }> = {
         'no-team': {
           name: 'No Team',
           players: []
@@ -216,6 +216,7 @@ export default function ControllerPage() {
           // Get player details directly from game_players record
           const playerInfo = {
             id: playerRef,
+            gamePlayerId: player.id,  // Store game_players record ID for avatar URLs
             name: player.name || '',
             avatar: player.avatar || ''
           }
@@ -901,6 +902,9 @@ export default function ControllerPage() {
 
     // Initial data fetch
     fetchGameData()
+
+    // Rebuild scoreboard on initial load to ensure latest schema
+    rebuildScoreboard()
 
     // Subscribe to real-time updates for games (includes scoreboard changes)
     const unsubscribeGame = pb.collection('games').subscribe('*', (e) => {
