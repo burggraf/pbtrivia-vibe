@@ -1,10 +1,12 @@
 import { useState, useEffect } from 'react'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
+import { Switch } from '@/components/ui/switch'
 import pb from '@/lib/pocketbase'
 import { gameAnswersService } from '@/lib/gameAnswers'
-import { GameScoreboard } from '@/types/games'
+import { GameScoreboard, ScoreboardPlayer } from '@/types/games'
 import { useTextSize } from '@/contexts/TextSizeContext'
+import TeamDetailsModal from './TeamDetailsModal'
 
 interface RoundPlayDisplayProps {
   gameData: {
@@ -43,6 +45,14 @@ interface RoundPlayDisplayProps {
 export default function RoundPlayDisplay({ gameData, mode = 'controller', onAnswerSubmit, gameId, scoreboard }: RoundPlayDisplayProps) {
   const [teamAnswerStatus, setTeamAnswerStatus] = useState<Map<string, { answered: boolean, isCorrect?: boolean }>>(new Map()) // Track which teams have answered and their correctness
   const { textSize } = useTextSize()
+  const [selectedTeam, setSelectedTeam] = useState<{ name: string; players: ScoreboardPlayer[] } | null>(null)
+  const [teamModalOpen, setTeamModalOpen] = useState(false)
+  const [showEmptyTeams, setShowEmptyTeams] = useState(false)
+
+  const handleTeamClick = (teamName: string, players: ScoreboardPlayer[]) => {
+    setSelectedTeam({ name: teamName, players })
+    setTeamModalOpen(true)
+  }
 
   // Get text size classes based on the current text size setting
   const getTextSizeClasses = () => {
@@ -306,12 +316,28 @@ export default function RoundPlayDisplay({ gameData, mode = 'controller', onAnsw
       {mode === 'controller' && scoreboard && Object.keys(scoreboard.teams).length > 0 && (
         <Card className="max-w-3xl mx-auto">
           <CardHeader>
-            <CardTitle className="text-lg">Team Answer Status</CardTitle>
+            <div className="flex items-center justify-between">
+              <CardTitle className="text-lg">Team Answer Status</CardTitle>
+              <div className="flex items-center gap-2">
+                <label htmlFor="show-empty-teams" className="text-sm text-slate-600 dark:text-slate-400 cursor-pointer">
+                  Show empty teams
+                </label>
+                <Switch
+                  id="show-empty-teams"
+                  checked={showEmptyTeams}
+                  onCheckedChange={setShowEmptyTeams}
+                />
+              </div>
+            </div>
           </CardHeader>
           <CardContent>
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2">
               {Object.entries(scoreboard.teams)
-                .filter(([teamId]) => teamId !== 'no-team') // Exclude "No Team"
+                .filter(([teamId, teamData]) => {
+                  if (teamId === 'no-team') return false // Exclude "No Team"
+                  if (!showEmptyTeams && teamData.players.length === 0) return false // Exclude empty teams if toggle is off
+                  return true
+                })
                 .sort(([, a], [, b]) => (b.score || 0) - (a.score || 0)) // Sort by score descending
                 .map(([teamId, teamData]) => {
                   const teamStatus = teamAnswerStatus.get(teamId)
@@ -347,7 +373,8 @@ export default function RoundPlayDisplay({ gameData, mode = 'controller', onAnsw
                   return (
                     <div
                       key={teamId}
-                      className={`flex items-center gap-2 p-2 rounded-lg border-2 ${bgColor}`}
+                      onClick={() => handleTeamClick(teamData.name, teamData.players)}
+                      className={`flex items-center gap-2 p-2 rounded-lg border-2 ${bgColor} cursor-pointer hover:opacity-80 transition-opacity`}
                     >
                       {/* Score Badge */}
                       <div className={`text-sm font-semibold px-2 py-1 shrink-0 rounded ${badgeColor}`}>
@@ -369,6 +396,16 @@ export default function RoundPlayDisplay({ gameData, mode = 'controller', onAnsw
             </div>
           </CardContent>
         </Card>
+      )}
+
+      {/* Team Details Modal */}
+      {selectedTeam && (
+        <TeamDetailsModal
+          teamName={selectedTeam.name}
+          players={selectedTeam.players}
+          open={teamModalOpen}
+          onOpenChange={setTeamModalOpen}
+        />
       )}
     </div>
   )
