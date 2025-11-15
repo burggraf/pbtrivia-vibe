@@ -57,6 +57,8 @@ export function DisplayProvider({ children }: { children: ReactNode }) {
 
   // Use ref to avoid stale closure in display subscription
   const gameIdRef = useRef<string | null>(null)
+  // Store display subscription unsubscribe function for cleanup
+  const displayUnsubscribeRef = useRef<(() => void) | null>(null)
 
   const clearError = useCallback(() => setError(null), [])
 
@@ -159,9 +161,16 @@ export function DisplayProvider({ children }: { children: ReactNode }) {
 
       setConnectionStatus('connected')
 
+      // Unsubscribe from any existing display subscription before creating a new one
+      if (displayUnsubscribeRef.current) {
+        console.log('🧹 Cleaning up existing display subscription')
+        displayUnsubscribeRef.current()
+        displayUnsubscribeRef.current = null
+      }
+
       console.log('🎧 Subscribing to display record changes:', record.id)
       // Subscribe to display record changes
-      await pb.collection('displays').subscribe<DisplaysRecord>(record.id, (e) => {
+      const unsubscribe = await pb.collection('displays').subscribe<DisplaysRecord>(record.id, (e) => {
         console.log('🖥️ Display subscription update:', {
           hasGame: !!e.record.game,
           currentGameId: gameIdRef.current,
@@ -204,6 +213,8 @@ export function DisplayProvider({ children }: { children: ReactNode }) {
           }
         }
       })
+      // Store unsubscribe function for cleanup on next initialization
+      displayUnsubscribeRef.current = unsubscribe
       console.log('✅ Display initialization complete!')
     } catch (err) {
       console.error('❌ Initialization error:', err)
