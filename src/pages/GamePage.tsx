@@ -29,6 +29,9 @@ export default function GamePage() {
   usePresenceTracking({
     gameId: id || null,
     userId: pb.authStore.model?.id || '',
+    playerName: pb.authStore.model?.name || 'Player',
+    teamId: currentTeamId,
+    teamName: currentTeamId && game?.scoreboard?.teams?.[currentTeamId]?.name || null,
     enabled: !!id && !!pb.authStore.model?.id
   })
 

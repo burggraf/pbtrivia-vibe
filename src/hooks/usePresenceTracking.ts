@@ -4,6 +4,9 @@ import pb from '@/lib/pocketbase'
 export interface UsePresenceTrackingParams {
   gameId: string | null
   userId: string
+  playerName: string
+  teamId: string | null
+  teamName: string | null
   enabled: boolean
 }
 
@@ -15,6 +18,9 @@ export interface UsePresenceTrackingReturn {
 export function usePresenceTracking({
   gameId,
   userId,
+  playerName,
+  teamId,
+  teamName,
   enabled
 }: UsePresenceTrackingParams): UsePresenceTrackingReturn {
   const [presenceRecordId, setPresenceRecordId] = useState<string | null>(null)
@@ -29,7 +35,7 @@ export function usePresenceTracking({
     if (!enabled || !gameId || !userId) return
 
     try {
-      console.log('🟢 Upserting presence record:', { gameId, userId, active: isVisible })
+      console.log('🟢 Upserting presence record:', { gameId, userId, playerName, teamId, teamName, active: isVisible })
 
       // Try to find existing record first
       const existingRecords = await pb.collection('online').getFullList({
@@ -39,8 +45,11 @@ export function usePresenceTracking({
       let recordId: string
 
       if (existingRecords.length > 0) {
-        // Update existing record
+        // Update existing record with current team info
         const updated = await pb.collection('online').update(existingRecords[0].id, {
+          player_name: playerName,
+          team_id: teamId,
+          team_name: teamName,
           active: isVisible,
           updated: new Date().toISOString()
         })
@@ -50,6 +59,9 @@ export function usePresenceTracking({
         const created = await pb.collection('online').create({
           player: userId,
           game: gameId,
+          player_name: playerName,
+          team_id: teamId,
+          team_name: teamName,
           active: isVisible,
           updated: new Date().toISOString()
         })
@@ -62,7 +74,7 @@ export function usePresenceTracking({
     } catch (error) {
       console.error('❌ Failed to upsert presence:', error)
     }
-  }, [enabled, gameId, userId])
+  }, [enabled, gameId, userId, playerName, teamId, teamName])
 
   // Update presence record
   const updatePresence = useCallback(async (updates: { active?: boolean }) => {

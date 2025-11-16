@@ -135,6 +135,9 @@ export interface OnlinePlayer {
   id: string;
   player: string; // FK to users collection
   game: string; // FK to games collection
+  player_name: string; // Denormalized for performance
+  team_id: string | null; // FK to game_teams collection
+  team_name: string | null; // Denormalized for performance
   active: boolean;
   created: string;
   updated: string;

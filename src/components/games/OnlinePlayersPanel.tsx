@@ -15,6 +15,7 @@ interface OnlinePlayersPanelProps {
 interface PlayerStatus {
   id: string
   name: string
+  teamName: string | null
   status: 'active' | 'stale' | 'inactive'
   lastSeen: string
   updated: Date
@@ -52,7 +53,8 @@ export default function OnlinePlayersPanel({ gameId }: OnlinePlayersPanelProps) 
 
     return {
       id: record.id,
-      name: record.expand?.player?.name || 'Unknown Player',
+      name: record.player_name || 'Unknown Player',
+      teamName: record.team_name,
       status,
       lastSeen,
       updated,
@@ -71,7 +73,6 @@ export default function OnlinePlayersPanel({ gameId }: OnlinePlayersPanelProps) 
       try {
         const records = await pb.collection('online').getFullList<OnlinePlayerExpanded>({
           filter: `game = "${gameId}"`,
-          expand: 'player',
           sort: '-updated'
         })
 
@@ -93,30 +94,26 @@ export default function OnlinePlayersPanel({ gameId }: OnlinePlayersPanelProps) 
         console.log('🔄 Online player update:', e.action, e.record)
 
         if (e.action === 'create' || e.action === 'update') {
-          // Fetch the record with expanded player data
-          pb.collection('online').getOne<OnlinePlayerExpanded>(e.record.id, {
-            expand: 'player'
-          }).then(record => {
-            const status = getPlayerStatus(record)
+          // Use the record directly - no need to fetch with expand
+          const status = getPlayerStatus(e.record as OnlinePlayerExpanded)
 
-            setPlayers(prev => {
-              const filtered = prev.filter(p => p.id !== e.record.id)
-              return [...filtered, status].sort((a, b) => {
-                // Sort by status priority (active > stale > inactive)
-                const statusPriority = { active: 0, stale: 1, inactive: 2 }
-                if (statusPriority[a.status] !== statusPriority[b.status]) {
-                  return statusPriority[a.status] - statusPriority[b.status]
-                }
-                // Then by most recent update
-                return b.updated.getTime() - a.updated.getTime()
-              })
+          setPlayers(prev => {
+            const filtered = prev.filter(p => p.id !== e.record.id)
+            return [...filtered, status].sort((a, b) => {
+              // Sort by status priority (active > stale > inactive)
+              const statusPriority = { active: 0, stale: 1, inactive: 2 }
+              if (statusPriority[a.status] !== statusPriority[b.status]) {
+                return statusPriority[a.status] - statusPriority[b.status]
+              }
+              // Then by most recent update
+              return b.updated.getTime() - a.updated.getTime()
             })
           })
         } else if (e.action === 'delete') {
           setPlayers(prev => prev.filter(p => p.id !== e.record.id))
         }
       },
-      { filter: `game = "${gameId}"`, expand: 'player' }
+      { filter: `game = "${gameId}"` }
     )
 
     // Update "last seen" times every second
@@ -195,9 +192,16 @@ export default function OnlinePlayersPanel({ gameId }: OnlinePlayersPanelProps) 
                 >
                   <div className="flex items-center gap-2">
                     <StatusDot status={player.status} />
-                    <span className="text-sm font-medium text-slate-900 dark:text-slate-100">
-                      {player.name}
-                    </span>
+                    <div className="flex flex-col">
+                      <span className="text-sm font-medium text-slate-900 dark:text-slate-100">
+                        {player.name}
+                      </span>
+                      {player.teamName && (
+                        <span className="text-xs text-slate-500 dark:text-slate-400">
+                          {player.teamName}
+                        </span>
+                      )}
+                    </div>
                   </div>
                   <span className="text-xs text-slate-500 dark:text-slate-400">
                     {player.lastSeen}
