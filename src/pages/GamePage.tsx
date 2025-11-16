@@ -11,6 +11,7 @@ import { gamesService, gameTeamsService, gamePlayersService } from '@/lib/games'
 import { gameAnswersService } from '@/lib/gameAnswers'
 import pb from '@/lib/pocketbase'
 import { Game } from '@/types/games'
+import { usePresenceTracking } from '@/hooks/usePresenceTracking'
 
 export default function GamePage() {
   const { id } = useParams<{ id: string }>()
@@ -23,6 +24,13 @@ export default function GamePage() {
   const [teamAnswer, setTeamAnswer] = useState<{ answer: string, isCorrect?: boolean } | null>(null)
   const [showTeamModal, setShowTeamModal] = useState(false)
   const [timerKey, setTimerKey] = React.useState(0)
+
+  // Track player presence when on game page
+  usePresenceTracking({
+    gameId: id || null,
+    userId: pb.authStore.model?.id || '',
+    enabled: !!id && !!pb.authStore.model?.id
+  })
 
   const handleAnswerSubmit = async (selectedLabel: string) => {
     if (!id || !gameData?.question || !currentTeamId || isSubmittingAnswer) return
