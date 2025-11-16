@@ -81,7 +81,7 @@ export function usePresenceTracking({
 
   // Heartbeat update (just timestamp)
   const sendHeartbeat = useCallback(async () => {
-    if (!presenceRecordId || !document.hidden) {
+    if (presenceRecordId && !document.hidden) {
       await updatePresence({})
     }
   }, [presenceRecordId, updatePresence])
