@@ -18,6 +18,7 @@ interface PlayerStatus {
   status: 'active' | 'stale' | 'inactive'
   lastSeen: string
   updated: Date
+  active: boolean
 }
 
 export default function OnlinePlayersPanel({ gameId }: OnlinePlayersPanelProps) {
@@ -54,7 +55,8 @@ export default function OnlinePlayersPanel({ gameId }: OnlinePlayersPanelProps) 
       name: record.expand?.player?.name || 'Unknown Player',
       status,
       lastSeen,
-      updated
+      updated,
+      active: record.active
     }
   }
 
@@ -134,7 +136,7 @@ export default function OnlinePlayersPanel({ gameId }: OnlinePlayersPanelProps) 
 
         // Re-evaluate status based on current time
         let status: 'active' | 'stale' | 'inactive'
-        if (!player.status || player.status === 'inactive') {
+        if (!player.active) {
           status = 'inactive'
         } else if (secondsSinceUpdate > 15) {
           status = 'stale'
