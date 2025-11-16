@@ -98,5 +98,48 @@ const CircularTimer = React.forwardRef<
 
 CircularTimer.displayName = "CircularTimer"
 
-export { CircularTimer }
-export type { CircularTimerProps }
+interface CircularTimerFixedProps extends CircularTimerProps {
+  onFadeOutComplete?: () => void
+}
+
+const CircularTimerFixed = React.forwardRef<
+  HTMLDivElement,
+  CircularTimerFixedProps
+>(({ onFadeOutComplete, ...props }, ref) => {
+  const [isVisible, setIsVisible] = React.useState(true)
+
+  // Handle fade-out when timer reaches zero
+  React.useEffect(() => {
+    if (props.remainingSeconds <= 0) {
+      // Start fade-out
+      setIsVisible(false)
+
+      // Notify parent after fade-out animation completes
+      const timer = setTimeout(() => {
+        onFadeOutComplete?.()
+      }, 300)
+
+      return () => clearTimeout(timer)
+    } else {
+      setIsVisible(true)
+    }
+  }, [props.remainingSeconds, onFadeOutComplete])
+
+  return (
+    <div
+      ref={ref}
+      className={cn(
+        "fixed bottom-4 right-4 z-50",
+        "transition-opacity duration-300",
+        isVisible ? "opacity-100" : "opacity-0"
+      )}
+    >
+      <CircularTimer {...props} />
+    </div>
+  )
+})
+
+CircularTimerFixed.displayName = "CircularTimerFixed"
+
+export { CircularTimer, CircularTimerFixed }
+export type { CircularTimerProps, CircularTimerFixedProps }
