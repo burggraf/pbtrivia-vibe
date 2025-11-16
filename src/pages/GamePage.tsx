@@ -1,11 +1,12 @@
 import { useParams, useNavigate } from 'react-router-dom'
 import { useState, useEffect } from 'react'
+import * as React from 'react'
 import { ArrowLeft } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import AppHeader from '@/components/ui/AppHeader'
 import GameStateRenderer from '@/components/games/GameStateRenderer'
 import TeamSelectionModal from '@/components/games/TeamSelectionModal'
-import GameTimer from '@/components/games/GameTimer'
+import { CircularTimerFixed } from '@/components/ui/circular-timer'
 import { gamesService, gameTeamsService, gamePlayersService } from '@/lib/games'
 import { gameAnswersService } from '@/lib/gameAnswers'
 import pb from '@/lib/pocketbase'
@@ -21,6 +22,7 @@ export default function GamePage() {
   const [currentTeamId, setCurrentTeamId] = useState<string | null>(null)
   const [teamAnswer, setTeamAnswer] = useState<{ answer: string, isCorrect?: boolean } | null>(null)
   const [showTeamModal, setShowTeamModal] = useState(false)
+  const [timerKey, setTimerKey] = React.useState(0)
 
   const handleAnswerSubmit = async (selectedLabel: string) => {
     if (!id || !gameData?.question || !currentTeamId || isSubmittingAnswer) return
@@ -381,6 +383,17 @@ export default function GamePage() {
     }
   }, [id])
 
+  // Update timer display every second
+  React.useEffect(() => {
+    if (!gameData?.timer || gameData.timer.isPaused) return
+
+    const interval = setInterval(() => {
+      setTimerKey(prev => prev + 1)
+    }, 1000)
+
+    return () => clearInterval(interval)
+  }, [gameData?.timer, gameData?.timer?.isPaused])
+
   return (
     <div className="min-h-screen bg-slate-50 dark:bg-slate-900">
       <AppHeader
@@ -431,8 +444,24 @@ export default function GamePage() {
         )}
       </div>
 
-      {/* Timer Display - Fixed to bottom when active */}
-      {gameData?.timer && <GameTimer timer={gameData.timer} />}
+      {/* Timer Display - Fixed to bottom-right when active */}
+      {gameData?.timer && !gameData.timer.showAsNotification && (
+        <CircularTimerFixed
+          key={timerKey}
+          remainingSeconds={(() => {
+            const timer = gameData.timer
+            if (timer.isPaused) {
+              return timer.pausedRemaining || 0
+            }
+            const now = Date.now()
+            const expiresAt = new Date(timer.expiresAt).getTime()
+            const remainingMs = Math.max(0, expiresAt - now)
+            return Math.ceil(remainingMs / 1000)
+          })()}
+          totalSeconds={gameData.timer.duration}
+          isPaused={gameData.timer.isPaused || false}
+        />
+      )}
 
       {/* Team Selection Modal */}
       {game && showTeamModal && (
