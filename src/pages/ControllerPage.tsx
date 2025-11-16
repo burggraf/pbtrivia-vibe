@@ -1,8 +1,9 @@
 import { useParams, useNavigate } from 'react-router-dom'
 import { useState, useEffect, useCallback } from 'react'
+import * as React from 'react'
 import GameStateDisplay from '@/components/games/GameStateDisplay'
 import NextQuestionPreview from '@/components/games/NextQuestionPreview'
-import GameTimer from '@/components/games/GameTimer'
+import { CircularTimerFixed } from '@/components/ui/circular-timer'
 import { gamesService } from '@/lib/games'
 import { roundsService } from '@/lib/rounds'
 import { gameQuestionsService } from '@/lib/gameQuestions'
@@ -117,6 +118,7 @@ export default function ControllerPage() {
   const [game, setGame] = useState<Game | null>(null)
   const [rounds, setRounds] = useState<any[]>([])
   const [gameData, setGameData] = useState<GameData | null>(null)
+  const [timerKey, setTimerKey] = React.useState(0)
 
   const handleBackToHost = () => {
     navigate('/host')
@@ -872,6 +874,17 @@ export default function ControllerPage() {
     }
   }
 
+  // Update timer display every second
+  React.useEffect(() => {
+    if (!gameData?.timer || gameData.timer.isPaused) return
+
+    const interval = setInterval(() => {
+      setTimerKey(prev => prev + 1)
+    }, 1000)
+
+    return () => clearInterval(interval)
+  }, [gameData?.timer, gameData?.timer?.isPaused])
+
   // Auto-advance when timer expires (host only)
   useEffect(() => {
     if (!gameData?.timer || gameData.timer.isPaused || !id) return
@@ -1064,8 +1077,24 @@ export default function ControllerPage() {
         />
       )}
 
-      {/* Timer Display - Fixed to top when active */}
-      {gameData?.timer && <GameTimer timer={gameData.timer} />}
+      {/* Timer Display - Fixed to bottom-right when active */}
+      {gameData?.timer && !gameData.timer.showAsNotification && (
+        <CircularTimerFixed
+          key={timerKey}
+          remainingSeconds={(() => {
+            const timer = gameData.timer
+            if (timer.isPaused) {
+              return timer.pausedRemaining || 0
+            }
+            const now = Date.now()
+            const expiresAt = new Date(timer.expiresAt).getTime()
+            const remainingMs = Math.max(0, expiresAt - now)
+            return Math.ceil(remainingMs / 1000)
+          })()}
+          totalSeconds={gameData.timer.duration}
+          isPaused={gameData.timer.isPaused || false}
+        />
+      )}
     </div>
   )
 }
