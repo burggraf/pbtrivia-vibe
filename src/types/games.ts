@@ -130,3 +130,22 @@ export interface CreateGameAnswerData {
   translated_answer?: string; // Answer translated from shuffled to original position
   is_correct?: boolean;
 }
+
+export interface OnlinePlayer {
+  id: string;
+  player: string; // FK to users collection
+  game: string; // FK to games collection
+  active: boolean;
+  created: string;
+  updated: string;
+}
+
+export interface OnlinePlayerExpanded extends OnlinePlayer {
+  expand?: {
+    player?: {
+      id: string;
+      name: string;
+      avatar: string;
+    };
+  };
+}
