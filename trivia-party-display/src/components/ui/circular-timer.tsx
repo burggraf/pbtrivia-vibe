@@ -1,7 +1,7 @@
 /**
  * Circular Timer Component
  *
- * This file is duplicated to: trivia-party-display/src/components/ui/circular-timer.tsx
+ * This file is duplicated from: src/components/ui/circular-timer.tsx
  * Keep both versions in sync when making changes.
  */
 import * as React from "react"
