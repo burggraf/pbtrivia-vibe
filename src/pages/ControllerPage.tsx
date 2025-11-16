@@ -21,6 +21,7 @@ import QrCodeCard from '@/components/games/QrCodeCard'
 import TeamCard from '@/components/games/TeamCard'
 import FloatingActionBar from '@/components/games/FloatingActionBar'
 import { getPublicUrl } from '@/lib/networkUrl'
+import OnlinePlayersPanel from '@/components/games/OnlinePlayersPanel'
 
 type GameState = 'game-start' | 'round-start' | 'round-play' | 'round-end' | 'game-end' | 'thanks' | 'return-to-lobby'
 
@@ -1059,6 +1060,13 @@ export default function ControllerPage() {
               gameData={gameData}
               rounds={rounds}
             />
+          )}
+
+          {/* Online Players Panel */}
+          {game && (
+            <div className="w-full">
+              <OnlinePlayersPanel gameId={game.id} />
+            </div>
           )}
         </ControllerGrid>
       </div>
