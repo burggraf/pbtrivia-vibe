@@ -5,11 +5,26 @@ import RoundPlayDisplay from '@/components/RoundPlayDisplay'
 import RoundEnd from '@/components/states/RoundEnd'
 import GameEnd from '@/components/states/GameEnd'
 import Thanks from '@/components/states/Thanks'
-import GameTimer from '@/components/GameTimer'
+import { CircularTimerFixed } from '@/components/ui/circular-timer'
 import { GameData } from '@/types/games'
+import * as React from 'react'
 
 export function GameDisplay() {
   const { gameRecord } = useDisplay()
+  const [timerKey, setTimerKey] = React.useState(0)
+
+  const gameData = gameRecord?.data as GameData | undefined
+
+  // Update timer display every second
+  React.useEffect(() => {
+    if (!gameData?.timer || gameData.timer.isPaused) return
+
+    const interval = setInterval(() => {
+      setTimerKey(prev => prev + 1)
+    }, 1000)
+
+    return () => clearInterval(interval)
+  }, [gameData?.timer, gameData?.timer?.isPaused])
 
   if (!gameRecord) {
     return (
@@ -21,7 +36,6 @@ export function GameDisplay() {
     )
   }
 
-  const gameData = gameRecord.data as GameData | undefined
   const state = gameData?.state
 
   if (!state) {
@@ -72,8 +86,24 @@ export function GameDisplay() {
         {state === 'thanks' && <Thanks />}
       </div>
 
-      {/* Timer Display - Fixed to bottom when active */}
-      {gameData?.timer && <GameTimer timer={gameData.timer} />}
+      {/* Timer Display - Fixed to bottom-right when active */}
+      {gameData?.timer && (
+        <CircularTimerFixed
+          key={timerKey}
+          remainingSeconds={(() => {
+            const timer = gameData.timer
+            if (timer.isPaused) {
+              return timer.pausedRemaining || 0
+            }
+            const now = Date.now()
+            const expiresAt = new Date(timer.expiresAt).getTime()
+            const remainingMs = Math.max(0, expiresAt - now)
+            return Math.ceil(remainingMs / 1000)
+          })()}
+          totalSeconds={gameData.timer.duration}
+          isPaused={gameData.timer.isPaused || false}
+        />
+      )}
     </>
   )
 }
