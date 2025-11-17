@@ -159,5 +159,6 @@ export interface GameData {
     isPaused?: boolean
     pausedAt?: string
     pausedRemaining?: number
+    showAsNotification?: boolean
   }
 }
