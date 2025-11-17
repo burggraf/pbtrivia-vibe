@@ -30,9 +30,22 @@ function processScoreboardData(
   )
 }
 
+function calculateScale(teams: ProcessedTeam[]): number {
+  if (teams.length === 0) return 1.0
+
+  const teamCount = teams.length
+  const maxPlayersPerTeam = Math.max(...teams.map((t) => t.players.length), 0)
+
+  const teamScale = 8 / Math.max(teamCount, 1)
+  const playerScale = 4 / Math.max(maxPlayersPerTeam, 1)
+
+  return Math.max(0.6, Math.min(1.0, Math.min(teamScale, playerScale)))
+}
+
 export function TeamRoster() {
   const { gameRecord } = useDisplay()
   const teams = processScoreboardData(gameRecord?.scoreboard)
+  const scale = calculateScale(teams)
 
   if (teams.length === 0) {
     return (
@@ -44,7 +57,7 @@ export function TeamRoster() {
 
   return (
     <div className="text-slate-200">
-      {teams.length} team(s) ready
+      {teams.length} team(s) ready (scale: {scale.toFixed(2)})
     </div>
   )
 }
