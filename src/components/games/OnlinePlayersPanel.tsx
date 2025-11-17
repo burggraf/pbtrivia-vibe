@@ -15,11 +15,20 @@ interface OnlinePlayersPanelProps {
 interface PlayerStatus {
   id: string
   name: string
+  teamId: string | null
   teamName: string | null
   status: 'active' | 'stale' | 'inactive'
   lastSeen: string
   updated: Date
   active: boolean
+}
+
+interface TeamGroup {
+  teamId: string
+  teamName: string
+  players: PlayerStatus[]
+  activeCount: number
+  totalCount: number
 }
 
 export default function OnlinePlayersPanel({ gameId }: OnlinePlayersPanelProps) {
@@ -54,6 +63,7 @@ export default function OnlinePlayersPanel({ gameId }: OnlinePlayersPanelProps) 
     return {
       id: record.id,
       name: record.player_name || 'Unknown Player',
+      teamId: record.team_id,
       teamName: record.team_name,
       status,
       lastSeen,
@@ -156,6 +166,48 @@ export default function OnlinePlayersPanel({ gameId }: OnlinePlayersPanelProps) 
   const activeCount = players.filter(p => p.status === 'active').length
   const totalCount = players.length
 
+  // Group players by team
+  const groupPlayersByTeam = (): TeamGroup[] => {
+    const teamMap = new Map<string, TeamGroup>()
+
+    // Group players by team
+    players.forEach(player => {
+      const teamId = player.teamId || 'no-team'
+      const teamName = player.teamName || 'No Team'
+
+      if (!teamMap.has(teamId)) {
+        teamMap.set(teamId, {
+          teamId,
+          teamName,
+          players: [],
+          activeCount: 0,
+          totalCount: 0
+        })
+      }
+
+      const team = teamMap.get(teamId)!
+      team.players.push(player)
+      team.totalCount++
+      if (player.status === 'active') {
+        team.activeCount++
+      }
+    })
+
+    // Sort players within each team by name
+    teamMap.forEach(team => {
+      team.players.sort((a, b) => a.name.localeCompare(b.name))
+    })
+
+    // Convert map to array and sort by team_name + team_id
+    return Array.from(teamMap.values()).sort((a, b) => {
+      const nameCompare = a.teamName.localeCompare(b.teamName)
+      if (nameCompare !== 0) return nameCompare
+      return a.teamId.localeCompare(b.teamId)
+    })
+  }
+
+  const teamGroups = groupPlayersByTeam()
+
   // Status indicator dot
   const StatusDot = ({ status }: { status: 'active' | 'stale' | 'inactive' }) => {
     const colors = {
@@ -180,34 +232,51 @@ export default function OnlinePlayersPanel({ gameId }: OnlinePlayersPanelProps) 
         </AccordionTrigger>
         <AccordionContent>
           <div className="space-y-2 pt-2">
-            {players.length === 0 ? (
+            {teamGroups.length === 0 ? (
               <div className="text-sm text-slate-500 dark:text-slate-400 py-2">
                 No players online
               </div>
             ) : (
-              players.map((player) => (
-                <div
-                  key={player.id}
-                  className="flex items-center justify-between py-2 px-3 rounded-md bg-slate-50 dark:bg-slate-700/50"
-                >
-                  <div className="flex items-center gap-2">
-                    <StatusDot status={player.status} />
-                    <div className="flex flex-col">
-                      <span className="text-sm font-medium text-slate-900 dark:text-slate-100">
-                        {player.name}
-                      </span>
-                      {player.teamName && (
-                        <span className="text-xs text-slate-500 dark:text-slate-400">
-                          {player.teamName}
+              <Accordion type="multiple" className="w-full space-y-2">
+                {teamGroups.map((team) => (
+                  <AccordionItem
+                    key={team.teamId}
+                    value={team.teamId}
+                    className="border rounded-md bg-slate-50 dark:bg-slate-700/50"
+                  >
+                    <AccordionTrigger className="hover:no-underline px-3 py-2">
+                      <div className="flex items-center justify-between w-full pr-2">
+                        <span className="text-sm font-medium text-slate-900 dark:text-slate-100">
+                          {team.teamName}
                         </span>
-                      )}
-                    </div>
-                  </div>
-                  <span className="text-xs text-slate-500 dark:text-slate-400">
-                    {player.lastSeen}
-                  </span>
-                </div>
-              ))
+                        <span className="text-xs text-slate-500 dark:text-slate-400">
+                          {team.activeCount}/{team.totalCount} active
+                        </span>
+                      </div>
+                    </AccordionTrigger>
+                    <AccordionContent>
+                      <div className="space-y-1 px-3 pb-2">
+                        {team.players.map((player) => (
+                          <div
+                            key={player.id}
+                            className="flex items-center justify-between py-2 px-3 rounded-md bg-white dark:bg-slate-600/50"
+                          >
+                            <div className="flex items-center gap-2">
+                              <StatusDot status={player.status} />
+                              <span className="text-sm text-slate-900 dark:text-slate-100">
+                                {player.name}
+                              </span>
+                            </div>
+                            <span className="text-xs text-slate-500 dark:text-slate-400">
+                              {player.lastSeen}
+                            </span>
+                          </div>
+                        ))}
+                      </div>
+                    </AccordionContent>
+                  </AccordionItem>
+                ))}
+              </Accordion>
             )}
           </div>
         </AccordionContent>
