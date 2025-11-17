@@ -52,7 +52,6 @@ interface PlayerAvatarProps {
   player: ProcessedPlayer
 }
 
-// @ts-ignore - TS6133: Component will be used in Task 6
 function PlayerAvatar({ player }: PlayerAvatarProps) {
   const color = getAvatarColor(player.id)
 
@@ -74,6 +73,20 @@ function PlayerAvatar({ player }: PlayerAvatarProps) {
       className={`w-8 h-8 rounded-full bg-${color}-500 flex items-center justify-center text-white font-medium text-sm`}
     >
       {initial}
+    </div>
+  )
+}
+
+interface PlayerItemProps {
+  player: ProcessedPlayer
+}
+
+// @ts-ignore - TS6133: Component will be used in Task 7
+function PlayerItem({ player }: PlayerItemProps) {
+  return (
+    <div className="flex items-center gap-2 bg-slate-700/50 rounded-md p-2">
+      <PlayerAvatar player={player} />
+      <span className="text-base text-slate-200 truncate">{player.name}</span>
     </div>
   )
 }
