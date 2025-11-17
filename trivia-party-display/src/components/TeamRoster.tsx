@@ -1,4 +1,5 @@
 import { useDisplay } from '@/contexts/DisplayContext'
+import { getFileUrl } from '@/lib/pocketbase'
 import type { ReactNode } from 'react'
 
 interface ProcessedPlayer {
@@ -18,13 +19,16 @@ function processScoreboardData(
 ): ProcessedTeam[] {
   if (!scoreboard?.teams) return []
 
-  const teamsArray = Object.entries(scoreboard.teams).map(([id, team]) => ({
-    id,
-    name: team.name,
-    players: [...(team.players || [])].sort((a, b) =>
-      a.name.localeCompare(b.name)
-    ),
-  }))
+  const teamsArray = Object.entries(scoreboard.teams)
+    .map(([id, team]) => ({
+      id,
+      name: team.name,
+      players: [...(team.players || [])].sort((a, b) =>
+        a.name.localeCompare(b.name)
+      ),
+    }))
+    // Filter out teams with no players
+    .filter((team) => team.players.length > 0)
 
   return teamsArray.sort((a, b) =>
     (a.name + a.id).localeCompare(b.name + b.id)
@@ -57,9 +61,10 @@ function PlayerAvatar({ player }: PlayerAvatarProps) {
   const colorName = getAvatarColor(player.id)
 
   if (player.avatar) {
+    const avatarUrl = getFileUrl('_pb_users_auth_', player.id, player.avatar, { thumb: '100x100' })
     return (
       <img
-        src={player.avatar}
+        src={avatarUrl}
         alt={player.name}
         className="w-8 h-8 rounded-full object-cover"
       />
