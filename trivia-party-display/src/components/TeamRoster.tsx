@@ -126,7 +126,11 @@ function TeamCard({ team, scale }: TeamCardProps) {
   )
 }
 
-export function TeamRoster() {
+interface TeamRosterProps {
+  children: React.ReactNode
+}
+
+export function TeamRoster({ children }: TeamRosterProps) {
   const { gameRecord } = useDisplay()
   const teams = processScoreboardData(gameRecord?.scoreboard)
   const scale = calculateScale(teams)
@@ -139,7 +143,6 @@ export function TeamRoster() {
     )
   }
 
-  // Split teams into left and right columns
   const midpoint = Math.ceil(teams.length / 2)
   const leftTeams = teams.slice(0, midpoint)
   const rightTeams = teams.slice(midpoint)
@@ -153,11 +156,9 @@ export function TeamRoster() {
         ))}
       </div>
 
-      {/* Center Column - Placeholder for QR code content */}
+      {/* Center Column - QR code content passed as children */}
       <div className="flex items-center justify-center">
-        <div className="text-slate-400 text-sm">
-          (QR code and game info goes here)
-        </div>
+        {children}
       </div>
 
       {/* Right Column */}
