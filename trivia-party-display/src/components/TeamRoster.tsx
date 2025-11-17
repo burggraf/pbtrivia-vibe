@@ -81,12 +81,36 @@ interface PlayerItemProps {
   player: ProcessedPlayer
 }
 
-// @ts-ignore - TS6133: Component will be used in Task 7
 function PlayerItem({ player }: PlayerItemProps) {
   return (
     <div className="flex items-center gap-2 bg-slate-700/50 rounded-md p-2">
       <PlayerAvatar player={player} />
       <span className="text-base text-slate-200 truncate">{player.name}</span>
+    </div>
+  )
+}
+
+interface TeamCardProps {
+  team: ProcessedTeam
+  scale: number
+}
+
+// @ts-ignore - TS6133: Component will be used in Task 8
+function TeamCard({ team, scale }: TeamCardProps) {
+  return (
+    <div
+      className="border border-slate-700 bg-slate-800 rounded-lg p-3 transition-transform duration-200 ease-in-out"
+      style={{
+        transform: `scale(${scale})`,
+        transformOrigin: 'top',
+      }}
+    >
+      <h3 className="text-lg font-bold text-slate-100 mb-2">{team.name}</h3>
+      <div className="space-y-2">
+        {team.players.map((player) => (
+          <PlayerItem key={player.id} player={player} />
+        ))}
+      </div>
     </div>
   )
 }
