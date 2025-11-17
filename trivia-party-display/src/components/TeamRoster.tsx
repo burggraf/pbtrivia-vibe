@@ -1,4 +1,5 @@
 import { useDisplay } from '@/contexts/DisplayContext'
+import type { ReactNode } from 'react'
 
 interface ProcessedPlayer {
   id: string
@@ -127,7 +128,7 @@ function TeamCard({ team, scale }: TeamCardProps) {
 }
 
 interface TeamRosterProps {
-  children: React.ReactNode
+  children: ReactNode
 }
 
 export function TeamRoster({ children }: TeamRosterProps) {
