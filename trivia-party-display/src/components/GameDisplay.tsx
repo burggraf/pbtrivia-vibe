@@ -104,6 +104,24 @@ export function GameDisplay() {
           isPaused={gameData.timer.isPaused || false}
         />
       )}
+
+      {/* Early Answer Notification - Show when all teams have answered */}
+      {gameData?.timer?.showAsNotification && (
+        <div
+          role="status"
+          aria-live="polite"
+          className="
+            fixed bottom-20 left-1/2 -translate-x-1/2 z-50
+            bg-blue-500 dark:bg-blue-600 text-white
+            px-6 py-3 rounded-lg shadow-lg
+            animate-[slideDown_0.5s_ease-out,pulse_2s_ease-in-out_0.5s_infinite]
+          "
+        >
+          <div className="text-center font-medium">
+            All teams have answered.
+          </div>
+        </div>
+      )}
     </>
   )
 }
