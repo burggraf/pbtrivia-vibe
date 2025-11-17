@@ -86,12 +86,6 @@ export default function RoundPlayDisplay({ gameData, mode = 'controller', onAnsw
 
   // Reset team answer status when question changes
   useEffect(() => {
-    console.log('🔄 RoundPlayDisplay: Question changed', {
-      newQuestionId: gameData.question?.id,
-      newQuestionNumber: gameData.question?.question_number,
-      teamAnswer: gameData.teamAnswer,
-      mode
-    })
     setTeamAnswerStatus(new Map()) // Reset team answer status for new question
     setHasTriggeredCallback(false) // Reset callback trigger flag for new question
   }, [gameData.question?.id, gameData.question?.question_number, mode])
@@ -164,16 +158,6 @@ export default function RoundPlayDisplay({ gameData, mode = 'controller', onAnsw
 
     // Count teams that have answered
     const teamsAnswered = teamAnswerStatus.size
-
-    console.log('👥 [RoundPlayDisplay] Detection check:', {
-      teamsAnswered,
-      teamsWithPlayers,
-      teamIds: Array.from(teamAnswerStatus.keys()),
-      allTeamIds: Object.keys(scoreboard.teams).filter(tid =>
-        scoreboard.teams[tid].players && scoreboard.teams[tid].players.length > 0
-      ),
-      hasTriggered: hasTriggeredCallback
-    })
 
     // If all teams have answered, trigger callback
     if (teamsAnswered >= teamsWithPlayers) {
