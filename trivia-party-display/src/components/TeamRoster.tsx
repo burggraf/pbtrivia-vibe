@@ -42,12 +42,40 @@ function calculateScale(teams: ProcessedTeam[]): number {
   return Math.max(0.6, Math.min(1.0, Math.min(teamScale, playerScale)))
 }
 
-// Used by PlayerAvatar component (Task 5)
-// @ts-ignore - TS6133: Function will be used in next task
 function getAvatarColor(playerId: string): string {
   const colors = ['blue', 'green', 'purple', 'orange', 'pink', 'teal']
   const hash = playerId.split('').reduce((acc, char) => acc + char.charCodeAt(0), 0)
   return colors[hash % colors.length]
+}
+
+interface PlayerAvatarProps {
+  player: ProcessedPlayer
+}
+
+// @ts-ignore - TS6133: Component will be used in Task 6
+function PlayerAvatar({ player }: PlayerAvatarProps) {
+  const color = getAvatarColor(player.id)
+
+  if (player.avatar) {
+    return (
+      <img
+        src={player.avatar}
+        alt={player.name}
+        className="w-8 h-8 rounded-full object-cover"
+      />
+    )
+  }
+
+  // Fallback: show first letter with colored background
+  const initial = player.name.charAt(0).toUpperCase()
+
+  return (
+    <div
+      className={`w-8 h-8 rounded-full bg-${color}-500 flex items-center justify-center text-white font-medium text-sm`}
+    >
+      {initial}
+    </div>
+  )
 }
 
 export function TeamRoster() {
