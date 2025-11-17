@@ -37,16 +37,18 @@ export function usePresenceTracking({
     try {
       console.log('🟢 Upserting presence record:', { gameId, userId, playerName, teamId, teamName, active: isVisible })
 
-      // Try to find existing record first
+      // Try to find existing record for this player (regardless of game)
+      // Note: There's a unique index on 'player', so each player can only have one record
       const existingRecords = await pb.collection('online').getFullList({
-        filter: `player = "${userId}" && game = "${gameId}"`
+        filter: `player = "${userId}"`
       })
 
       let recordId: string
 
       if (existingRecords.length > 0) {
-        // Update existing record with current team info
+        // Update existing record with current game and team info
         const updated = await pb.collection('online').update(existingRecords[0].id, {
+          game: gameId,
           player_name: playerName,
           team_id: teamId,
           team_name: teamName,
