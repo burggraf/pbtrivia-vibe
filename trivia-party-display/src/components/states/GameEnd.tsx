@@ -34,7 +34,7 @@ export default function GameEnd({ scoreboard }: GameEndProps) {
           </h2>
         </div>
         {sortedTeams.length > 0 ? (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             {sortedTeams.map((team: ScoreboardTeam & { id: string }, index) => (
               <TeamScoreCard
                 key={team.id}
