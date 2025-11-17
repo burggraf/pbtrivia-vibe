@@ -107,7 +107,6 @@ interface TeamCardProps {
   scale: number
 }
 
-// @ts-ignore - TS6133: Component will be used in Task 8
 function TeamCard({ team, scale }: TeamCardProps) {
   return (
     <div
@@ -140,9 +139,33 @@ export function TeamRoster() {
     )
   }
 
+  // Split teams into left and right columns
+  const midpoint = Math.ceil(teams.length / 2)
+  const leftTeams = teams.slice(0, midpoint)
+  const rightTeams = teams.slice(midpoint)
+
   return (
-    <div className="text-slate-200">
-      {teams.length} team(s) ready (scale: {scale.toFixed(2)})
+    <div className="grid grid-cols-[1fr_2fr_1fr] gap-8 w-full">
+      {/* Left Column */}
+      <div className="flex flex-col gap-3">
+        {leftTeams.map((team) => (
+          <TeamCard key={team.id} team={team} scale={scale} />
+        ))}
+      </div>
+
+      {/* Center Column - Placeholder for QR code content */}
+      <div className="flex items-center justify-center">
+        <div className="text-slate-400 text-sm">
+          (QR code and game info goes here)
+        </div>
+      </div>
+
+      {/* Right Column */}
+      <div className="flex flex-col gap-3">
+        {rightTeams.map((team) => (
+          <TeamCard key={team.id} team={team} scale={scale} />
+        ))}
+      </div>
     </div>
   )
 }
