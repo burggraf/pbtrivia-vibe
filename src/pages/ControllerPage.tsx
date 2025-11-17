@@ -121,6 +121,9 @@ export default function ControllerPage() {
   const [gameData, setGameData] = useState<GameData | null>(null)
   const [timerKey, setTimerKey] = React.useState(0)
 
+  // Guard to prevent race condition when multiple answer events fire rapidly
+  const isProcessingAllAnswered = React.useRef(false)
+
   const handleBackToHost = () => {
     navigate('/host')
   }
@@ -352,45 +355,61 @@ export default function ControllerPage() {
 
       // If all answered and no early-advance timer exists yet and timer not paused
       if (teamsAnswered >= teamsWithPlayers && !gameData.timer?.isEarlyAdvance && !gameData.timer?.isPaused) {
-        // Check if auto-reveal setting is enabled
-        const autoRevealEnabled = game?.metadata?.auto_reveal_on_all_answered ?? false
+        // GUARD: Prevent race condition when multiple answer events fire rapidly
+        if (isProcessingAllAnswered.current) {
+          console.log('👥 Already processing all-answered, skipping duplicate trigger')
+          return
+        }
+        isProcessingAllAnswered.current = true
 
-        if (autoRevealEnabled) {
-          // Check remaining time on question timer
-          const questionTimerExpiresAt = gameData.timer?.expiresAt
-          const remainingMs = questionTimerExpiresAt
-            ? new Date(questionTimerExpiresAt).getTime() - Date.now()
-            : Infinity
+        try {
+          // Check if auto-reveal setting is enabled
+          const autoRevealEnabled = game?.metadata?.auto_reveal_on_all_answered ?? false
 
-          // Only trigger 3-second early advance if >3 seconds remain
-          if (remainingMs > 3000) {
-            console.log('🎉 All teams answered! Triggering notification for 3 seconds')
+          if (autoRevealEnabled) {
+            // Check remaining time on question timer
+            const questionTimerExpiresAt = gameData.timer?.expiresAt
+            const remainingMs = questionTimerExpiresAt
+              ? new Date(questionTimerExpiresAt).getTime() - Date.now()
+              : Infinity
 
-            // Create 3-second early-advance timer WITH notification flag
-            const timer = {
-              startedAt: new Date().toISOString(),
-              duration: 3,
-              expiresAt: new Date(Date.now() + 3000).toISOString(),
-              isEarlyAdvance: true,
-              showAsNotification: true
+            // Only trigger 3-second early advance if >3 seconds remain
+            if (remainingMs > 3000) {
+              console.log('🎉 All teams answered! Triggering notification for 3 seconds')
+
+              // Create 3-second early-advance timer WITH notification flag
+              const timer = {
+                startedAt: new Date().toISOString(),
+                duration: 3,
+                expiresAt: new Date(Date.now() + 3000).toISOString(),
+                isEarlyAdvance: true,
+                showAsNotification: true
+              }
+
+              await updateGameDataClean({
+                ...gameData,
+                timer
+              })
+            } else {
+              // Let existing question timer expire naturally
+              console.log('👥 All teams answered with ≤3s remaining, letting timer expire naturally')
             }
-
-            await updateGameDataClean({
-              ...gameData,
-              timer
-            })
           } else {
-            // Let existing question timer expire naturally
-            console.log('👥 All teams answered with ≤3s remaining, letting timer expire naturally')
+            console.log('👥 All teams answered! Waiting for manual advance (auto-reveal disabled)')
           }
-        } else {
-          console.log('👥 All teams answered! Waiting for manual advance (auto-reveal disabled)')
+        } finally {
+          // Reset guard after a short delay (in case update fails or races)
+          setTimeout(() => {
+            isProcessingAllAnswered.current = false
+          }, 500)
         }
       }
     }, { filter: `game = "${id}"` })
 
     return () => {
       console.log('👥 Cleaning up answer subscription for question:', gameData.question?.id)
+      // Reset guard when question changes
+      isProcessingAllAnswered.current = false
       unsubscribe.then(unsub => unsub())
     }
   }, [gameData?.question?.id, gameData?.question?.correct_answer, id, game?.scoreboard, game?.metadata, updateGameDataClean])
