@@ -313,106 +313,70 @@ export default function ControllerPage() {
     }
   }, [gameData, id, updateGameDataClean])
 
-  // Check if all teams have answered and trigger early advance
-  useEffect(() => {
-    // Only monitor when question is active (not revealed yet)
-    if (!gameData?.question?.id || gameData.question.correct_answer || !id || !game?.scoreboard) return
+  // Handle when all teams have answered (triggered by RoundPlayDisplay)
+  const handleAllTeamsAnswered = useCallback(async () => {
+    if (!gameData || !game) return
 
-    console.log('👥 Monitoring answers for early advance:', {
-      questionId: gameData.question.id,
-      gameId: id
-    })
+    // Don't trigger if answer is already revealed
+    if (gameData.question?.correct_answer) return
 
-    const unsubscribe = pb.collection('game_answers').subscribe('*', async (e) => {
-      // Filter to current question
-      if ((e.record as any).game_questions_id !== gameData.question!.id) return
-      if ((e.record as any).game !== id) return
+    // Don't trigger if early-advance timer already exists or timer is paused
+    if (gameData.timer?.isEarlyAdvance || gameData.timer?.isPaused) return
 
-      console.log('👥 Answer event detected:', {
-        action: e.action,
-        questionId: (e.record as any).game_questions_id,
-        team: (e.record as any).team
-      })
-
-      // Count teams with players
-      const teamsWithPlayers = Object.values(game.scoreboard?.teams || {})
-        .filter(team => team.players && team.players.length > 0).length
-
-      console.log('👥 Teams with players:', teamsWithPlayers)
-
-      // If no teams with players, skip
-      if (teamsWithPlayers === 0) {
-        console.log('👥 No teams with players, skipping early advance check')
-        return
-      }
-
-      // Get all answers for current question
-      const { gameAnswersService } = await import('@/lib/gameAnswers')
-      const answers = await gameAnswersService.getTeamAnswersForQuestion(id, gameData.question!.id)
-      const teamsAnswered = answers.length
-
-      console.log('👥 Teams answered:', teamsAnswered, 'of', teamsWithPlayers)
-
-      // If all answered and no early-advance timer exists yet and timer not paused
-      if (teamsAnswered >= teamsWithPlayers && !gameData.timer?.isEarlyAdvance && !gameData.timer?.isPaused) {
-        // GUARD: Prevent race condition when multiple answer events fire rapidly
-        if (isProcessingAllAnswered.current) {
-          console.log('👥 Already processing all-answered, skipping duplicate trigger')
-          return
-        }
-        isProcessingAllAnswered.current = true
-
-        try {
-          // Check if auto-reveal setting is enabled
-          const autoRevealEnabled = game?.metadata?.auto_reveal_on_all_answered ?? false
-
-          if (autoRevealEnabled) {
-            // Check remaining time on question timer
-            const questionTimerExpiresAt = gameData.timer?.expiresAt
-            const remainingMs = questionTimerExpiresAt
-              ? new Date(questionTimerExpiresAt).getTime() - Date.now()
-              : Infinity
-
-            // Only trigger 3-second early advance if >3 seconds remain
-            if (remainingMs > 3000) {
-              console.log('🎉 All teams answered! Triggering notification for 3 seconds')
-
-              // Create 3-second early-advance timer WITH notification flag
-              const timer = {
-                startedAt: new Date().toISOString(),
-                duration: 3,
-                expiresAt: new Date(Date.now() + 3000).toISOString(),
-                isEarlyAdvance: true,
-                showAsNotification: true
-              }
-
-              await updateGameDataClean({
-                ...gameData,
-                timer
-              })
-            } else {
-              // Let existing question timer expire naturally
-              console.log('👥 All teams answered with ≤3s remaining, letting timer expire naturally')
-            }
-          } else {
-            console.log('👥 All teams answered! Waiting for manual advance (auto-reveal disabled)')
-          }
-        } finally {
-          // Reset guard after a short delay (in case update fails or races)
-          setTimeout(() => {
-            isProcessingAllAnswered.current = false
-          }, 500)
-        }
-      }
-    }, { filter: `game = "${id}"` })
-
-    return () => {
-      console.log('👥 Cleaning up answer subscription for question:', gameData.question?.id)
-      // Reset guard when question changes
-      isProcessingAllAnswered.current = false
-      unsubscribe.then(unsub => unsub())
+    // GUARD: Prevent duplicate triggers
+    if (isProcessingAllAnswered.current) {
+      console.log('👥 [ControllerPage] Already processing all-answered, skipping duplicate trigger')
+      return
     }
-  }, [gameData?.question?.id, gameData?.question?.correct_answer, id, game?.scoreboard, game?.metadata, updateGameDataClean])
+    isProcessingAllAnswered.current = true
+
+    try {
+      // Check if auto-reveal setting is enabled
+      const autoRevealEnabled = game?.metadata?.auto_reveal_on_all_answered ?? false
+
+      if (autoRevealEnabled) {
+        // Check remaining time on question timer
+        const questionTimerExpiresAt = gameData.timer?.expiresAt
+        const remainingMs = questionTimerExpiresAt
+          ? new Date(questionTimerExpiresAt).getTime() - Date.now()
+          : Infinity
+
+        // Only trigger 3-second early advance if >3 seconds remain
+        if (remainingMs > 3000) {
+          console.log('🎉 [ControllerPage] All teams answered! Triggering notification for 3 seconds')
+
+          // Create 3-second early-advance timer WITH notification flag
+          const timer = {
+            startedAt: new Date().toISOString(),
+            duration: 3,
+            expiresAt: new Date(Date.now() + 3000).toISOString(),
+            isEarlyAdvance: true,
+            showAsNotification: true
+          }
+
+          await updateGameDataClean({
+            ...gameData,
+            timer
+          })
+        } else {
+          // Let existing question timer expire naturally
+          console.log('👥 [ControllerPage] All teams answered with ≤3s remaining, letting timer expire naturally')
+        }
+      } else {
+        console.log('👥 [ControllerPage] All teams answered! Waiting for manual advance (auto-reveal disabled)')
+      }
+    } finally {
+      // Reset guard after a short delay (in case update fails or races)
+      setTimeout(() => {
+        isProcessingAllAnswered.current = false
+      }, 500)
+    }
+  }, [gameData, game, updateGameDataClean])
+
+  // Reset guard when question changes
+  useEffect(() => {
+    isProcessingAllAnswered.current = false
+  }, [gameData?.question?.id])
 
   // Fetch game data
   const fetchGameData = async () => {
@@ -1038,6 +1002,7 @@ export default function ControllerPage() {
               gameData={gameData}
               rounds={rounds}
               game={game}
+              onAllTeamsAnswered={handleAllTeamsAnswered}
             />
           </div>
         )}

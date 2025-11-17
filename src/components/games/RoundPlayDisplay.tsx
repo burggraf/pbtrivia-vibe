@@ -40,9 +40,10 @@ interface RoundPlayDisplayProps {
   onAnswerSubmit?: (answer: string) => void  // Only used in player mode
   gameId?: string  // Added for controller mode to track answers
   scoreboard?: GameScoreboard  // Added for controller mode to show teams
+  onAllTeamsAnswered?: () => void  // Callback when all teams have submitted answers (controller mode only)
 }
 
-export default function RoundPlayDisplay({ gameData, mode = 'controller', onAnswerSubmit, gameId, scoreboard }: RoundPlayDisplayProps) {
+export default function RoundPlayDisplay({ gameData, mode = 'controller', onAnswerSubmit, gameId, scoreboard, onAllTeamsAnswered }: RoundPlayDisplayProps) {
   const [teamAnswerStatus, setTeamAnswerStatus] = useState<Map<string, { answered: boolean, isCorrect?: boolean }>>(new Map()) // Track which teams have answered and their correctness
   const { textSize } = useTextSize()
   const [selectedTeam, setSelectedTeam] = useState<{ name: string; players: ScoreboardPlayer[] } | null>(null)
@@ -141,6 +142,32 @@ export default function RoundPlayDisplay({ gameData, mode = 'controller', onAnsw
       unsubscribe.then(unsub => unsub())
     }
   }, [mode, gameId, gameData.question?.id])
+
+  // Detect when all teams have answered and trigger callback (controller mode only)
+  useEffect(() => {
+    if (mode !== 'controller' || !onAllTeamsAnswered || !scoreboard || !gameData.question?.id) return
+
+    // Don't trigger if answer is already revealed
+    if (gameData.question.correct_answer) return
+
+    // Count teams with players
+    const teamsWithPlayers = Object.values(scoreboard.teams)
+      .filter(team => team.players && team.players.length > 0).length
+
+    // If no teams with players, skip
+    if (teamsWithPlayers === 0) return
+
+    // Count teams that have answered
+    const teamsAnswered = teamAnswerStatus.size
+
+    console.log('👥 [RoundPlayDisplay] Teams answered:', teamsAnswered, 'of', teamsWithPlayers)
+
+    // If all teams have answered, trigger callback
+    if (teamsAnswered >= teamsWithPlayers) {
+      console.log('🎉 [RoundPlayDisplay] All teams have answered! Triggering callback')
+      onAllTeamsAnswered()
+    }
+  }, [mode, onAllTeamsAnswered, scoreboard, gameData.question?.id, gameData.question?.correct_answer, teamAnswerStatus])
 
   // Show answer if correct_answer exists in the data
   const shouldShowAnswer = !!gameData.question?.correct_answer

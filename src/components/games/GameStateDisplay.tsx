@@ -46,9 +46,10 @@ interface GameStateDisplayProps {
     code: string
     scoreboard?: GameScoreboard
   }
+  onAllTeamsAnswered?: () => void  // Callback when all teams have submitted answers
 }
 
-export default function GameStateDisplay({ gameData, rounds, game }: GameStateDisplayProps) {
+export default function GameStateDisplay({ gameData, rounds, game, onAllTeamsAnswered }: GameStateDisplayProps) {
   if (!gameData) {
     return (
       <div className="text-center py-12">
@@ -157,6 +158,7 @@ export default function GameStateDisplay({ gameData, rounds, game }: GameStateDi
               mode="controller"
               gameId={game.id}
               scoreboard={game.scoreboard}
+              onAllTeamsAnswered={onAllTeamsAnswered}
             />
           </div>
         )
