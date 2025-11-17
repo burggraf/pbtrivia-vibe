@@ -1,9 +1,13 @@
 import { useState } from 'react'
+// @ts-expect-error - Temporary: Import will be used in Task 10
 import { Button } from '@/components/ui/button'
 import { gamePlayersService } from '@/lib/games'
 import pb from '@/lib/pocketbase'
+// @ts-expect-error - Temporary: Import will be used in Task 10
 import QRCode from 'react-qr-code'
+// @ts-expect-error - Temporary: Import will be used in Task 10
 import { getMainAppUrl } from '@/lib/networkUrl'
+import { TeamRoster } from '@/components/TeamRoster'
 
 interface GameStartProps {
   gameData: {
@@ -17,9 +21,11 @@ interface GameStartProps {
   gameName?: string
 }
 
-export default function GameStart({ gameData: _gameData, gameId, gameStatus, currentTeamId, onChangeTeam, gameCode, gameName }: GameStartProps) {
+export default function GameStart({ gameData: _gameData, gameId, gameStatus, currentTeamId, onChangeTeam, gameCode: _gameCode, gameName: _gameName }: GameStartProps) {
+  // @ts-expect-error - Temporary: State will be used in Task 10
   const [isChangingTeam, setIsChangingTeam] = useState(false)
 
+  // @ts-expect-error - Temporary: Function will be used in Task 10
   const handleChangeTeam = async () => {
     if (!gameId) {
       console.error('No game ID provided')
@@ -54,48 +60,10 @@ export default function GameStart({ gameData: _gameData, gameId, gameStatus, cur
   // Only show the Change Team button if:
   // 1. Game status is "ready"
   // 2. User has a current team
+  // @ts-expect-error - Temporary: Variable will be used in Task 10
   const showChangeTeamButton = gameStatus === 'ready' && currentTeamId
 
   return (
-    <div className="text-center mb-4 md:mb-8">
-      <h2 className="text-2xl md:text-3xl font-bold text-slate-800 dark:text-slate-100 mb-4">
-        Welcome to Trivia Party!
-      </h2>
-      <p className="text-base md:text-lg text-slate-600 dark:text-slate-400 font-medium mb-3">
-        {gameName || 'Get ready to play!'}
-      </p>
-
-      {gameCode && (
-        <div className="mb-6">
-          <p className="text-lg md:text-xl text-slate-700 dark:text-slate-300 mb-4">
-            Game Code: <span className="font-mono font-bold text-xl md:text-2xl">{gameCode}</span>
-          </p>
-          <div className="flex justify-center mb-4">
-            <div className="bg-white p-4 rounded-lg shadow-lg">
-              <QRCode
-                value={`${getMainAppUrl()}/join?code=${gameCode}`}
-                size={256}
-                level="M"
-                aria-label={`QR code to join game ${gameCode}`}
-              />
-              <p className="text-center text-base text-slate-600 dark:text-slate-700 mt-3">
-                Scan to join
-              </p>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {showChangeTeamButton && (
-        <Button
-          onClick={handleChangeTeam}
-          disabled={isChangingTeam}
-          variant="outline"
-          className="h-[44px] min-h-[44px] px-6"
-        >
-          {isChangingTeam ? 'Leaving...' : 'Change My Team'}
-        </Button>
-      )}
-    </div>
+    <TeamRoster />
   )
 }
