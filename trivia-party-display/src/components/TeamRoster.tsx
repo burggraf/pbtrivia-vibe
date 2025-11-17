@@ -42,6 +42,14 @@ function calculateScale(teams: ProcessedTeam[]): number {
   return Math.max(0.6, Math.min(1.0, Math.min(teamScale, playerScale)))
 }
 
+// Used by PlayerAvatar component (Task 5)
+// @ts-ignore - TS6133: Function will be used in next task
+function getAvatarColor(playerId: string): string {
+  const colors = ['blue', 'green', 'purple', 'orange', 'pink', 'teal']
+  const hash = playerId.split('').reduce((acc, char) => acc + char.charCodeAt(0), 0)
+  return colors[hash % colors.length]
+}
+
 export function TeamRoster() {
   const { gameRecord } = useDisplay()
   const teams = processScoreboardData(gameRecord?.scoreboard)
