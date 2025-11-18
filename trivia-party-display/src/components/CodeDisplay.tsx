@@ -3,11 +3,18 @@ import { pbUrl } from '@/lib/pocketbase'
 import { useState, useEffect } from 'react'
 import { TestMode } from '@/components/TestMode'
 import { Button } from '@/components/ui/button'
+import { getVersion } from '@tauri-apps/api/app'
 
 export function CodeDisplay() {
   const { code, displayId } = useDisplay()
   const [resolution, setResolution] = useState('')
   const [isTestMode, setIsTestMode] = useState(false)
+  const [appVersion, setAppVersion] = useState('...')
+
+  // Get app version
+  useEffect(() => {
+    getVersion().then(version => setAppVersion(version)).catch(() => setAppVersion('1.5.3'))
+  }, [])
 
   // Get screen resolution
   useEffect(() => {
@@ -80,7 +87,7 @@ export function CodeDisplay() {
 
       {/* App version - bottom right */}
       <div className="absolute bottom-4 right-4 text-base text-slate-500 dark:text-slate-600">
-        v1.0.0
+        v{appVersion}
       </div>
     </div>
   )
