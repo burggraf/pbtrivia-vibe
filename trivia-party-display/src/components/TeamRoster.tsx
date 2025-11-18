@@ -142,9 +142,23 @@ export function TeamRoster({ children }: TeamRosterProps) {
   const scale = calculateScale(teams)
 
   if (teams.length === 0) {
+    // No teams yet - show children (QR code, game info) in center with waiting message
     return (
-      <div className="text-slate-400 text-center py-8">
-        Waiting for teams to join...
+      <div className="grid grid-cols-[1fr_2fr_1fr] gap-8 w-full">
+        {/* Left Column - Empty with waiting message */}
+        <div className="flex items-center justify-center">
+          <div className="text-slate-400 text-center text-lg">
+            Waiting for teams to join...
+          </div>
+        </div>
+
+        {/* Center Column - QR code content passed as children */}
+        <div className="flex items-center justify-center">
+          {children}
+        </div>
+
+        {/* Right Column - Empty */}
+        <div />
       </div>
     )
   }
