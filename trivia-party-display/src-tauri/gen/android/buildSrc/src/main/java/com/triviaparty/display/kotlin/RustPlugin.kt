@@ -63,7 +63,7 @@ open class RustPlugin : Plugin<Project> {
                     val targetName = targetPair.value
                     val targetArch = archList[targetPair.index]
                     val targetArchCapitalized = targetArch.replaceFirstChar { it.uppercase() }
-                    val targetBuildTask = project.tasks.maybeCreate(
+                    val targetBuildTask = tasks.maybeCreate(
                         "rustBuild$targetArchCapitalized$profileCapitalized",
                         BuildTask::class.java
                     ).apply {

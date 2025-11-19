@@ -1,5 +1,3 @@
-use tauri::Manager;
-
 // Monitor commands only available on desktop platforms
 #[cfg(not(any(target_os = "android", target_os = "ios")))]
 #[tauri::command]
@@ -168,15 +166,20 @@ fn setup_desktop_menu(app: &mut tauri::App) -> Result<(), Box<dyn std::error::Er
 
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
+  // Use conditional compilation to avoid unused_mut warning on mobile platforms
+  #[cfg(not(any(target_os = "android", target_os = "ios")))]
   let mut builder = tauri::Builder::default()
+    .plugin(tauri_plugin_updater::Builder::new().build())
+    .plugin(tauri_plugin_process::init());
+
+  #[cfg(any(target_os = "android", target_os = "ios"))]
+  let builder = tauri::Builder::default()
     .plugin(tauri_plugin_updater::Builder::new().build())
     .plugin(tauri_plugin_process::init());
 
   // Register monitor commands only on desktop platforms
   #[cfg(not(any(target_os = "android", target_os = "ios")))]
-  {
-    builder = builder.invoke_handler(tauri::generate_handler![get_available_monitors, move_to_monitor]);
-  }
+  let builder = builder.invoke_handler(tauri::generate_handler![get_available_monitors, move_to_monitor]);
 
   builder
     .setup(|app| {

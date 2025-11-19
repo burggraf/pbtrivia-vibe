@@ -24,8 +24,8 @@ class MainActivity : TauriActivity() {
         useWideViewPort = true
         loadWithOverviewMode = false
 
-        // Enable hardware acceleration
-        setRenderPriority(android.webkit.WebSettings.RenderPriority.HIGH)
+        // Hardware acceleration is enabled by default in modern Android WebViews
+        // (setRenderPriority was deprecated and is no longer needed)
       }
 
       // Inject zoom adjustment after page loads to compensate for high DPR

@@ -1,12 +1,16 @@
 import java.io.File
+import javax.inject.Inject
 import org.apache.tools.ant.taskdefs.condition.Os
 import org.gradle.api.DefaultTask
 import org.gradle.api.GradleException
 import org.gradle.api.logging.LogLevel
 import org.gradle.api.tasks.Input
 import org.gradle.api.tasks.TaskAction
+import org.gradle.process.ExecOperations
 
-open class BuildTask : DefaultTask() {
+abstract class BuildTask @Inject constructor(
+    private val execOperations: ExecOperations
+) : DefaultTask() {
     @Input
     var rootDirRel: String? = null
     @Input
@@ -27,7 +31,7 @@ open class BuildTask : DefaultTask() {
                     "$executable.cmd",
                     "$executable.bat",
                 )
-                
+
                 var lastException: Exception = e
                 for (fallback in fallbacks) {
                     try {
@@ -48,21 +52,27 @@ open class BuildTask : DefaultTask() {
         val rootDirRel = rootDirRel ?: throw GradleException("rootDirRel cannot be null")
         val target = target ?: throw GradleException("target cannot be null")
         val release = release ?: throw GradleException("release cannot be null")
-        val args = listOf("tauri", "android", "android-studio-script");
 
-        project.exec {
-            workingDir(File(project.projectDir, rootDirRel))
+        // Capture project properties before exec to avoid accessing project during execution
+        val projectDir = project.projectDir
+        val isDebugEnabled = project.logger.isEnabled(LogLevel.DEBUG)
+        val isInfoEnabled = project.logger.isEnabled(LogLevel.INFO)
+
+        val args = mutableListOf("tauri", "android", "android-studio-script")
+        if (isDebugEnabled) {
+            args.add("-vv")
+        } else if (isInfoEnabled) {
+            args.add("-v")
+        }
+        if (release) {
+            args.add("--release")
+        }
+        args.addAll(listOf("--target", target))
+
+        execOperations.exec {
+            workingDir(File(projectDir, rootDirRel))
             executable(executable)
             args(args)
-            if (project.logger.isEnabled(LogLevel.DEBUG)) {
-                args("-vv")
-            } else if (project.logger.isEnabled(LogLevel.INFO)) {
-                args("-v")
-            }
-            if (release) {
-                args("--release")
-            }
-            args(listOf("--target", target))
         }.assertNormalExitValue()
     }
 }
