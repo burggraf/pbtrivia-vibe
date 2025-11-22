@@ -9,6 +9,9 @@ export interface GameQuestion {
   sequence: number;
   category_name: string;
   key: string; // Secure random key for answer shuffling (only accessible to host)
+  audio_file?: string; // Audio file for TTS playback
+  audio_status: 'none' | 'generating' | 'available' | 'failed'; // Status of audio generation
+  audio_error?: string; // Error message if audio generation failed
   created: string;
   updated: string;
 }
