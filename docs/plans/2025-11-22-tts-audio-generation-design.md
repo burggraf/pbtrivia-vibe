@@ -11,11 +11,11 @@ Add text-to-speech (TTS) audio generation for trivia questions, allowing the dis
 ## Requirements Summary
 
 - Host triggers audio generation from game setup screen
-- Audio generated for all questions in a game (via round_questions)
+- Audio generated for all questions in a game (via game_questions)
 - Sequential processing to manage API rate limits
 - Progress tracking with real-time updates
 - Graceful error handling with retry capability
-- Audio stored per round_question (game-specific, not reusable)
+- Audio stored per game_question (game-specific, not reusable)
 - Display app automatically plays audio when available
 - MP3 format for universal compatibility
 
@@ -26,9 +26,9 @@ Add text-to-speech (TTS) audio generation for trivia questions, allowing the dis
 1. **Frontend trigger**: Host clicks "Generate Audio" button in game setup (only available when game status = "setup")
 2. **API endpoint**: `POST /api/games/{gameId}/generate-audio` creates job record, returns 202 Accepted
 3. **Background worker**: PocketBase interval check picks up pending jobs, processes sequentially
-4. **Audio generation**: For each round_question, call Gemini TTS API, save MP3 to PocketBase storage
+4. **Audio generation**: For each game_question, call Gemini TTS API, save MP3 to PocketBase storage
 5. **Progress monitoring**: Frontend subscribes to job updates via realtime, shows progress bar
-6. **Playback**: Display app downloads audio files during game using round_questions.audio_file field
+6. **Playback**: Display app downloads audio files during game using game_questions.audio_file field
 
 ### Component Architecture
 
@@ -62,7 +62,7 @@ Add text-to-speech (TTS) audio generation for trivia questions, allowing the dis
          │
          ▼
 ┌─────────────────────────┐
-│  round_questions        │
+│  game_questions        │
 │  - audio_file (MP3)     │
 │  - audio_status         │
 └─────────────────────────┘
@@ -82,9 +82,9 @@ Add text-to-speech (TTS) audio generation for trivia questions, allowing the dis
 | `game` | relation | Link to games collection (required) |
 | `status` | select | "pending", "processing", "completed", "failed" |
 | `progress` | number | 0-100, percentage complete |
-| `total_questions` | number | Total round_questions to process |
+| `total_questions` | number | Total game_questions to process |
 | `processed_questions` | number | Questions completed so far |
-| `failed_questions` | json | Array of `{round_question_id, error_message}` |
+| `failed_questions` | json | Array of `{game_question_id, error_message}` |
 | `current_api_key_index` | number | Index of Gemini API key to use next (for rotation) |
 | `created` | datetime | Auto-generated |
 | `updated` | datetime | Auto-generated |
@@ -95,7 +95,7 @@ Add text-to-speech (TTS) audio generation for trivia questions, allowing the dis
 - Update: Only PocketBase internal (no external updates)
 - Delete: Only game host (for cleanup)
 
-### Modified Collection: `round_questions`
+### Modified Collection: `game_questions`
 
 **New Fields**:
 | Field | Type | Description |
@@ -105,7 +105,7 @@ Add text-to-speech (TTS) audio generation for trivia questions, allowing the dis
 | `audio_error` | text | Optional, stores error message if generation failed |
 
 **Access Rules** (additions):
-- Audio fields readable by anyone who can read round_questions (needed for display app)
+- Audio fields readable by anyone who can read game_questions (needed for display app)
 - Audio file writable only by PocketBase internal
 
 ## API Endpoint
@@ -121,11 +121,11 @@ Add text-to-speech (TTS) audio generation for trivia questions, allowing the dis
 - No existing "pending" or "processing" job for this game (idempotency)
 
 **Process**:
-1. Query all round_questions for this game (via rounds relationship)
+1. Query all game_questions for this game (via rounds relationship)
 2. Create audio_generation_jobs record:
    - game: {gameId}
    - status: "pending"
-   - total_questions: count of round_questions
+   - total_questions: count of game_questions
    - processed_questions: 0
    - failed_questions: []
    - current_api_key_index: 0
@@ -155,12 +155,12 @@ Add text-to-speech (TTS) audio generation for trivia questions, allowing the dis
 1. Find oldest job with status="pending"
 2. Update job status to "processing"
 3. Load `GEMINI_API_KEYS` from environment variable (JSON array)
-4. For each round_question in game (ordered by round, then question order):
-   - Update round_question.audio_status = "generating"
+4. For each game_question in game (ordered by round, then question order):
+   - Update game_question.audio_status = "generating"
    - Load question text from related questions record
    - Call Gemini TTS API with current API key
    - **On success**:
-     - Save MP3 to round_question.audio_file
+     - Save MP3 to game_question.audio_file
      - Set audio_status = "available"
      - Increment job.processed_questions
    - **On rate limit (429)**:
@@ -316,7 +316,7 @@ if (currentQuestion.audio_status === 'available') {
 
 4. **All Keys Exhausted**:
    - Mark question as failed
-   - Record error in round_question.audio_error
+   - Record error in game_question.audio_error
    - Add to job.failed_questions
    - Continue to next question
 
@@ -325,14 +325,14 @@ if (currentQuestion.audio_status === 'available') {
 **From Frontend**:
 - If job.status = "failed" with failed_questions array populated
 - Show "Retry Failed Questions" button
-- Creates new job targeting only failed round_questions:
+- Creates new job targeting only failed game_questions:
   - Reset audio_status from "failed" to "none"
   - Create new job with subset of questions
   - Process with same background worker logic
 
 **Idempotency**:
 - If "Generate Audio" clicked while job in progress: return existing job ID
-- If round_question already has audio_status="available": skip generation, count as success
+- If game_question already has audio_status="available": skip generation, count as success
 - No duplicate job creation
 
 ### Worker Resilience
@@ -407,7 +407,7 @@ if (currentQuestion.audio_status === 'available') {
 ### Migration Strategy
 
 1. Create migration for audio_generation_jobs collection
-2. Create migration to add audio fields to round_questions
+2. Create migration to add audio fields to game_questions
 3. Add custom API route in pb_hooks/audio_generation.pb.js
 4. Add background worker in same hook file
 5. Update frontend game setup screen
