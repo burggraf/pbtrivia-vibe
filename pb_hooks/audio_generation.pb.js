@@ -124,9 +124,8 @@ routerAdd("POST", "/api/games/{id}/generate-audio", (e) => {
     // Create job record
     const jobsCollection = e.app.findCollectionByNameOrId("audio_generation_jobs");
     const jobRecord = new Record(jobsCollection);
-    const jobForm = new RecordUpsertForm(e.app, jobRecord);
 
-    jobForm.loadData({
+    jobRecord.load({
       game: gameId,
       status: "pending",
       progress: 0,
@@ -136,6 +135,7 @@ routerAdd("POST", "/api/games/{id}/generate-audio", (e) => {
       current_api_key_index: 0
     });
 
+    const jobForm = new RecordUpsertForm(e.app, jobRecord);
     jobForm.submit();
 
     return e.json(202, {
@@ -172,7 +172,7 @@ onBootstrap((e) => {
       if (stuckJobs && stuckJobs.length > 0) {
         for (const job of stuckJobs) {
           const form = new RecordUpsertForm($app, job);
-          form.loadData({ status: "pending" });
+          form.load({ status: "pending" });
           form.submit();
           console.log(`[AudioGen] Reset stuck job ${job.id} to pending`);
         }
@@ -209,7 +209,7 @@ onBootstrap((e) => {
 
       // Update job status to processing
       const jobForm = new RecordUpsertForm($app, job);
-      jobForm.loadData({ status: "processing" });
+      jobForm.load({ status: "processing" });
       jobForm.submit();
 
       // Get API keys
@@ -246,7 +246,7 @@ onBootstrap((e) => {
         try {
           // Update status to generating
           const gqForm = new RecordUpsertForm($app, gameQuestion);
-          gqForm.loadData({ audio_status: "generating" });
+          gqForm.load({ audio_status: "generating" });
           gqForm.submit();
 
           // Get question text
@@ -277,7 +277,7 @@ onBootstrap((e) => {
 
               // Update job with new key index
               const updateForm = new RecordUpsertForm($app, job);
-              updateForm.loadData({ current_api_key_index: currentKeyIndex });
+              updateForm.load({ current_api_key_index: currentKeyIndex });
               updateForm.submit();
             }
           }
@@ -304,7 +304,7 @@ onBootstrap((e) => {
             // Failed after all retries
             const errorMsg = lastError?.message || "Unknown error";
             const gqErrorForm = new RecordUpsertForm($app, gameQuestion);
-            gqErrorForm.loadData({
+            gqErrorForm.load({
               audio_status: "failed",
               audio_error: errorMsg.substring(0, 255)
             });
@@ -322,7 +322,7 @@ onBootstrap((e) => {
 
           // Update job progress
           const progressForm = new RecordUpsertForm($app, job);
-          progressForm.loadData({
+          progressForm.load({
             processed_questions: processedCount,
             progress: Math.floor((processedCount / gameQuestions.length) * 100),
             failed_questions: failedQuestions
@@ -337,7 +337,7 @@ onBootstrap((e) => {
 
           // Mark as failed and continue
           const gqErrorForm = new RecordUpsertForm($app, gameQuestion);
-          gqErrorForm.loadData({
+          gqErrorForm.load({
             audio_status: "failed",
             audio_error: err.message.substring(0, 255)
           });
@@ -351,7 +351,7 @@ onBootstrap((e) => {
           processedCount++;
 
           const progressForm = new RecordUpsertForm($app, job);
-          progressForm.loadData({
+          progressForm.load({
             processed_questions: processedCount,
             progress: Math.floor((processedCount / gameQuestions.length) * 100),
             failed_questions: failedQuestions
@@ -363,7 +363,7 @@ onBootstrap((e) => {
       // Mark job as complete or failed
       const finalStatus = failedQuestions.length > 0 ? "failed" : "completed";
       const finalForm = new RecordUpsertForm($app, job);
-      finalForm.loadData({ status: finalStatus });
+      finalForm.load({ status: finalStatus });
       finalForm.submit();
 
       console.log(`[AudioGen] Job ${job.id} ${finalStatus} (${processedCount}/${gameQuestions.length} processed, ${failedQuestions.length} failed)`);
