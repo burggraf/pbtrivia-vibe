@@ -7,6 +7,8 @@ import GameEditModal from '@/components/games/GameEditModal'
 import RoundEditModal from '@/components/games/RoundEditModal'
 import QuestionsList from '@/components/games/QuestionsList'
 import ConnectedDisplays from '@/components/games/ConnectedDisplays'
+import AudioGenerationButton from '@/components/games/AudioGenerationButton'
+import AudioGenerationModal from '@/components/games/AudioGenerationModal'
 import CategoryIcon, { getAvailableCategories } from '@/components/ui/CategoryIcon'
 import { Info, Plus, Play, User } from 'lucide-react'
 import ProfileModal from '@/components/ProfileModal'
@@ -33,6 +35,8 @@ export default function HostPage() {
   const [isRoundCreateMode, setIsRoundCreateMode] = useState(false)
   const [currentGameId, setCurrentGameId] = useState<string | null>(null)
   const [profileModalOpen, setProfileModalOpen] = useState(false)
+  const [audioJobId, setAudioJobId] = useState<string | null>(null)
+  const [isAudioModalOpen, setIsAudioModalOpen] = useState(false)
 
   const fetchGames = async () => {
     try {
@@ -468,6 +472,17 @@ export default function HostPage() {
                               >
                                 <Info className="h-4 w-4" />
                               </button>
+                              {game.status === 'setup' && (
+                                <div onClick={(e) => e.stopPropagation()}>
+                                  <AudioGenerationButton
+                                    game={game}
+                                    onJobCreated={(jobId) => {
+                                      setAudioJobId(jobId)
+                                      setIsAudioModalOpen(true)
+                                    }}
+                                  />
+                                </div>
+                              )}
                               {(game.status === 'setup' || game.status === 'ready' || game.status === 'in-progress') && (
                                 <button
                                   className={`w-8 h-8 flex items-center justify-center rounded-md transition-colors ${
@@ -649,6 +664,16 @@ export default function HostPage() {
         <ProfileModal
           isOpen={profileModalOpen}
           onClose={() => setProfileModalOpen(false)}
+        />
+
+        <AudioGenerationModal
+          jobId={audioJobId}
+          isOpen={isAudioModalOpen}
+          onClose={() => setIsAudioModalOpen(false)}
+          onRetry={() => {
+            setIsAudioModalOpen(false)
+            setAudioJobId(null)
+          }}
         />
       </div>
     </div>
