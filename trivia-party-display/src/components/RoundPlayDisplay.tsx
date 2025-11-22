@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import pb from '@/lib/pocketbase'
@@ -43,6 +43,7 @@ interface RoundPlayDisplayProps {
 export default function RoundPlayDisplay({ gameData, mode = 'controller', onAnswerSubmit, gameId, scoreboard }: RoundPlayDisplayProps) {
   const [teamAnswerStatus, setTeamAnswerStatus] = useState<Map<string, { answered: boolean, isCorrect?: boolean }>>(new Map()) // Track which teams have answered and their correctness
   const { textSize } = useTextSize()
+  const audioRef = useRef<HTMLAudioElement | null>(null)
 
   // Get text size classes based on the current text size setting
   const getTextSizeClasses = () => {
@@ -136,6 +137,44 @@ export default function RoundPlayDisplay({ gameData, mode = 'controller', onAnsw
       unsubscribe.then(unsub => unsub())
     }
   }, [mode, gameId, gameData.question?.id])
+
+  // Play audio when question changes
+  useEffect(() => {
+    if (!gameData.question) return
+
+    // Clean up previous audio
+    if (audioRef.current) {
+      audioRef.current.pause()
+      audioRef.current = null
+    }
+
+    // Check if audio is available
+    const currentQuestion = gameData.question as any
+    if (currentQuestion.audio_status === 'available' && currentQuestion.audio_file) {
+      try {
+        const audioUrl = pb.files.getUrl(currentQuestion, currentQuestion.audio_file)
+
+        const audio = new Audio(audioUrl)
+        audioRef.current = audio
+
+        audio.play().catch(err => {
+          console.error('Failed to play audio:', err)
+          // Silently fail - question still displays
+        })
+      } catch (err) {
+        console.error('Error loading audio:', err)
+        // Silently fail - question still displays
+      }
+    }
+
+    // Cleanup on unmount
+    return () => {
+      if (audioRef.current) {
+        audioRef.current.pause()
+        audioRef.current = null
+      }
+    }
+  }, [gameData.question, gameData.question?.id])
 
   // Show answer if correct_answer exists in the data
   const shouldShowAnswer = !!gameData.question?.correct_answer
