@@ -19,11 +19,17 @@ function getGeminiApiKeys() {
   }
 }
 
-// Helper: Call Gemini TTS API
+// Helper: Call Gemini TTS API with 30-second timeout
 async function generateAudio(text, apiKey) {
   const url = `https://texttospeech.googleapis.com/v1/text:synthesize?key=${apiKey}`;
 
-  const response = await fetch(url, {
+  // Create timeout promise
+  const timeoutPromise = new Promise((_, reject) => {
+    setTimeout(() => reject(new Error('API request timeout after 30 seconds')), 30000);
+  });
+
+  // Create fetch promise
+  const fetchPromise = fetch(url, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json'
@@ -39,6 +45,9 @@ async function generateAudio(text, apiKey) {
       }
     })
   });
+
+  // Race between fetch and timeout
+  const response = await Promise.race([fetchPromise, timeoutPromise]);
 
   if (!response.ok) {
     const error = await response.text();
@@ -145,8 +154,10 @@ routerAdd("POST", "/api/games/{id}/generate-audio", (e) => {
 onBootstrap((e) => {
   console.log('[AudioGen] Starting background worker');
 
-  // Start cron job to process jobs every minute
-  // The cron expression "* * * * *" means every minute
+  // NOTE: PocketBase JSVM does not support setTimeout/setInterval (no event loop)
+  // cronAdd is the only way to schedule recurring tasks, but has 1-minute minimum
+  // For sub-minute scheduling, would need to implement in Go
+  // See: https://pocketbase.io/docs/js-overview/ and https://github.com/pocketbase/pocketbase/discussions/3535
   cronAdd("audioGenerationWorker", "* * * * *", async () => {
     // Try to reset any stuck jobs (will be empty most of the time)
     try {
