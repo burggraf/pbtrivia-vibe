@@ -32,7 +32,7 @@ export default function AudioGenerationButton({ game, onJobCreated, disabled = f
       const response = await fetch(`${pb.baseUrl}/api/games/${game.id}/generate-audio`, {
         method: 'POST',
         headers: {
-          'Authorization': pb.authStore.token,
+          'Authorization': `Bearer ${pb.authStore.token}`,
           'Content-Type': 'application/json'
         }
       });
