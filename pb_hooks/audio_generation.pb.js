@@ -1,7 +1,6 @@
 /// <reference path="../pb_data/types.d.ts" />
 
 // Track worker state
-let workerInterval = null;
 let isProcessing = false;
 
 // Helper: Get Gemini API keys from environment
@@ -140,6 +139,242 @@ routerAdd("POST", "/api/games/{id}/generate-audio", (e) => {
     console.error('[AudioGen] Error creating job:', err);
     return e.json(500, { error: "Failed to create audio generation job" });
   }
+});
+
+// Background worker: Process pending jobs
+async function processJobs(app) {
+  if (isProcessing) {
+    return; // Already processing, skip this interval
+  }
+
+  try {
+    isProcessing = true;
+
+    // Find oldest pending job
+    const pendingJobs = app.findRecordsByFilter(
+      "audio_generation_jobs",
+      `status = "pending"`,
+      "+created",
+      1,
+      0
+    );
+
+    if (pendingJobs.length === 0) {
+      return; // No pending jobs
+    }
+
+    const job = pendingJobs[0];
+    const gameId = job.getString("game");
+
+    console.log(`[AudioGen] Processing job ${job.id} for game ${gameId}`);
+
+    // Update job status to processing
+    const jobForm = new RecordUpsertForm(app, job);
+    jobForm.loadData({ status: "processing" });
+    jobForm.submit();
+
+    // Get API keys
+    const apiKeys = getGeminiApiKeys();
+    if (apiKeys.length === 0) {
+      throw new Error("No Gemini API keys available");
+    }
+
+    let currentKeyIndex = job.getInt("current_api_key_index");
+    const failedQuestions = [];
+
+    // Get all game_questions for this game
+    const gameQuestions = app.findRecordsByFilter(
+      "game_questions",
+      `game = {:gameId}`,
+      "round_order,order",
+      -1,
+      0,
+      { gameId }
+    );
+
+    let processedCount = job.getInt("processed_questions");
+
+    // Process each question
+    for (let i = 0; i < gameQuestions.length; i++) {
+      const gameQuestion = gameQuestions[i];
+
+      // Skip if already has audio
+      if (gameQuestion.getString("audio_status") === "available") {
+        processedCount++;
+        continue;
+      }
+
+      try {
+        // Update status to generating
+        const gqForm = new RecordUpsertForm(app, gameQuestion);
+        gqForm.loadData({ audio_status: "generating" });
+        gqForm.submit();
+
+        // Get question text
+        const questionId = gameQuestion.getString("question");
+        const question = app.findRecordById("questions", questionId);
+        const questionText = question.getString("text");
+
+        // Try to generate audio with retry logic
+        let audioContent = null;
+        let attempts = 0;
+        let lastError = null;
+
+        while (attempts < 3 && audioContent === null) {
+          try {
+            const apiKey = apiKeys[currentKeyIndex % apiKeys.length];
+            audioContent = await generateAudio(questionText, apiKey);
+          } catch (err) {
+            lastError = err;
+            attempts++;
+
+            // If rate limit, rotate immediately
+            if (err.message.includes("429")) {
+              currentKeyIndex++;
+            } else {
+              // For other errors, try next key
+              currentKeyIndex++;
+            }
+
+            // Update job with new key index
+            const updateForm = new RecordUpsertForm(app, job);
+            updateForm.loadData({ current_api_key_index: currentKeyIndex });
+            updateForm.submit();
+          }
+        }
+
+        if (audioContent) {
+          // Decode base64 and save as file
+          const audioBytes = atob(audioContent);
+          const audioArray = new Uint8Array(audioBytes.length);
+          for (let i = 0; i < audioBytes.length; i++) {
+            audioArray[i] = audioBytes.charCodeAt(i);
+          }
+          const filename = `${gameQuestion.id}.mp3`;
+
+          // Create form with file
+          const fileForm = new RecordUpsertForm(app, gameQuestion);
+          const fileData = new FormData();
+          fileData.append('audio_file', new Blob([audioArray], { type: 'audio/mpeg' }), filename);
+          fileData.append('audio_status', 'available');
+          fileForm.loadFormData(fileData);
+          fileForm.submit();
+
+          console.log(`[AudioGen] Generated audio for question ${gameQuestion.id}`);
+        } else {
+          // Failed after all retries
+          const errorMsg = lastError?.message || "Unknown error";
+          const gqErrorForm = new RecordUpsertForm(app, gameQuestion);
+          gqErrorForm.loadData({
+            audio_status: "failed",
+            audio_error: errorMsg.substring(0, 255)
+          });
+          gqErrorForm.submit();
+
+          failedQuestions.push({
+            game_question_id: gameQuestion.id,
+            error_message: errorMsg
+          });
+
+          console.error(`[AudioGen] Failed to generate audio for question ${gameQuestion.id}:`, errorMsg);
+        }
+
+        processedCount++;
+
+        // Update job progress
+        const progressForm = new RecordUpsertForm(app, job);
+        progressForm.loadData({
+          processed_questions: processedCount,
+          progress: Math.floor((processedCount / gameQuestions.length) * 100),
+          failed_questions: failedQuestions
+        });
+        progressForm.submit();
+
+        // Rate limit safety: wait 200ms between questions
+        await new Promise(resolve => setTimeout(resolve, 200));
+
+      } catch (err) {
+        console.error(`[AudioGen] Unexpected error processing question ${gameQuestion.id}:`, err);
+
+        // Mark as failed and continue
+        const gqErrorForm = new RecordUpsertForm(app, gameQuestion);
+        gqErrorForm.loadData({
+          audio_status: "failed",
+          audio_error: err.message.substring(0, 255)
+        });
+        gqErrorForm.submit();
+
+        failedQuestions.push({
+          game_question_id: gameQuestion.id,
+          error_message: err.message
+        });
+
+        processedCount++;
+
+        const progressForm = new RecordUpsertForm(app, job);
+        progressForm.loadData({
+          processed_questions: processedCount,
+          progress: Math.floor((processedCount / gameQuestions.length) * 100),
+          failed_questions: failedQuestions
+        });
+        progressForm.submit();
+      }
+    }
+
+    // Mark job as complete or failed
+    const finalStatus = failedQuestions.length > 0 ? "failed" : "completed";
+    const finalForm = new RecordUpsertForm(app, job);
+    finalForm.loadData({ status: finalStatus });
+    finalForm.submit();
+
+    console.log(`[AudioGen] Job ${job.id} ${finalStatus} (${processedCount}/${gameQuestions.length} processed, ${failedQuestions.length} failed)`);
+
+  } catch (err) {
+    console.error('[AudioGen] Worker error:', err);
+  } finally {
+    isProcessing = false;
+  }
+}
+
+// Start worker on app initialization
+onBootstrap((e) => {
+  console.log('[AudioGen] Starting background worker');
+
+  // Start cron job to process jobs every minute
+  // The cron expression "* * * * *" means every minute
+  cronAdd("audioGenerationWorker", "* * * * *", () => {
+    // Try to reset any stuck jobs (will be empty most of the time)
+    try {
+      const stuckJobs = $app.findRecordsByFilter(
+        "audio_generation_jobs",
+        `status = "processing"`,
+        "",
+        -1,
+        0
+      );
+
+      if (stuckJobs && stuckJobs.length > 0) {
+        for (const job of stuckJobs) {
+          const form = new RecordUpsertForm($app, job);
+          form.loadData({ status: "pending" });
+          form.submit();
+          console.log(`[AudioGen] Reset stuck job ${job.id} to pending`);
+        }
+      }
+    } catch (err) {
+      // Silently ignore stuck job recovery errors
+    }
+
+    // Process pending jobs
+    try {
+      processJobs($app);
+    } catch (err) {
+      console.error('[AudioGen] Worker error:', err.message || String(err));
+    }
+  });
+
+  // Continue bootstrap process
+  e.next();
 });
 
 // Export for testing
